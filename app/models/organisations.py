@@ -1,8 +1,11 @@
 
 import uuid
+
+
 from ..db.database import Base
 
-from sqlalchemy import String 
+from sqlalchemy.orm import relationship
+from sqlalchemy import String , ForeignKey
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped , mapped_column
@@ -22,7 +25,13 @@ class Organisation(Base,TimestampMixin):
         default=uuid.uuid4
     )
     name : Mapped[str] = mapped_column(String(225))
-
+    organisation_code : Mapped[str] = mapped_column(String(20),unique= True)    
     status: Mapped[OrganizationStatus]= mapped_column(
         SQLEnum(OrganizationStatus)
     )
+    subscription: Mapped["Subscription"] = relationship(
+    "Subscription",
+    back_populates="organisation",
+    uselist=False
+)
+

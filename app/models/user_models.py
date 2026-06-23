@@ -7,9 +7,9 @@ from sqlalchemy import String,ForeignKey,DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
 
-from ..enums.user_status_enums import UserStatus
-from ..enums.role_enums import UserRole
-from ..db.timestamp import TimestampMixin
+from app.enums.user_status_enums import UserStatus
+from app.enums.role_enums import UserRole
+from app.db.timestamp import TimestampMixin
 
 
 class User(Base,TimestampMixin):
