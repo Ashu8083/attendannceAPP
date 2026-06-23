@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.db.database import Base
 from app.models.user_models import User
-from app.models.organizations import Organisation
+from app.models.organisations import Organisation
 from app.models.employee_models import Employee
 from app.models.attendance_record_model import Attendance
 from app.models.leave_record_model import LeaveRequest

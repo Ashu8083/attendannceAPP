@@ -18,15 +18,14 @@ class LeaveRequest(Base,TimestampMixin):
         primary_key=True,
         default=uuid.uuid4
     )
-
     employee_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("employees.id")
     )
-
     start_date: Mapped[date] = mapped_column(Date)
-
     end_date: Mapped[date] = mapped_column(Date)
-
     status: Mapped[LeaveStatus] = mapped_column(
         SQLEnum(LeaveStatus)
+    )
+    approved_by :Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("user.id")
     )

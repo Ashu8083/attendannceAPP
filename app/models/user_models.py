@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 from datetime import datetime
 from ..db.database import Base
 from sqlalchemy.orm  import Mapped , mapped_column
@@ -26,9 +27,13 @@ class User(Base,TimestampMixin):
     full_name : Mapped [str] = mapped_column(
         String (225)
     )
+
     email : Mapped[str] = mapped_column(
         String(225),
         unique = True
+    )
+    profile_image : Mapped[str] = mapped_column(
+        String(225)
     )
     password_hash : Mapped[str] = mapped_column(
         String(225)
@@ -40,5 +45,6 @@ class User(Base,TimestampMixin):
     (
         SQLEnum (UserStatus)
     )
+    
     
 
