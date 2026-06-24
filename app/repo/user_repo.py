@@ -15,14 +15,14 @@ class UserRepo:
             self.db.query(User).filter(User.email ==user_email ).first()
         )
     
-    def create_user(self,data : UserCreation):
+    def create_user(self,data:UserCreation,organisation_id):
+            
             user = User(
                  full_name = data.full_name,
-                 organisation_id = data.organisation_id,
+                 organisation_id = organisation_id,
                  email = data.email,
-                 password_hash = data.password,
-                 role = data.role,
-                 user_status = data.userStatus
+                 #password_hash = data.password,
+                 role = data.role
             )
             self.db.add(user)
             self.db.commit()

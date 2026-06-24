@@ -5,11 +5,14 @@ from pydantic import BaseModel,EmailStr
 from datetime import date
 
 from app.enums.user_status_enums import UserStatus
+from app.enums.role_enums import UserRole
+
 
 class UserCreation(BaseModel): # for only org_admin creation 
     full_name : str
     email : EmailStr
-    organisation_name : str
+    organisation_code : str
+    role : Optional[UserRole] = None
 
 
 class UserUpdate(BaseModel):

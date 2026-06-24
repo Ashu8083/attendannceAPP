@@ -9,14 +9,15 @@ from app.models.user_models import User
 from app.models.employee_models import Employee
 from app.models.subcription_model import Subscription
 from app.models.leave_record_model import LeaveRequest
-from app.api.organigastion_api import router
+from app.api import all_router
 app = FastAPI()
 
 @app.get("/")
 def home():
     return{"message" : "FastAPI server"}
 
-app.include_router(router)
+for router in all_router:
+    app.include_router(router)
 
 Base.metadata.create_all(
     bind = engine

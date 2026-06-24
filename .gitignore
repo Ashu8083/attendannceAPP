@@ -1,0 +1,13 @@
+# Virtual Environments
+env/
+venv/
+.venv/
+chatenv/
+
+# Environment Files
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc

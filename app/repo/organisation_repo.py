@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.organisations import Organisation
-from app.schemas.organisation_schema import CreateOrganisation
+from app.schemas.organisation_schema import CreateOrganisation,OrganisationDetailsUpdate,OrganisationDetailsResponse
 
 
 class OrganisationRepo:
@@ -22,6 +22,12 @@ class OrganisationRepo:
             .filter(Organisation.id == organisation_id)
             .first()
         )
+    def get_organisation_by_email(self,organisation_email) -> Organisation:
+        return (
+            self.db.query(Organisation)
+            .filter(Organisation.organisation_email == organisation_email)
+            .first()
+        )
 
     def get_organisation_id(self, organisation_code: str):
         return (
@@ -34,13 +40,18 @@ class OrganisationRepo:
 
     def create_organisation(
         self,
-        data: CreateOrganisation
-    ) -> Organisation:
+        data: CreateOrganisation,
+        code :str
+    ) -> OrganisationDetailsResponse:
 
         organisation = Organisation(
             name=data.organisation_name,
-            organisation_code=data.organisation_code,
-            status=data.organisation_status
+            organisation_code=code,
+            organisation_email = data.organisation_email,
+            status=data.organisation_status,
+            phone_number = data.organisation_phone,
+            address =data.organisation_address
+
         )
 
         self.db.add(organisation)
@@ -49,8 +60,11 @@ class OrganisationRepo:
 
         return organisation
 
-    def update_organisation(self, organisation: Organisation):
-
+    def update_organisation(self,organisation_code:str ,data: OrganisationDetailsUpdate):
+    
+        organisation = self.db.query(Organisation).filter(Organisation.organisation_code == organisation_code)
+        for feild in data.model_dump().items():
+            setattr(organisation,feild,data)
         self.db.commit()
         self.db.refresh(organisation)
 

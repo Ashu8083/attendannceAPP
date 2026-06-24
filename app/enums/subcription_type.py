@@ -1,5 +1,10 @@
 from enum import Enum
 
-class SubscriptionType(str, Enum):
-    YEARLY = "YEARLY"
-    MONTHLY = "MONTHLY"
+class SubscriptionDuration(str, Enum):
+        Freeimium = "Freeimium"
+        Basic = "Basic"
+        Premimum = "Premimum"
+
+class SubscriptionType(str,Enum):
+        YEARLY = "YEARLY"
+        MONTHLY = "MONTHLY"

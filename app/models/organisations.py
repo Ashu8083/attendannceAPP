@@ -5,7 +5,7 @@ import uuid
 from ..db.database import Base
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import String , ForeignKey
+from sqlalchemy import String , ForeignKey,Float,Integer
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped , mapped_column
@@ -25,7 +25,10 @@ class Organisation(Base,TimestampMixin):
         default=uuid.uuid4
     )
     name : Mapped[str] = mapped_column(String(225))
-    organisation_code : Mapped[str] = mapped_column(String(20),unique= True)    
+    organisation_code : Mapped[str] = mapped_column(
+                                                    String(20),
+                                                    unique= True,
+                                                    index=True)    
     status: Mapped[OrganizationStatus]= mapped_column(
         SQLEnum(OrganizationStatus)
     )
@@ -33,5 +36,20 @@ class Organisation(Base,TimestampMixin):
     "Subscription",
     back_populates="organisation",
     uselist=False
-)
+    )
+    organisation_email : Mapped[str] = mapped_column(
+      String(225),
+      unique= True,
+      index= True,
+    )
+    address : Mapped[str] = mapped_column(
+        String(225)
+    )
+    phone_number : Mapped[str] = mapped_column(
+        String(20)
+    )
+
+    latitude : Mapped[float] = mapped_column(Float)
+    longitude : Mapped[Float] = mapped_column(Float)
+    allowed_radius = mapped_column(Integer, default=100)
 
