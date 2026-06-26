@@ -4,7 +4,7 @@ from datetime import date
 
 from ..enums.employee_status import  EmployeeStatus
 from sqlalchemy import ForeignKey,String,Date
-from sqlalchemy.orm import Mapped , mapped_column
+from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnums
 from ..db.timestamp import TimestampMixin
@@ -43,9 +43,33 @@ class Employee(Base,TimestampMixin):
     join_date : Mapped[date] = mapped_column(
         Date
     )
+    
     # manaer_id : Mapped[uuid.UUID] = mapped_column(
     #     ForeignKey("user.id")
     # )
+
+    # Employee.py
+
+    role_id:Mapped[uuid.UUID] = mapped_column(
+                                                UUID(as_uuid=True),
+                                                ForeignKey("role.id"),
+                                                nullable=False,
+    )
+
+    role = relationship(
+                        "Role",
+                        back_populates="employees",
+                        )
+    leave_request = relationship(
+                                "Leave_Request",
+                                back_populates= "employee",
+                                cascade= "all,delete-orphan"
+                                )
+    documents = relationship(
+                            "EmployeeDocuments",
+                             back_populates="employee",
+                             uselist=False
+    )
      
      
 

@@ -16,7 +16,6 @@ class User(Base,TimestampMixin):
     __tablename__ = "user"
 
     id : Mapped[uuid.UUID] = mapped_column(
-
         UUID(as_uuid= True),
         primary_key=True,
         default=uuid.uuid4
@@ -27,7 +26,6 @@ class User(Base,TimestampMixin):
     full_name : Mapped [str] = mapped_column(
         String (225)
     )
-
     email : Mapped[str] = mapped_column(
         String(225),
         unique = True

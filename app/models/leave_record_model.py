@@ -1,8 +1,8 @@
 import uuid
-from datetime import date
+from datetime import date,datetime
 
-from sqlalchemy import Date, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Date, ForeignKey,DateTime
+from sqlalchemy.orm import Mapped, mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
 
@@ -19,7 +19,9 @@ class LeaveRequest(Base,TimestampMixin):
         default=uuid.uuid4
     )
     employee_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("employees.id")
+        UUID(as_uuid = True),
+        ForeignKey("employees.id"),
+        nullable= False
     )
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)
@@ -29,3 +31,10 @@ class LeaveRequest(Base,TimestampMixin):
     approved_by :Mapped[uuid.UUID] = mapped_column(
         ForeignKey("user.id")
     )
+    approved_at : Mapped[datetime] = mapped_column(
+        DateTime
+    )
+    employee = relationship(
+                            "Employee",
+                            back_populates="leave_requests"
+                            )
