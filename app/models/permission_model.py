@@ -15,6 +15,7 @@ class Permission(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
+    
 
     name: Mapped[str] = mapped_column(
         String(100),

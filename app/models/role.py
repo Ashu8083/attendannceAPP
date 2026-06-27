@@ -16,24 +16,20 @@ class Role(Base, TimestampMixin):
         primary_key=True,
         default=uuid.uuid4,
     )
-
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("organisation.id",
                     ondelete="CASCADE"),
                     nullable=False,
                     )
-
     name: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
     )
-
     description: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
     )
-
     organization = relationship("Organisation")
     employees = relationship("Employee", back_populates="roles")
     role_permissions = relationship(

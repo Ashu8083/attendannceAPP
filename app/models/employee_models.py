@@ -2,8 +2,10 @@ import uuid
 
 from datetime import date
 
+from app.enums.work_mode import WorkMode
+
 from ..enums.employee_status import  EmployeeStatus
-from sqlalchemy import ForeignKey,String,Date
+from sqlalchemy import ForeignKey,String,Date, UniqueConstraint
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnums
@@ -21,13 +23,20 @@ class Employee(Base,TimestampMixin):
         primary_key = True,
         default = uuid.uuid4
     )
+    __table_args__ = (
+        UniqueConstraint(
+            "organisation_id",
+            "employee_code",
+            name="uq_org_employee_code"
+        ),
+    )
     user_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("user.id")
     )
-    oganisation_id : Mapped[uuid.UUID] = mapped_column(
+    organisation_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("organisation.id")
     )
-    emplopyee_code: Mapped[str] = mapped_column(
+    employee_code: Mapped[str] = mapped_column(
         String(50),
         unique = True
     )
@@ -53,8 +62,15 @@ class Employee(Base,TimestampMixin):
     role_id:Mapped[uuid.UUID] = mapped_column(
                                                 UUID(as_uuid=True),
                                                 ForeignKey("role.id"),
-                                                nullable=False,
+                                                nullable=True,
     )
+    work_mode : Mapped[WorkMode] = mapped_column(
+                                                SQLEnums(
+                                                WorkMode,
+                                                native_enum=False,
+                                                validate_strings=True
+                                                )
+                                                )
 
     role = relationship(
                         "Role",
@@ -70,6 +86,10 @@ class Employee(Base,TimestampMixin):
                              back_populates="employee",
                              uselist=False
     )
+    employee_details= relationship(
+                                    "EmployeeDetails",
+                                    back_populates="employee",
+                                    )
      
      
 

@@ -52,6 +52,10 @@ class Organisation(Base,TimestampMixin):
     latitude : Mapped[float] = mapped_column(Float)
     longitude : Mapped[Float] = mapped_column(Float)
     allowed_radius = mapped_column(Integer, default=100)
+    number_of_employee : Mapped[int] = mapped_column(
+        Integer,
+        default= 0
+    )
     departments = relationship(
                                 "DepartmentModel",
                                  back_populates="organization",
@@ -63,13 +67,14 @@ class Organisation(Base,TimestampMixin):
                         cascade="all,delete-orphan"
                         )
     attendance_record = relationship(
-                        "Attendance_Record",
+                        "Attendance_Records",
                         back_populates="organisation",
                         cascade="all,delete-orphan"
     )
+
     employee = relationship(
                             "Employee",
                             back_populates="oranisation",
                             cascade="all,delete-orphan"
     )
-
+    

@@ -4,7 +4,10 @@ from app.models.user_models import User
 from app.repo.organisation_repo import Organisation
 from app.schemas.user import UserCreation,UserUpdate
 from app.repo.organisation_repo import OrganisationRepo
+from app.repo.user_device_repo import UserDeviceDetailRepo
 
+
+#for adding organisation admin only 
 class UserRepo:
 
     def __init__(self , db : Session):
@@ -14,19 +17,24 @@ class UserRepo:
         return(
             self.db.query(User).filter(User.email ==user_email ).first()
         )
+        
+
     
     def create_user(self,data:UserCreation,organisation_id):
             
+            ueserdevicedetails = UserDeviceDetailRepo(self.db)
             user = User(
                  full_name = data.full_name,
                  organisation_id = organisation_id,
                  email = data.email,
-                 #password_hash = data.password,
+                 password_hash = data.password,
                  role = data.role
             )
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
+
+
 
             return user
 

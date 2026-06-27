@@ -13,3 +13,6 @@ from .userdevice_details import UserDeviceDetails
 from .role import Role
 from .permission_model import Permission
 from .rolePermision import RolePermission
+
+from .employee_details_model import EmployeeDetails
+from .employee_documents_model import EmployeeDocuments

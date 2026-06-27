@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime
+from datetime import datetime,date
 
-from sqlalchemy import String ,ForeignKey ,DateTime
+from sqlalchemy import String ,ForeignKey ,DateTime, UniqueConstraint,Date,Boolean
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum 
@@ -16,6 +16,14 @@ class Attendance(Base,TimestampMixin):
     
     __tablename__ = "attendance_records"
 
+    __table_args__ = (UniqueConstraint(
+                                        "employee_id",
+                                        "attendance_date",
+                                        name="uq_employee_attendance_date",
+                                        ),
+                        )
+    #__table_args__ make sure that combination employee and attendance date must be unique
+
     id  : Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid= True),
         primary_key= True,
@@ -29,19 +37,30 @@ class Attendance(Base,TimestampMixin):
     employee_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("employees.id")
     )
-    attendance_date : Mapped[datetime] = mapped_column(
-        DateTime
+    attendance_date : Mapped[date] = mapped_column(
+        Date
+    )
+    is_punchin : Mapped[bool] = mapped_column(
+        Boolean ,
+        default= False
     )
     punchin_time : Mapped[datetime] = mapped_column(
-        DateTime
+
+        DateTime,
+    )
+    is_punchout :Mapped[bool] = mapped_column(
+        Boolean,
+        default= False
     )
     punchout_time :Mapped[datetime] = mapped_column(
-        DateTime
+        DateTime,
+        nullable= False
     )
     status: Mapped[AttendanceStatus] = mapped_column(
         SQLEnum(AttendanceStatus,
                 native_enum=False,
-                validate_strings=True)
+                validate_strings=True),
+                default= AttendanceStatus.PRESENT
     )
     work_mode : Mapped[WorkMode] = mapped_column(
         SQLEnum(
@@ -51,8 +70,8 @@ class Attendance(Base,TimestampMixin):
     )
     )
     organisation = relationship(
-        "Attendance_Record",
-        back_populates="organisation"
+        "Oranisation",
+        back_populates="attendance_records"
     )
     
     
