@@ -46,6 +46,10 @@ class OrganisationService():
         )
         return response
     
+    def get_organisation_id(self, organisation_code):
+         
+        return  self.organisationRepo.get_organisation_id(organisation_code= organisation_code)
+    
     def update_organisation(self,organisation_code :str,
                             data :OrganisationDetailsUpdate):
         organisation = self.organisationRepo.get_organisation_by_code(organisation_code)

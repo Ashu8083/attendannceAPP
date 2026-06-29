@@ -40,6 +40,7 @@ class Employee(Base,TimestampMixin):
         String(50),
         unique = True
     )
+
     department: Mapped[str] = mapped_column(
         String(100)
     )
@@ -49,9 +50,18 @@ class Employee(Base,TimestampMixin):
     emplopyee_status : Mapped[EmployeeStatus] = mapped_column(
             SQLEnums(EmployeeStatus)
     )
+    shift_id : Mapped[int] = mapped_column(
+        ForeignKey("shift.id")
+    )
     join_date : Mapped[date] = mapped_column(
         Date
     )
+    shift =  relationship(
+        "Shift",
+        back_populates= "employee"
+    )
+
+    
     
     # manaer_id : Mapped[uuid.UUID] = mapped_column(
     #     ForeignKey("user.id")
@@ -74,10 +84,10 @@ class Employee(Base,TimestampMixin):
 
     role = relationship(
                         "Role",
-                        back_populates="employees",
+                        back_populates="employee",
                         )
-    leave_request = relationship(
-                                "Leave_Request",
+    leave_requests = relationship(
+                                "LeaveRequest",
                                 back_populates= "employee",
                                 cascade= "all,delete-orphan"
                                 )
@@ -89,7 +99,17 @@ class Employee(Base,TimestampMixin):
     employee_details= relationship(
                                     "EmployeeDetails",
                                     back_populates="employee",
-                                    )
+    
+                                 )
+    organisation = relationship(
+    "Organisation",
+    back_populates="employee"
+
+)
+    attendance_records = relationship(
+    "Attendance",
+    back_populates="employee"
+)
      
      
 

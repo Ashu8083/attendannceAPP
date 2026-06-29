@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from datetime import datetime
 from ..db.database import Base
-from sqlalchemy.orm  import Mapped , mapped_column
+from sqlalchemy.orm  import Mapped , mapped_column,relationship
 from sqlalchemy import String,ForeignKey,DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
@@ -31,17 +31,24 @@ class User(Base,TimestampMixin):
         unique = True
     )
     profile_image : Mapped[str] = mapped_column(
-        String(225)
+        String(225),
+        nullable= True
     )
     password_hash : Mapped[str] = mapped_column(
-        String(225)
+        String(225),
+        nullable= True
     )
     role : Mapped[UserRole] = mapped_column(
-         SQLEnum(UserRole)
+         SQLEnum(UserRole),
+         default= UserRole.USER
     )
-    status : Mapped [UserStatus] = mapped_column
-    (
-        SQLEnum (UserStatus)
+    status : Mapped [UserStatus] = mapped_column(
+        SQLEnum(UserStatus),
+        default= UserStatus.ACTIVE
+    )
+    device = relationship(
+        "UserDeviceDetails",
+        back_populates ="user"
     )
     
     

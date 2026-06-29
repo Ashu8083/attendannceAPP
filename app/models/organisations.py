@@ -49,8 +49,10 @@ class Organisation(Base,TimestampMixin):
         String(20)
     )
 
-    latitude : Mapped[float] = mapped_column(Float)
-    longitude : Mapped[Float] = mapped_column(Float)
+    latitude : Mapped[float] = mapped_column(Float,
+                                             nullable=True)
+    longitude : Mapped[Float] = mapped_column(Float,
+                                              nullable=True)
     allowed_radius = mapped_column(Integer, default=100)
     number_of_employee : Mapped[int] = mapped_column(
         Integer,
@@ -61,20 +63,19 @@ class Organisation(Base,TimestampMixin):
                                  back_populates="organization",
                                  cascade="all, delete-orphan"
                                 )
-    shift = relationship(
-                        "Shift",
+   
+    attendance_records = relationship(
+                        "Attendance",
                         back_populates="organisation",
                         cascade="all,delete-orphan"
                         )
-    attendance_record = relationship(
-                        "Attendance_Records",
-                        back_populates="organisation",
-                        cascade="all,delete-orphan"
-    )
 
     employee = relationship(
                             "Employee",
-                            back_populates="oranisation",
+                            back_populates="organisation",
                             cascade="all,delete-orphan"
-    )
-    
+                            )
+    shift = relationship(
+                        "Shift",
+                        back_populates="organisation"
+                        )

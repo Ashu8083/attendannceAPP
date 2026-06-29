@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy.orm import Session
 
 from .user_repo import UserRepo
@@ -15,42 +17,43 @@ class EmployeeRepo:
     def __init__(self,db :Session):
         self.db = db
 
-    def createEmployee(self,employeedata : CreateEmployee):
-        userRepo = UserRepo(self.db)
-        user = userRepo.get_user_by_email(employeedata.email)
-
-        if not  user : 
-            user = User(email = employeedata.email,
-                        full_name = employeedata.full_name,
-                        role  = UserRole.USER,
-                        organisation_id = employeedata.organisation_id
-                        )
-            self.db.add(user)
-            self.db.flush()
-            
+    def createEmployee(self,user_id :uuid ,employeedata : CreateEmployee):
         existing = self.get_employee_by_employee_code(
          employeedata.employee_code
         )
         if existing:
             raise ValueError("Employee code already exists")
 
-        employee = Employee( user_id = user.id,
+        employee = Employee( user_id = user_id,
                             organisation_id = employeedata.organisation_id,
                             employee_code = employeedata.employee_code,
                             department = employeedata.department,
                             join_date = employeedata.join_date,
                             )
         self.db.add(employee)
-        try:
+        self.db.flush(employee)
+        employee_details = EmployeeDetails(
+                                            employee_id=employee.id,
+                                            full_name=employeedata.full_name,
+                                            dob=employeedata.dob,
+                                            gender=employeedata.gender,
+                                            marital_status=employeedata.marital_status,
+                                            address=employeedata.address,
+                                            city=employeedata.city,
+                                            state=employeedata.state,
+                                                            )
+        try: 
             self.db.commit()
-            self.db.refresh(employee)
-            self.db.refresh(user)
-        except:
+
+        except Exception:
             self.db.rollback()
+            raise
         return employee
-    def get_employee_by_employee_code(self ,employee_code : str):
+    
+
+    def get_employee_by_employee_code(self , organisation_id:uuid ,employee_code : str):
         
-        employee= self.db.query(Employee).filter(Employee.employee_code == employee_code).first()
+        employee= self.db.query(Employee).filter(Employee.organisation_id == organisation_id,Employee.employee_code == employee_code).first()
         if not employee :
             return None
         return employee
@@ -69,10 +72,11 @@ class EmployeeRepo:
     def update_employee_details(
                                 self,
                                 employee_code: str,
+                                organisation_id : uuid,
                                 employee_details: EmployeeDetailsUpdate
                           ):
 
-        employee = self.get_employee_by_employee_code(employee_code)
+        employee = self.get_employee_by_employee_code(organisation_id,employee_code)
 
         if not employee:
             return None
@@ -91,8 +95,8 @@ class EmployeeRepo:
 
         return details
     
-    def employee_update_status(self,employee_code,employee_status : EmployeeStatusUpdate):
-        employee = self.get_employee_by_employee_code(employee_code)
+    def employee_update_status(self,organisation_id :uuid ,employee_code,employee_status : EmployeeStatusUpdate):
+        employee = self.get_employee_by_employee_code(organisation_id= organisation_id,employee_code=  employee_code)
         if employee :
             employee.employee_status = employee_status.status
             try:    
@@ -102,7 +106,9 @@ class EmployeeRepo:
                 self.db.rollback()
                 raise 
         return None
+    
     def get_all_employee(self,organisation_id : str):
         employee=  self.db.query(Employee).filter(Employee.organisation_id == organisation_id).all()
 
         return employee
+    

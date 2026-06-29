@@ -39,11 +39,8 @@ class EmployeeDetails(Base, TimestampMixin):
     state : Mapped[str] = mapped_column(
         String(30)
     )
-    employee: Mapped["Employee"] = relationship(
-
+    employee = relationship(
     "Employee",
-
-    back_populates="emplopyee_details"
-
+    back_populates="employee_details"
 )
 

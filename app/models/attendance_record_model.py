@@ -70,8 +70,12 @@ class Attendance(Base,TimestampMixin):
     )
     )
     organisation = relationship(
-        "Oranisation",
+        "Organisation",
         back_populates="attendance_records"
     )
     
-    
+    employee = relationship(
+    "Employee",
+    back_populates="attendance_records"
+
+)

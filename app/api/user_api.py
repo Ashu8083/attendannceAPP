@@ -9,26 +9,19 @@ from app.service.user_service import UserService
 
 user_router = APIRouter()
 
-@user_router.post("/create-user",response_model=UserDetailsRespone)
+@user_router.post("/create-user")
 def create_user(user_data : UserCreation,
                 service : UserService = Depends(get_user_service) ):
     
-    try:
-        user = service.create_user_service(user_data)
-        return user
-    except Exception as e:
-        JSONResponse(
-            content= "server error {e}",
-            status_code= 500
-        )
-
+    return service.create_user_service(user_data)
     
 
 @user_router.put("/update-user")
 def update_user():
     return
 
-@user_router.get("/get-user/{user_email}",response_model=UserDetailsRespone)
+@user_router.get("/get-user/{user_email}",
+                 response_model=UserDetailsRespone)
 def get_user(user_email : str,
                 service : UserService = Depends(get_user_service) ):
     return service.get_user(user_email= user_email)

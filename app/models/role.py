@@ -31,7 +31,7 @@ class Role(Base, TimestampMixin):
         nullable=True,
     )
     organization = relationship("Organisation")
-    employees = relationship("Employee", back_populates="roles")
+    employee = relationship("Employee", back_populates="role")
     role_permissions = relationship(
         "RolePermission",
         back_populates="role",

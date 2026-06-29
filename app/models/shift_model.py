@@ -39,5 +39,9 @@ class Shift(Base,TimestampMixin):
     )
     organisation = relationship(
                                 "Organisation",
-                                back_populates="shifts"
+                                back_populates="shift"
                                 )
+    employee = relationship(
+                          "Employee",
+                           back_populates= "shift"
+    )

@@ -2,9 +2,9 @@ from pydantic import BaseModel,EmailStr
 
 from datetime import date,datetime
 
-from enums.employee_status import EmployeeStatus
-from enums.user_status_enums import UserStatus
-from models.employee_models import Employee
+from app.enums.employee_status import EmployeeStatus
+from app.enums.user_status_enums import UserStatus
+from app.models.employee_models import Employee
 
 class CreateEmployee(BaseModel) :  
 
@@ -22,7 +22,14 @@ class CreateEmployee(BaseModel) :
     join_date : date
     emplopyee_status : EmployeeStatus
 
-class EmployeDetails(BaseModel):
+    dob :date
+    gender : str
+    marital_status: str
+    address : str
+    city :str
+    state :str
+
+class EmployeeDetails(BaseModel):
     employee_code : str
     dob :date
     gender : str
@@ -30,6 +37,7 @@ class EmployeDetails(BaseModel):
     address : str
     city :str
     state :str
+    
 
 class CreateEmployeeDocuments(BaseModel):
     employee_code: str
