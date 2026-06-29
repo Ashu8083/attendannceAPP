@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+import uuid
+
+from fastapi import  APIRouter
 from fastapi import Depends
 from fastapi.responses import JSONResponse
 
@@ -8,13 +10,14 @@ from app.dependancy.service_dependancy import get_employee_service
 
 employee_router = APIRouter()
 
-@employee_router.post("/create-employee",response_model=EmployeeDetails)
-def create_employee( 
+@employee_router.post("/create-employee/{organisation_id}")
+def create_employee(
     data : CreateEmployee ,
-    employee_service : EmployeeService = Depends (get_employee_service)
+    organisation_id: uuid.UUID,
+    employee_service : EmployeeService = Depends (get_employee_service),
+  
     ):
-    organisation_id = "testid" 
-    employee = employee_service.createEmployee_service(organisation_id = organisation_id ,employeeSchema= data)
+    employee = employee_service.createEmployee_service(organisation_id=organisation_id, employee_schema=data)
     if not employee: 
         return JSONResponse(
             content = "Something Went Wrong",
@@ -35,4 +38,21 @@ def get_employee(
     return employee
 
 
+@employee_router.put("/update-employee-details/{employee_code}")
+def update_employee(
+    employee_code :str ,
+    employee_data : EmployeeDetailsUpdate,
+    employee_service : EmployeeService = Depends(get_employee_service)
+):
+    organisation_id = "test_id"
+    return employee_service.update_employee_service(organisation_id= organisation_id,employeeDetailsSchema= employee_data, employee_code= employee_code)
+
+@employee_router.put("/update-employee-status/{employee_code}")
+def update_employee_status(
+        employee_code : str,
+        employee_data: EmployeeStatusUpdate,
+        employee_service : EmployeeService = Depends(get_employee_service)
+):
+    organisation_id = "test_id"
+    return employee_service.update_employee_status_service()
 

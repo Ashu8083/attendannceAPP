@@ -1,11 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel,EmailStr,ConfigDict
 
 from datetime import date
 
 from app.enums.user_status_enums import UserStatus
 from app.enums.role_enums import UserRole
+from app.schemas.organisation_schema import OrganisationNameResponse
 
 
 class UserCreation(BaseModel): # for only org_admin creation 
@@ -33,9 +34,11 @@ class UserUpdatePassword(BaseModel):
 class UserDetailsRespone(BaseModel):
     full_name :str
     email : EmailStr
-    organisation_name : str
-    role : str
-    status : str
+    role : UserRole
+    status : UserStatus
+
+    organisation :OrganisationNameResponse
+    model_config =ConfigDict(from_attributes=True)
 
 
 

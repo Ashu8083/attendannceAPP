@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel,EmailStr
 
 from datetime import date,datetime
@@ -11,8 +13,8 @@ class CreateEmployee(BaseModel) :
     full_name : str
     email : EmailStr
     password_hash : str
-    emplopyee_code :str
-    organisation_id :str
+    employee_code : str
+
 
     department : str
     designation : str
@@ -61,13 +63,17 @@ class EmployeeUpdate(BaseModel):
     emplopyee_status : EmployeeStatus
 
 class EmployeeStatusUpdate(BaseModel):
+    def __init__(self, /, **data: Any):
+        super().__init__(null, data)
+        self.status = None
+
     employee_status :EmployeeStatus
 
 class EmployeeDetailsUpdate(BaseModel):
-    employee_code : str
+
     dob :date
-    gender : str
-    marital_status: str
-    address : str
-    city :str
-    state :str
+    gender : Optional[str] = None
+    marital_status: Optional[str] = None
+    address : Optional[str] = None
+    city :Optional[str] = None
+    state :Optional[str] = None

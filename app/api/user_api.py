@@ -20,8 +20,7 @@ def create_user(user_data : UserCreation,
 def update_user():
     return
 
-@user_router.get("/get-user/{user_email}",
-                 response_model=UserDetailsRespone)
+@user_router.get("/get-user/{user_email}",response_model=UserDetailsRespone)
 def get_user(user_email : str,
                 service : UserService = Depends(get_user_service) ):
     return service.get_user(user_email= user_email)

@@ -19,21 +19,24 @@ class UserRepo:
         self.db = db
 
     def get_user_by_email(self,user_email : str):
-        return(
-            self.db.query(User).filter(User.email ==user_email).first()
-        )
+        user = self.db.query(User).filter(User.email ==user_email).first()
+        return user
     
     def create_user_as_employee(self,full_name,email,organisation_id):
             user = User(
                  full_name = full_name,
                  email = email,
                  organisation_id = organisation_id,
-                 role = UserRole.USER,
+                 role = UserRole.EMPLOYEE,
                  status = UserStatus.ACTIVE
             )
-            self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
+            try :
+                self.db.add(user)
+                self.db.commit()
+                self.db.refresh(user)
+            except Exception as e :
+                 self.db.rollback()
+                 raise e
 
             return user
         

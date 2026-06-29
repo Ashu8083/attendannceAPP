@@ -40,18 +40,21 @@ class Employee(Base,TimestampMixin):
         String(50),
         unique = True
     )
-
     department: Mapped[str] = mapped_column(
-        String(100)
+        String(100),
+        nullable= True
     )
     designation: Mapped[str] = mapped_column(
-        String(100)
+        String(100),
+        nullable=True
     )
     emplopyee_status : Mapped[EmployeeStatus] = mapped_column(
-            SQLEnums(EmployeeStatus)
+            SQLEnums(EmployeeStatus),
+            default=EmployeeStatus.ACTIVE
     )
     shift_id : Mapped[int] = mapped_column(
-        ForeignKey("shift.id")
+        ForeignKey("shift.id"),
+        nullable= True
     )
     join_date : Mapped[date] = mapped_column(
         Date
@@ -59,10 +62,8 @@ class Employee(Base,TimestampMixin):
     shift =  relationship(
         "Shift",
         back_populates= "employee"
-    )
 
-    
-    
+    )
     # manaer_id : Mapped[uuid.UUID] = mapped_column(
     #     ForeignKey("user.id")
     # )
@@ -78,8 +79,9 @@ class Employee(Base,TimestampMixin):
                                                 SQLEnums(
                                                 WorkMode,
                                                 native_enum=False,
-                                                validate_strings=True
-                                                )
+                                                validate_strings=True,
+                                                ),
+                                                default=WorkMode.WFO
                                                 )
 
     role = relationship(
@@ -95,20 +97,19 @@ class Employee(Base,TimestampMixin):
                             "EmployeeDocuments",
                              back_populates="employee",
                              uselist=False
-    )
+                            )
     employee_details= relationship(
                                     "EmployeeDetails",
                                     back_populates="employee",
-    
+
                                  )
     organisation = relationship(
-    "Organisation",
-    back_populates="employee"
-
-)
+                                 "Organisation",
+                                 back_populates="employee"
+                                )
     attendance_records = relationship(
-    "Attendance",
-    back_populates="employee"
+                                        "Attendance",
+                                         back_populates="employee"
 )
      
      

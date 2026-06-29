@@ -40,15 +40,20 @@ class User(Base,TimestampMixin):
     )
     role : Mapped[UserRole] = mapped_column(
          SQLEnum(UserRole),
-         default= UserRole.USER
+         default= UserRole.EMPLOYEE
     )
     status : Mapped [UserStatus] = mapped_column(
         SQLEnum(UserStatus),
-        default= UserStatus.ACTIVE
+        default= UserStatus.ACTIVE,
+        nullable= True
     )
     device = relationship(
         "UserDeviceDetails",
         back_populates ="user"
+    )
+    organisation = relationship(
+        "Organisation",
+        back_populates="user"
     )
     
     

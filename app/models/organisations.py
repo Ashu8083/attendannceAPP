@@ -79,3 +79,7 @@ class Organisation(Base,TimestampMixin):
                         "Shift",
                         back_populates="organisation"
                         )
+    user =  relationship(
+        "User",
+        back_populates="organisation"
+    )
