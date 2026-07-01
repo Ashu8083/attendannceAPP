@@ -54,6 +54,6 @@ class EmployeeService:
         
     def delete_employee_service(self):
         return
-    def get_all_employee_service(self,organisation_id):
+    def get_all_employee_service(self,organisation_id : uuid.UUID):
 
-        return self.employeeRepo.get_all_employee()
+        return self.employeeRepo.get_all_employee(organisation_id=organisation_id)

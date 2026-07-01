@@ -1,7 +1,4 @@
-
-
-
-from datetime import datetime
+from datetime import datetime,date
 import uuid
 
 from pydantic import BaseModel, ConfigDict
@@ -18,8 +15,7 @@ class PunchOutSchema(BaseModel):
     employee_id: uuid.UUID
 
 class AttendanceResponse(BaseModel):
-    id: uuid.UUID
-    employee_id: uuid.UUID
+    employee_code: str
     attendance_date: datetime
     punchin_time: datetime | None
     punchout_time: datetime | None
@@ -30,7 +26,9 @@ class AttendanceResponse(BaseModel):
 
 class AttendanceUpdate(BaseModel):
 
+    employee_code: str
     status: AttendanceStatus | None = None
     punchin_time: datetime | None = None
     punchout_time: datetime | None = None
     work_mode: WorkMode | None = None
+    date: date

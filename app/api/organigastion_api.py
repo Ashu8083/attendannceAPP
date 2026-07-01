@@ -41,7 +41,7 @@ def upadate_organisation_details(
                 }
     except  Exception as e : 
         JSONResponse(
-            content= "internal error {e}",
-            status_code='400'
+            content= "error",
+            status_code=400
         )
     

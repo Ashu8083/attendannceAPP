@@ -2,7 +2,7 @@ from pydantic import BaseModel
 import uuid
 class CreateRole(BaseModel):
 
-    organisation_id : uuid.UUID
+
     name: str
     description :str
 

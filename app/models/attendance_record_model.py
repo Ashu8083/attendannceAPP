@@ -54,7 +54,7 @@ class Attendance(Base,TimestampMixin):
     )
     punchout_time :Mapped[datetime] = mapped_column(
         DateTime,
-        nullable= False
+        nullable= True
     )
     status: Mapped[AttendanceStatus] = mapped_column(
         SQLEnum(AttendanceStatus,

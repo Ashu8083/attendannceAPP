@@ -1,5 +1,6 @@
 from sqlalchemy import extract
 
+from app.models import Attendance
 from app.models.attendance_record_model import Attendance
 from datetime import date,datetime
 from sqlalchemy.orm import Session
@@ -13,41 +14,51 @@ class AttendanceRepo:
     def __init__(self,db:Session):
             self.db = db
 
-
-    def punch_in(self,punch_in_schema : PunchInSchema):
+    def today_attendance_employee_is_punch_in(self,organisation_id,employee_id):
         today = date.today()
-        Attendance_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
-                                                             Attendance.employee_id == punch_in_schema.employee_id,
+        attendance_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
+                                                             Attendance.employee_id == employee_id,
+                                                             Attendance.organisation_id == organisation_id,
                                                              Attendance.is_punchin == True).first()
-        if  Attendance_record:
-             raise ValueError("Already Punched IN ")
+        return attendance_record
+    def today_attendacnce_employee_is_punch_out(self,organisation_id,employee_id):
+        today = date.today()
+        attendace_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
+                                                            Attendance.employee_id == organisation_id,
+                                                            Attendance.is_punchout == True).first()
+        return attendace_record
 
-        Attendance_record = Attendance(employee_id = PunchInSchema.employee_id,
-                                        workmode = PunchInSchema.work_mode,
+    def punch_in(self,punch_in_schema : PunchInSchema,organisation_id : uuid.UUID):
+        today = date.today()
+
+        attendance_record = Attendance(
+                                        organisation_id = organisation_id,
+                                        employee_id=punch_in_schema.employee_id,
+                                        work_mode = punch_in_schema.work_mode,
                                         attendance_date = today,
-                                        punch_in = datetime.now(),
+                                        punchin_time = datetime.now(),
                                         is_punchin = True,
-                                        attendance_staus = AttendanceStatus.PRESENT
+                                        status = AttendanceStatus.PRESENT
                                         )
 
         try:
-            self.db.add(Attendance_record)
+            self.db.add(attendance_record)
             self.db.commit()
-            self.db.refresh(Attendance_record)
+            self.db.refresh(attendance_record)
         except Exception:
             self.db.rollback()
             raise 
-        return None
+        return attendance_record
 
-    def punch_out(self,punch_in_schema : PunchInSchema):
-         today = datetime.today()
+    def punch_out(self,punch_in_schema : PunchOutSchema):
+         today = date.today()
          attendance_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
                                                              Attendance.employee_id == punch_in_schema.employee_id,
                                                              Attendance.is_punchout == True).first()
          if attendance_record :
               raise ValueError("employee already Punchout")
          
-         attendance_record : Attendance = self.db.query(Attendance).filter(Attendance.attendance_date == today,
+         attendance_record  = self.db.query(Attendance).filter(Attendance.attendance_date == today,
                                                               Attendance.employee_id == punch_in_schema.employee_id).first()
          
          if not attendance_record:
@@ -60,7 +71,7 @@ class AttendanceRepo:
          
          return attendance_record
 
-    def get_today_attendance(self,organisation_id):
+    def get_today_attendance(self,organisation_id)->list[type[Attendance]]:
          
          today = date.today()
          attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
@@ -69,16 +80,20 @@ class AttendanceRepo:
               raise ValueError(f"{today} :Attendacne record not found ")
          return attendance_record
 
-    def get_employee_attendance(self,employee_id):
-         employee_attendance_record = self.db.query(Attendance).filter(Attendance.employee_id == employee_id).all()
+    def get_employee_attendance(self,employee_id : uuid.UUID,organisation_id)->list[type[Attendance]]:
+         employee_attendance_record = self.db.query(Attendance).filter(Attendance.employee_id == employee_id).where(Attendance.organisation_id == organisation_id).all()
          if not employee_attendance_record:
               raise ValueError("employee attendance record not found")
-         return None
+         return employee_attendance_record
+
     
 
-    def update_attendance(self,employee_id : uuid ,Attendance_date :date, update_attendacne :AttendanceUpdate):
-         attendance_record = self.db.query(Attendance).filter(Attendance.employee_id == employee_id,
-                                                              Attendance.attendance_date == date).first()
+    def update_attendance(self,organisation_id : uuid.UUID ,employee_id : uuid.UUID, update_attendacne :AttendanceUpdate):
+
+
+         attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
+                                                              Attendance.employee_id == employee_id,
+                                                              Attendance.attendance_date == update_attendacne.date).first()
          if not attendance_record: 
               raise ValueError("Attenadance Record not Found")
          
@@ -94,7 +109,7 @@ class AttendanceRepo:
 
          return attendance_record
 
-    def mark_absent(self,employee_id :uuid ,attedance_date : date):
+    def mark_absent(self,employee_id :uuid.UUID ,attedance_date : date):
          attedance_record = self.db.query(Attendance).filter(Attendance.attendance_date == attedance_date,
                                                              Attendance.employee_id == employee_id).first()
          
@@ -110,7 +125,7 @@ class AttendanceRepo:
     
     
 
-    def get_attendance_by_date(self,date :date,organisation_id :uuid):
+    def get_attendance_by_date(self,date :date,organisation_id :uuid.UUID ) -> list[type[Attendance]]:
         attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
                                                               Attendance.attendance_date == date).all()
         if not attendance_record:
@@ -118,7 +133,7 @@ class AttendanceRepo:
         return attendance_record
 
 
-    def get_attendance_by_month(self,month : int,organisation_id : uuid ):
+    def get_attendance_by_month(self,month : int,organisation_id : uuid.UUID ) -> list[type[Attendance]]:
          
          attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
                                                               extract("month", Attendance.attendance_date) == month).all()# extract the month from the date 
@@ -127,8 +142,12 @@ class AttendanceRepo:
          return attendance_record
 
 
-    def get_employee_today(self):
-         return None
+    def get_employee_today_attendance(self,organisation_id : uuid.UUID ,employee_id : uuid.UUID ) :
+         today = date.today()
+         today_attendace = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
+                                          Attendance.attendance_date == today,
+                                          Attendance.employee_id== employee_id).first()
+         return today_attendace
 
     def delete_attendance(self):
          return None

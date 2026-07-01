@@ -54,5 +54,19 @@ def update_employee_status(
         employee_service : EmployeeService = Depends(get_employee_service)
 ):
     organisation_id = "test_id"
-    return employee_service.update_employee_status_service()
+    return employee_service.update_employee_status_service(organisation_id= organisation_id,employee_status_update=employee_data,employee_code=employee_code)
 
+@employee_router.delete("/delete-employee/{employee_code}")
+def delete_employee(
+        employee_code : str,
+        employee_service : EmployeeService = Depends(get_employee_service)
+):
+    organisation_id = "test_id"
+    return employee_service.delete_employee_service()
+
+@employee_router.get("/get-all-employees/{organisation_id}")
+def get_employee_service(
+        organisation_id : uuid.UUID ,
+        employee_service : EmployeeService = Depends(get_employee_service)
+):
+    return employee_service.get_all_employee_service(organisation_id= organisation_id)

@@ -63,9 +63,6 @@ class EmployeeUpdate(BaseModel):
     emplopyee_status : EmployeeStatus
 
 class EmployeeStatusUpdate(BaseModel):
-    def __init__(self, /, **data: Any):
-        super().__init__(null, data)
-        self.status = None
 
     employee_status :EmployeeStatus
 

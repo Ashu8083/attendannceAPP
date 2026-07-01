@@ -2,14 +2,9 @@ import uuid
 from typing import Any
 
 from sqlalchemy.orm import Session, InstrumentedAttribute
-from .user_repo import UserRepo
-from app.models.user_models import User
-from app.models.employee_models import Employee
+
+from app.models import Employee
 from app.models.employee_details_model import EmployeeDetails as ED
-from app.models.organisations import Organisation
-from app.enums.employee_status import EmployeeStatus
-from app.enums.role_enums import UserRole
-from app.models.user_models import User
 from app.schemas.employee_schema import *
 
 
@@ -25,8 +20,12 @@ class EmployeeRepo:
         if existing:
             raise ValueError("Employee code already exists")
 
-        employee = Employee(user_id=user_id, organisation_id=organisation_id, employee_code=employeedata.employee_code,
-                            department=employeedata.department, join_date=employeedata.join_date, )
+        employee = Employee(user_id=user_id,
+                            organisation_id=organisation_id,
+                            employee_code=employeedata.employee_code,
+                            department=employeedata.department,
+                            join_date=employeedata.join_date,
+                            )
         self.db.add(employee)
         self.db.flush()
         employee_details = ED(
@@ -70,7 +69,7 @@ class EmployeeRepo:
     def update_employee_details(
             self,
             employee_code: str,
-            organisation_id: uuid,
+            organisation_id: uuid.UUID,
             employee_details: EmployeeDetailsUpdate
     ) -> InstrumentedAttribute[Any] | None:
 
@@ -93,10 +92,10 @@ class EmployeeRepo:
 
         return details
 
-    def employee_update_status(self, organisation_id: uuid, employee_code, employee_status: EmployeeStatusUpdate):
+    def employee_update_status(self, organisation_id: uuid.UUID, employee_code, employee_status: EmployeeStatusUpdate):
         employee = self.get_employee_by_employee_code(organisation_id=organisation_id, employee_code=employee_code)
         if employee:
-            employee.employee_status = employee_status.status
+            employee.employee_status = employee_status.employee_status
             try:
                 self.db.commit()
                 self.db.refresh(employee)
@@ -105,7 +104,12 @@ class EmployeeRepo:
                 raise
         return None
 
-    def get_all_employee(self, organisation_id: str):
+    def get_all_employee(self, organisation_id: uuid.UUID) -> list[type[Employee]]:
         employee = self.db.query(Employee).filter(Employee.organisation_id == organisation_id).all()
 
         return employee
+
+    def get_employee_id(self,oganisation_id : uuid.UUID, employee_code: str):
+        employee_id = self.db.query(Employee.id).filter(Employee.organisation_id == oganisation_id ,
+                                                        Employee.employee_code == employee_code).first()
+        return employee_id
