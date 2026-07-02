@@ -4,7 +4,9 @@ from app.enums.departement_status import DepartmentStatusEnum
 
 
 class DepartmentCreate(BaseModel):
-    departments : str
+    name : str
+
+
 class DepartmentUpdate(BaseModel):
     departments : str
     department_status: DepartmentStatusEnum

@@ -3,12 +3,14 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.repo.attendance_record_repo import AttendanceRepo
+from app.repo.department_repo import DepartmentRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.repo.role_repo import RoleRepo
 from app.repo.user_repo import UserRepo
 from app.repo.organisation_repo import OrganisationRepo
 from app.repo.user_repo import UserRepo
 from app.service.attendance_service import AttendanceService
+from app.service.department_service import DepartmentService
 from app.service.organisation_service import OrganisationService
 from app.service.role_services.role_creation_service import RoleService
 from app.service.user_service import UserService
@@ -47,3 +49,9 @@ def get_role_service(
 ):
     role_repo = RoleRepo(db)
     return RoleService(role_repo)
+
+def get_department_service(
+        db: Session = Depends(get_db),
+):
+    department_repo = DepartmentRepo(db)
+    return DepartmentService(department_repo)

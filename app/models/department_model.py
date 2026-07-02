@@ -31,7 +31,7 @@ class DepartmentModel(Base,TimestampMixin):
     name : Mapped[str] = mapped_column(
         String(25)
     )
-    organisation_idorganisation_id: Mapped[uuid.UUID] = mapped_column(
+    organisation_id: Mapped[uuid.UUID] = mapped_column(
                                 UUID(as_uuid=True),
                                 ForeignKey("organisation.id"),
                                 nullable=False

@@ -14,14 +14,12 @@ from app.schemas.organisation_schema import OrganisationUpdateStatus
 class DepartmentRepo:
     def __init__(self,db : Session):
         self.db = db
-
-
-
     def create_departments(self , DepartmentCreateSchema : DepartmentCreate , organisation_id : uuid.UUID ):
         department = DepartmentModel(
                     name = DepartmentCreateSchema.name,
                     organisation_id = organisation_id,
-                    departement_status =  DepartmentStatusEnum.ACTIVATE
+                    department_status =  DepartmentStatusEnum.ACTIVATE
+
         )
         try:
             self.db.add(department)
