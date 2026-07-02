@@ -1,14 +1,21 @@
-from pydantic import BaseModel
+from typing import Optional
 import uuid
+from pydantic import BaseModel
+
+
+from app.enums.permission_scop import PermissionScopEnum
+
+
 class CreateRole(BaseModel):
-
-
     name: str
     description :str
 
 class CreatePermision(BaseModel):
     name: str
     description : str
+    scope : PermissionScopEnum
+    assignable : bool
+
     
 class CreateRolePermision(BaseModel):
     role_id : uuid.UUID
@@ -24,3 +31,10 @@ class RoleResponse(BaseModel):
     organisation_id: uuid.UUID
     name: str
     description: str
+
+class PermissionResponse(BaseModel):
+    name : str
+    description : str
+
+class ListOFPermissions(BaseModel):
+     permissions : list[str]
