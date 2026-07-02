@@ -1,13 +1,17 @@
-from sqlalchemy.orm import Mapped , mapped_column,relationship
-from sqlalchemy import ForeignKey,String , Integer
+
 import uuid
 
-
-from sqlalchemy.dialects.postgresql import ENUM as SQLEnum
+from sqlalchemy import ForeignKey, String, Integer, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ENUM as SQLEnum
+from sqlalchemy.orm import Mapped , mapped_column,relationship
+
+
 
 from app.db.database import Base
 from app.db.timestamp import TimestampMixin
+from app.enums.departement_status import DepartmentStatusEnum
+
 
 class DepartmentModel(Base,TimestampMixin):
 
@@ -17,18 +21,25 @@ class DepartmentModel(Base,TimestampMixin):
         Integer,
         primary_key= True,
     )
-    deparrments : Mapped[str] = mapped_column(
+    __table_args__ = (
+        UniqueConstraint(
+            "organisation_id",
+            "name",
+            name = "uq_department_org_name"
+        ),
+    )
+    name : Mapped[str] = mapped_column(
         String(25)
     )
-    organization_id: Mapped[uuid.UUID] = mapped_column(
+    organisation_idorganisation_id: Mapped[uuid.UUID] = mapped_column(
                                 UUID(as_uuid=True),
                                 ForeignKey("organisation.id"),
                                 nullable=False
                                 )
-    shift_time : Mapped[int] = mapped_column(
-            ForeignKey("shift.id"),
-            nullable=False
+    department_status : Mapped[DepartmentStatusEnum]= mapped_column(
+            SQLEnum(DepartmentStatusEnum)
     )
+
     organization = relationship(
     "Organisation",
     back_populates="departments"

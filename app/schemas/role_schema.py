@@ -1,8 +1,6 @@
 from typing import Optional
 import uuid
 from pydantic import BaseModel
-
-
 from app.enums.permission_scop import PermissionScopEnum
 
 
