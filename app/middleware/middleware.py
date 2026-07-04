@@ -1,28 +1,41 @@
 import time
-import logging
-from urllib import response
-from urllib.request import Request
+import uuid
 
-
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-logger = logging.getLogger(__name__)
+from app.core.logging_config import logger
+from app.core.request_context import request_id_ctx
+
 
 class AuthMiddleware(BaseHTTPMiddleware):
+
     async def dispatch(self, request: Request, call_next):
 
-        start = time.time()
+        request_id = str(uuid.uuid4())
+
+        request.state.request_id = request_id
+
+        token = request_id_ctx.set(request_id)
+
+        start = time.perf_counter()
+
         logger.info(
             f"{request.method} {request.url.path} started"
-
-        )
-        resonse = await call_next(request)
-        duration = time.time()-start
-
-        logger.info(
-            f"{request.method} {request.url.path}"
-            f"status = {response.status_code}"
-            f"duration = {duration}"
         )
 
-        return resonse
+        try:
+            response = await call_next(request)
+
+            duration = time.perf_counter() - start
+
+            logger.info(
+                f"{request.method} {request.url.path} "
+                f"status={response.status_code} "
+                f"duration={duration:.3f}s"
+            )
+
+            return response
+
+        finally:
+            request_id_ctx.reset(token)

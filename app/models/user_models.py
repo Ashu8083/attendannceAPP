@@ -55,6 +55,9 @@ class User(Base,TimestampMixin):
         "Organisation",
         back_populates="user"
     )
-    
+    temp_otp_storage = relationship(
+        "TempOtpStorage",
+        back_populates="user"
+    )
     
 
