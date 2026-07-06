@@ -45,5 +45,9 @@ class UserService():
             raise ValueError ("user not found")
                 
         return self.userrepo.updateUser(data)
-    
+
+    def get_user_by_id(self,user_id :uuid.UUID):
+        return self.userrepo.get_user_by_id(user_id)
+
+
 

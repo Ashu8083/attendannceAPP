@@ -16,3 +16,4 @@ from .rolePermision import RolePermission
 
 from .employee_details_model import EmployeeDetails
 from .employee_documents_model import EmployeeDocuments
+from .temp_otp_storage import  TempOtpStorage

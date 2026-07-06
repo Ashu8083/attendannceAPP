@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.user_models import User
-
+import uuid
 from app.enums.role_enums import UserRole
 
 from app.enums.user_status_enums import UserStatus
@@ -74,3 +74,9 @@ class UserRepo:
         self.db.refresh(user)
 
         return user
+    def get_id_by_email(self,email):
+        user_id = self.db.query(User.id).filter(User.email == email).first()
+        return user_id[0]
+
+    def get_user_by_id(self,id : uuid.UUID):
+        user = self.db.query(User).filter(User.id == id).first()
