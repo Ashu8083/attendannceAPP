@@ -34,8 +34,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         db_session = SessionLocal()
 
         PUBLIC_ROUTES = [   # all the public api , which are not going throuh the security
-            "/login",
-            "/verify-otp",
+            "/otp-login",
+            "/otp-verify",
             "/docs",
             "/openapi.json",
             "/redoc"
@@ -59,7 +59,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
 
         try:
-            paylod = decode_token(token)
+            paylod = decode_token(token) #the decode will done here
         except jwt.ExpiredSignatureError:
             return JSONResponse(
                 content={"message": "Token has expired or Invalid Authorization Header"},
@@ -70,7 +70,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # user session create for verify the user from db
         try :
             user_service = UserService(db_session)
-            user = user_service.get_user_by_id(paylod["user_id"])
+            user = user_service.get_user_by_id(uuid.UUID(paylod["user_id"]))
         finally:
             db_session.close()
 

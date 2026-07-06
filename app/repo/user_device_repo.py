@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime,date
+
+from app.models.token import Token
 from app.models.userdevice_details import UserDeviceDetails
 from sqlalchemy.orm import Session
 from app.schemas.userdevice_schema import UserDeviceCreate,UserDeviceResponse,UserDeviceUpdate
@@ -66,5 +68,15 @@ class UserDeviceDetailRepo:
             raise ValueError("Internal error")
         return user_device
     
-    def delete_user_device():
+    # def delete_user_device():
+    #     return
+    def user_fcm_token(self):
         return
+
+    def user_refresh_token(self,user_id : uuid.UUID , refresh_token : str):
+        user_device = self.db.query(UserDeviceDetails).filter(UserDeviceDetails.user_id == user_id,).first()
+        refresh_token = user_device.token.refresh_token
+
+        return refresh_token
+
+

@@ -80,3 +80,6 @@ class UserRepo:
 
     def get_user_by_id(self,id : uuid.UUID):
         user = self.db.query(User).filter(User.id == id).first()
+
+    def create_user_device(self, ):
+        return

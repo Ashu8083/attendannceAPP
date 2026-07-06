@@ -5,6 +5,7 @@ from datetime import datetime, date ,timedelta,time
 from app.repo.department_repo import DepartmentRepo
 from app.models.temp_otp_storage import TempOtpStorage
 from app.schemas.otp_schema import OTPSchema
+from app.core.logging_config import logger
 
 
 class AuthRepo :
@@ -17,11 +18,16 @@ class AuthRepo :
             TempOtpStorage.is_expired.is_(False),
             TempOtpStorage.expire_time > datetime.now().time()
         ).first()
+        if otp is None:
+            raise Exception(f"otp not found or invalid")
         try:
             self.db.delete(otp)
             self.db.commit()
         except Exception as e:
+            self.db.rollback()
+            logger.error(f"error deleting otp {e}")
             raise e
+
         return otp
 
     def create_otp(self,user_id : uuid.UUID ,otp :str):

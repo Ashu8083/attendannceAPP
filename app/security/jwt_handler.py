@@ -20,16 +20,18 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 5
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-expire_time = (datetime.now(timezone.utc) + timedelta(minutes=15)).time()
-refresh_token_expiration_time = datetime.now() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
+def create_access_token(user_id,user_role,organisation_id) -> str:# life spam will 1 week generate new token on the use of the access token
 
-def create_access_token(user_id,user_role) -> str:# life spam will 1 week generate new token on the use of the access token
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     playload = {
-        "user_id" : user_id,
+        "user_id": str(user_id),
         "user_role" : user_role,
-        "expire_time" : expire_time,
-        "token_type" : "access"
+        "organisation_id": str(organisation_id),
+        "token_type" : "access",
+        "exp": expire,
     }
 
     return jwt.encode(
@@ -37,12 +39,18 @@ def create_access_token(user_id,user_role) -> str:# life spam will 1 week genera
         SECRET_KEY,
         algorithm=ALGORITHM
     )
-def create_refresh_token (user_id,user_role) :# life spam will 5 min (for revoke , revoke the user directly )
+def create_refresh_token (user_id,user_role,organisation_id) :# life spam will 5 min (for revoke , revoke the user directly )
+    expire = datetime.now(timezone.utc) + timedelta(
+        days=REFRESH_TOKEN_EXPIRE_DAYS
+    )
+    refresh_token_expiration_time = datetime.now(timezone.utc) + timedelta()
+
     playload = {
-        "user_id": user_id,
+        "user_id": str(user_id),
         "user_role": user_role,
-        "expire_time": refresh_token_expiration_time,
-        "token_type": "access"
+        "organisation_id": str(organisation_id),
+        "token_type": "access",
+        "exp": expire,
     }
     return refresh_token_expiration_time , jwt.encode(
         playload,
