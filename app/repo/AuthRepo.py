@@ -15,19 +15,18 @@ class AuthRepo :
 
     def get_otp(self ,user_id : uuid.UUID ):
         otp =  self.db.query(TempOtpStorage).filter(TempOtpStorage.user_id == user_id,
-            TempOtpStorage.is_expired.is_(False),
-            TempOtpStorage.expire_time > datetime.now().time()
+            TempOtpStorage.is_expired.is_(False)
         ).first()
         if otp is None:
             raise Exception(f"otp not found or invalid")
+        otp.is_expired = True
         try:
-            self.db.delete(otp)
             self.db.commit()
+            self.db.refresh(otp)
         except Exception as e:
             self.db.rollback()
             logger.error(f"error deleting otp {e}")
             raise e
-
         return otp
 
     def create_otp(self,user_id : uuid.UUID ,otp :str):

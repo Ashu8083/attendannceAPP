@@ -12,12 +12,11 @@ from app.models.rolePermision import RolePermission
 from app.models.permission_model import Permission
 
 
-class RoleRepo:
+class RolePermissionRepo:
         def __init__(self,db:Session) :
                 self.db = db
         def create_role(self,data : CreateRole , organisation_id : uuid.UUID ) -> Role | None:
-            role = Role(
-                            organization_id = organisation_id,
+            role = Role(    organization_id = organisation_id,
                             name = data.name,
                             description = data.description
                             )
@@ -74,7 +73,10 @@ class RoleRepo:
                 rp.permission.permission_name
                 for rp in role_permissions
             ]
+            print(permission_names)
             return permission_names
+
+
         def get_role(self,role_name : str , organisation_id : uuid.UUID ) -> InstrumentedAttribute[UUID] | None:
 
             return   self.db.query(Role.id).filter(Role.name == role_name,
@@ -95,4 +97,5 @@ class RoleRepo:
             )
             return permission
         def get_all_permission(self) -> list[Any] | list[type[Permission]]:
-            return self.db.query(Permission).all()
+            return self.db.query(Permission).filter(Permission.assignable == False,
+                                                    Permission.scope ==PermissionScopEnum.ORGANIZATION ).all()

@@ -1,10 +1,13 @@
 
 import uuid
+from fastapi import  Request
+
 from fastapi import  APIRouter
 from fastapi import  Depends
 from fastapi.responses import JSONResponse
 from starlette import status
 
+from app.auth.permission_check import PermissionChecker
 from app.models.attendance_record_model import Attendance
 from app.dependancy.service_dependancy import get_attendance_service
 from app.schemas.attendance_schema import PunchInSchema, AttendanceResponse, PunchOutSchema, AttendanceUpdate
@@ -14,27 +17,40 @@ from app.service.attendance_service import AttendanceService
 attendance_router = APIRouter()
 
 
-@attendance_router.post("/punch-in/{organisation_id}",response_model=AttendanceResponse)
+@attendance_router.post("/punch-in"
+                    ,response_model=AttendanceResponse
+                    ,dependencies=[Depends(PermissionChecker("employee.self.punchIn"))])
 
-def punch_in_attendance(punch_in :PunchInSchema, organisation_id : uuid.UUID,attendance_service : AttendanceService = Depends(get_attendance_service) ):
-    attendance : Attendance = attendance_service.get_today_employee_attendance(punch_in.employee_id,organisation_id)
+def punch_in_attendance(punch_in :PunchInSchema,request: Request,attendance_service : AttendanceService = Depends(get_attendance_service)  ):
+    attendance : Attendance = attendance_service.get_today_employee_attendance(punch_in.employee_id,organisation_id = request.state.auth.organisation_id)
     print(f"inside the model {attendance}")
     if not attendance:
-        return attendance_service.punch_in_attendance(punch_in,organisation_id)
-
+        return attendance_service.punch_in_attendance(punch_in,
+                                                      organisation_id = request.state.auth.organisation_id)
 
     return JSONResponse(content="you are already punchin",
                  status_code=status.HTTP_201_CREATED)
 
 
-@attendance_router.post("/punch-out/{organisation_id}",response_model=AttendanceResponse)
-def punch_out_attendance(punch_out :PunchOutSchema,organisation_id : uuid.UUID,attendance_service : AttendanceService = Depends(get_attendance_service) ):
-    attendacne = attendance_service.get_today_employee_attendance(organisation_id,punch_out.employee_id)
+@attendance_router.post("/punch-out/{organisation_id}"
+                        ,response_model=AttendanceResponse
+                        ,dependencies=[Depends(PermissionChecker("employee.self.punchOut"))])
+def punch_out_attendance(punch_out :PunchOutSchema
+                          ,request: Request
+                         ,attendance_service : AttendanceService = Depends(get_attendance_service) ):
+
+    attendacne = (attendance_service
+                  .get_today_employee_attendance(punch_out.employee_id
+                                                 ,organisation_id = request.state.auth.organisation_id))
     if attendacne.is_punchout :
         return JSONResponse(content="today attendance already taken")
-    return attendance_service.punch_out_attendance(punch_out,organisation_id)
+    return attendance_service.punch_out_attendance(punch_out,organisation_id = request.state.auth.organisation_id)
 
-@attendance_router.put("/update-employee-attendance/{organisation_id}")
+
+
+
+@attendance_router.put("/update-employee-attendance/{organisation_id}"
+                        ,dependencies=[Depends(PermissionChecker("employee.update"))])
 def update_employee_attendance(
         organisation_id : uuid.UUID,
         attendance_update : AttendanceUpdate,
@@ -47,6 +63,7 @@ def employee_attendance(
 ):
     return
 
-@attendance_router.get("/today-attendance/{organisation_id}")
+@attendance_router.get("/today-attendance/{organisation_id}"
+                        ,dependencies=[Depends(PermissionChecker("employee.today"))])
 def get_employee_attendance(organisation_id : uuid.UUID ,attendance_service: AttendanceService = Depends(get_attendance_service)):
-    return attendance_service.get_today_attendace(organisation_id)
+    return attendance_service.get_today_attendace(organisation_id = request.state.auth.organisation_id)

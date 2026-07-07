@@ -1,4 +1,4 @@
-from kombu import uuid
+import uuid
 
 from datetime import datetime, time, timedelta, timezone
 
@@ -17,19 +17,20 @@ settings = get_settings()
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 5
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 
-def create_access_token(user_id,user_role,organisation_id) -> str:# life spam will 1 week generate new token on the use of the access token
+def create_access_token(user_id,user_role,organisation_id,employee_id :uuid.UUID) -> str:# life spam will 1 week generate new token on the use of the access token
 
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
     playload = {
         "user_id": str(user_id),
-        "user_role" : user_role,
+        "system_role" : user_role,
         "organisation_id": str(organisation_id),
+        "employee_id": str(employee_id),
         "token_type" : "access",
         "exp": expire,
     }
@@ -47,9 +48,9 @@ def create_refresh_token (user_id,user_role,organisation_id) :# life spam will 5
 
     playload = {
         "user_id": str(user_id),
-        "user_role": user_role,
         "organisation_id": str(organisation_id),
-        "token_type": "access",
+        "system_role" : user_role,
+        "token_type": "refresh",
         "exp": expire,
     }
     return refresh_token_expiration_time , jwt.encode(

@@ -7,13 +7,23 @@ from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+from app.enums.role_enums import UserRole
+from app.models import UserDeviceDetails
+from app.repo.AuthRepo import AuthRepo
+from app.repo.employee_repo import EmployeeRepo
+from app.repo.organisation_repo import OrganisationRepo
+from app.repo.role_repo import RolePermissionRepo
+from app.repo.user_device_repo import UserDeviceDetailRepo
+from app.repo.user_repo import UserRepo
 from app.security.jwt_handler import decode_token
 from app.core.logging_config import logger
 from app.core.request_context import request_id_ctx
 from app.dependancy.service_dependancy import  get_user_service
 from app.service import user_service
 from app.db.database import SessionLocal
+from app.service.role_services.role_creation_service import RoleService
 from app.service.user_service import UserService
+from app.service.auth_service import AuthService
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -56,35 +66,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 content={"message": "Invalid Authorization header"},
                 status_code=status.HTTP_401_UNAUTHORIZED)
 
+        auth_service = AuthService(auth_repo=AuthRepo(db_session),user_repo=UserRepo(db_session),employee_repo=EmployeeRepo(db_session),user_device=(UserDeviceDetailRepo(db_session)))
 
+        auth =   auth_service.verify_access_token(token)
 
-        try:
-            paylod = decode_token(token) #the decode will done here
-        except jwt.ExpiredSignatureError:
-            return JSONResponse(
-                content={"message": "Token has expired or Invalid Authorization Header"},
-                status_code=status.HTTP_401_UNAUTHORIZED
-            )
-
-
-        # user session create for verify the user from db
-        try :
-            user_service = UserService(db_session)
-            user = user_service.get_user_by_id(uuid.UUID(paylod["user_id"]))
-        finally:
-            db_session.close()
-
-        if  not user:
-            return JSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"message": "User does not exist"},
-            )
-
-
-        # user payload attach to the  request
-        request.state.userpayload = paylod
-
-
+        if auth is None:
+            return JSONResponse( content={"message": "Invalid Authorization header"},)
+        request.state.auth = auth
         try:
             response = await call_next(request)
 

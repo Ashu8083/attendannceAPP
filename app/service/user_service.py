@@ -1,4 +1,6 @@
 import uuid
+
+from app.enums.user_status_enums import UserStatus
 from app.repo.user_repo import UserRepo
 from app.repo.organisation_repo import OrganisationRepo
 from app.service.organisation_service import OrganisationService
@@ -48,6 +50,14 @@ class UserService():
 
     def get_user_by_id(self,user_id :uuid.UUID):
         return self.userrepo.get_user_by_id(user_id)
+
+    def get_user(self,user_id : uuid.UUID):
+        if not self.userrepo.get_user_by_id(user_id):
+            raise ValueError("user not found")
+        user_status = self.userrepo.sta
+        if user_status != UserStatus.ACTIVE:
+            raise ValueError("user is Inactive")
+        return self.userrepo.get_user(user_id)
 
 
 

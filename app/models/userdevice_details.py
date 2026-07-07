@@ -38,7 +38,7 @@ class UserDeviceDetails(Base, TimestampMixin):
 
     user = relationship(
         "User",
-        back_populates="devices"
+        back_populates="device"
     )
 
 

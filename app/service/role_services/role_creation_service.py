@@ -3,10 +3,11 @@ from typing import List, Any
 from app.models import RolePermission, role, Permission
 from app.models.role import Role
 from app.schemas.role_schema import  *
-from app .repo.role_repo import RoleRepo
+from app.repo.role_repo import  RolePermissionRepo
+
 
 class RoleService:
-    def __init__(self,role_repo : RoleRepo):
+    def __init__(self,role_repo : RolePermissionRepo) -> None:
         self.role_repo = role_repo
 
     def get_role_description(self):

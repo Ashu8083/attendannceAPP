@@ -1,6 +1,7 @@
 import uuid
 from datetime import date
 
+from app.enums.work_mode import WorkMode
 from app.repo import attendance_record_repo, employee_repo
 from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.employee_repo import EmployeeRepo
@@ -14,12 +15,12 @@ class AttendanceService:
         self.employee_repo = employee_repo
 
 
-    def punch_in_attendance(self, punch_in : PunchInSchema,organisation_id : uuid.UUID):
-        attendance = self.attendacnce_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = punch_in.employee_id)
+    def punch_in_attendance(self,  employee_id :uuid.UUID ,organisation_id : uuid.UUID):
+        attendance = self.attendacnce_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
             return attendance
 
-        return self.attendacnce_record_repo.punch_in(punch_in,organisation_id)
+        return self.attendacnce_record_repo.punch_in(employee_id,workMode= WorkMode.WFH,organisation_id=organisation_id)
 
     def punch_out_attendance(self,punch_out : PunchOutSchema , organisation_id : uuid.UUID):
         attendance = self.attendacnce_record_repo.today_attendacnce_employee_is_punch_out(organisation_id= organisation_id,employee_id = punch_out.employee_id)

@@ -113,3 +113,5 @@ class EmployeeRepo:
         employee_id = self.db.query(Employee.id).filter(Employee.organisation_id == oganisation_id ,
                                                         Employee.employee_code == employee_code).first()
         return employee_id
+    def get_employee_by_user_id(self, user_id: uuid.UUID) -> type[Employee] | None:
+        return self.db.query(Employee).filter(Employee.user_id == user_id).first()

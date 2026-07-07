@@ -28,13 +28,13 @@ class AttendanceRepo:
                                                             Attendance.is_punchout == True).first()
         return attendace_record
 
-    def punch_in(self,punch_in_schema : PunchInSchema,organisation_id : uuid.UUID):
+    def punch_in(self,employee_id : uuid.UUID, workMode : WorkMode,organisation_id : uuid.UUID):
         today = date.today()
 
         attendance_record = Attendance(
                                         organisation_id = organisation_id,
-                                        employee_id=punch_in_schema.employee_id,
-                                        work_mode = punch_in_schema.work_mode,
+                                        employee_id=employee_id,
+                                        work_mode = workMode,
                                         attendance_date = today,
                                         punchin_time = datetime.now(),
                                         is_punchin = True,

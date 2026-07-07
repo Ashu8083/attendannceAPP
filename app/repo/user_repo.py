@@ -1,4 +1,6 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
+
+from app.models import Employee, RolePermission, Role
 from app.models.user_models import User
 import uuid
 from app.enums.role_enums import UserRole
@@ -21,7 +23,19 @@ class UserRepo:
     def get_user_by_email(self,user_email : str):
         user = self.db.query(User).filter(User.email ==user_email).first()
         return user
-    
+
+    def get_user(self, user_id: uuid.UUID):
+        return (
+            self.db.query(User)
+            .options(
+                joinedload(User.employee)
+                .joinedload(Employee.role)
+                .joinedload(Role.role_permissions)
+                .joinedload(RolePermission.permission)
+            )
+            .filter(User.id == user_id)
+            .first()
+        )
     def create_user_as_employee(self,full_name,email,organisation_id):
             user = User(
                  full_name = full_name,
@@ -80,6 +94,10 @@ class UserRepo:
 
     def get_user_by_id(self,id : uuid.UUID):
         user = self.db.query(User).filter(User.id == id).first()
+        return user
 
     def create_user_device(self, ):
         return
+    def get_user_status_by_id(self,id : uuid.UUID):
+        user_status = self.db.query(User.status).filter(User.id == id).first()
+        return user_status

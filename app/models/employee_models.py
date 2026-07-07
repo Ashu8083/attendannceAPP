@@ -70,6 +70,10 @@ class Employee(Base,TimestampMixin):
 
     # Employee.py
 
+    user = relationship(
+        "User",
+        back_populates= "employee"
+    )
     role_id:Mapped[uuid.UUID] = mapped_column(
                                                 UUID(as_uuid=True),
                                                 ForeignKey("role.id"),
