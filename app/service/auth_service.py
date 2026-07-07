@@ -36,8 +36,9 @@ class AuthService:
             raise Exception(f"otp not found or invalid")
         access_token = create_access_token(user.id,user_role= user.role,organisation_id= user.organisation_id )
         refresh_token = create_refresh_token(user.id,user_role= user.role,organisation_id= user.organisation_id ) ## store the refresh token in userdevice
-                                                                                                                 # table in db
-        token_store = user_device_repo.ce
+
+        store_token  = self.user_device_repo.c                                                                                             # table in db
+
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,

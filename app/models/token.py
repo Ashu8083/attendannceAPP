@@ -9,6 +9,7 @@ from app.db.timestamp import TimestampMixin
 
 
 class Token(Base, TimestampMixin):
+
     __tablename__ = "token"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -24,14 +25,11 @@ class Token(Base, TimestampMixin):
     )
 
     token: Mapped[str] = mapped_column(String)
-
     is_revoked: Mapped[bool] = mapped_column(
         Boolean,
         default=False
     )
-
     expires_at: Mapped[DateTime] = mapped_column(DateTime)
-
     device = relationship(
         "UserDeviceDetails",
         back_populates="refresh_tokens"

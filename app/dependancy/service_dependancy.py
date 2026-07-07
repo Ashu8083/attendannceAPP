@@ -2,6 +2,8 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.models import UserDeviceDetails
+from app.repo import user_device_repo
 from app.repo.AuthRepo import AuthRepo
 from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.department_repo import DepartmentRepo
@@ -17,6 +19,7 @@ from app.service.role_services.role_creation_service import RoleService
 from app.service.user_service import UserService
 from app.service.employee_services import EmployeeService
 from app.service.auth_service import AuthService
+from app.repo.user_device_repo import  UserDeviceDetailRepo
 
 def get_organaistion_service(
     db: Session = Depends(get_db)
@@ -63,4 +66,6 @@ def get_auth_service(
 ):
     auth_repo = AuthRepo(db)
     user_repo = UserRepo(db)
-    return AuthService(auth_repo, user_repo)
+    user_device_repo = UserDeviceDetailRepo(db)
+    return AuthService(auth_repo, user_repo,user_device_repo)
+

@@ -10,7 +10,7 @@ class UserDeviceDetailRepo:
     def __init__(self,db :Session):
         self.db = db
     
-    def create_user_device(self,user_id :uuid ,userdevice : UserDeviceCreate):
+    def create_user_device(self,user_id :uuid.UUID ,userdevice : UserDeviceCreate):
         user_device = self.db.query(UserDeviceDetails).filter(UserDeviceDetails.user_id == user_id,
                                                 UserDeviceDetails.device_unique_id == userdevice.device_unique_id).first()
         
@@ -75,6 +75,7 @@ class UserDeviceDetailRepo:
 
     def user_refresh_token(self,user_id : uuid.UUID , refresh_token : str):
         user_device = self.db.query(UserDeviceDetails).filter(UserDeviceDetails.user_id == user_id,).first()
+
         refresh_token = user_device.token.refresh_token
 
         return refresh_token

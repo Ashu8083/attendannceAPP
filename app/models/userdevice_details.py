@@ -41,6 +41,7 @@ class UserDeviceDetails(Base, TimestampMixin):
         back_populates="devices"
     )
 
+
     refresh_tokens = relationship(
         "Token",
         back_populates="device",
