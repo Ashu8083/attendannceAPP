@@ -1,4 +1,4 @@
-from datetime import datetime,date
+from datetime import datetime,time,date
 import uuid
 
 from pydantic import BaseModel, ConfigDict
@@ -28,7 +28,7 @@ class AttendanceUpdate(BaseModel):
 
     employee_code: str
     status: AttendanceStatus | None = None
-    punchin_time: datetime | None = None
-    punchout_time: datetime | None = None
+    punchin_time: time | None = None
+    punchout_time: time | None = None
     work_mode: WorkMode | None = None
     date: date

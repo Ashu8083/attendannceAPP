@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime,date
+from datetime import datetime,date,time
 
-from sqlalchemy import String ,ForeignKey ,DateTime, UniqueConstraint,Date,Boolean
+from sqlalchemy import String ,ForeignKey ,DateTime, UniqueConstraint,Date,Boolean,Time
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum 
@@ -44,16 +44,16 @@ class Attendance(Base,TimestampMixin):
         Boolean ,
         default= False
     )
-    punchin_time : Mapped[datetime] = mapped_column(
+    punchin_time : Mapped[time] = mapped_column(
 
-        DateTime,
+        Time,
     )
     is_punchout :Mapped[bool] = mapped_column(
         Boolean,
         default= False
     )
-    punchout_time :Mapped[datetime] = mapped_column(
-        DateTime,
+    punchout_time :Mapped[time] = mapped_column(
+        Time,
         nullable= True
     )
     status: Mapped[AttendanceStatus] = mapped_column(

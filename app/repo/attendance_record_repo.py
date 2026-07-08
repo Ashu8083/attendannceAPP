@@ -1,9 +1,11 @@
+from uuid import UUID
+
 from sqlalchemy import extract
 
-from app.models import Attendance
+from app.models import Attendance, Employee
 from app.models.attendance_record_model import Attendance
 from datetime import date,datetime
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, InstrumentedAttribute
 from app.enums.attandance_status import AttendanceStatus
 from app.schemas.attendance_schema import *
 
@@ -13,6 +15,12 @@ from app.models.attendance_record_model import Attendance
 class AttendanceRepo:
     def __init__(self,db:Session):
             self.db = db
+    def get_employee_attendance_by_date(self, attendance_date: date, employee_id : uuid.UUID , organisation_id : uuid.UUID) -> type[Attendance] | None:
+        attendance_record = self.db.query(Attendance).filter(Attendance.employee_id == employee_id,
+                                                                Attendance.organisation_id == organisation_id,
+                                                              Attendance.attendance_date == attendance_date
+                                                              ).first()
+        return attendance_record
 
     def today_attendance_employee_is_punch_in(self,organisation_id,employee_id):
         today = date.today()
@@ -95,10 +103,12 @@ class AttendanceRepo:
                                                               Attendance.employee_id == employee_id,
                                                               Attendance.attendance_date == update_attendacne.date).first()
          if not attendance_record: 
-              raise ValueError("Attenadance Record not Found")
-         
-         for feild,value in update_attendacne.model_dump().items():
-              setattr(attendance_record,feild,value)
+              raise ValueError("Attendance Record not Found")
+
+
+         # setattr() built-in function for  python to set the attribute manually
+         for feld,value in update_attendacne.model_dump().items():
+              setattr(attendance_record,feld,value)
 
          try :
             self.db.commit()
@@ -109,21 +119,26 @@ class AttendanceRepo:
 
          return attendance_record
 
-    def mark_absent(self,employee_id :uuid.UUID ,attedance_date : date):
-         attedance_record = self.db.query(Attendance).filter(Attendance.attendance_date == attedance_date,
-                                                             Attendance.employee_id == employee_id).first()
-         
-         if not attedance_record :
-              raise ValueError(f"no record found on {attedance_date} for ")
-         attedance_record.status = AttendanceStatus.ABSENT
-         try :
-              self.db.commit()
-              self.db.refresh(attedance_record)
-         except Exception:
-              self.db.rollback()
-         return attedance_record
-    
-    
+    def mark_absent(self,organisation_id : uuid.UUID,attedance_date : date , employee : Employee ) -> Attendance:
+
+        attendance_record = Attendance(
+                                        organisation_id = organisation_id,
+                                        employee_id=employee.id,
+                                        work_mode = employee.work_mode ,
+                                        attendance_date = attedance_date,
+                                        punchin_time = None,
+                                        punchout_time = None,
+                                        is_punchin = False,
+                                        is_pucnhout = False,
+                                        status = AttendanceStatus.ABSENT
+                                        )
+
+        try  :
+            self.db.commit()
+            self.db.refresh(attendance_record)
+        except Exception:
+            raise ValueError("unknow error found")
+        return attendance_record
 
     def get_attendance_by_date(self,date :date,organisation_id :uuid.UUID ) -> list[type[Attendance]]:
         attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
@@ -151,3 +166,20 @@ class AttendanceRepo:
 
     def delete_attendance(self):
          return None
+
+    def get_present_employee(
+            self,
+            organisation_id: uuid.UUID,
+            attendance_date: date
+    ) -> set[uuid.UUID]:
+        result = (
+            self.db.query(Attendance.employee_id)
+            .filter(
+                Attendance.organisation_id == organisation_id,
+                Attendance.attendance_date == attendance_date,
+                Attendance.status == AttendanceStatus.PRESENT,
+            )
+            .all()
+        )
+
+        return {row.employee_id for row in result}

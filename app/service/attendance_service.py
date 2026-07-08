@@ -1,7 +1,10 @@
 import uuid
 from datetime import date
 
+from dateutil.utils import today
+
 from app.enums.work_mode import WorkMode
+from app.models import Employee
 from app.repo import attendance_record_repo, employee_repo
 from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.employee_repo import EmployeeRepo
@@ -40,7 +43,30 @@ class AttendanceService:
     def get_today_employee_attendance(self,organisation_id : uuid.UUID,employee_id : uuid.UUID):
         return self.attendacnce_record_repo.get_employee_today_attendance(employee_id=employee_id , organisation_id=organisation_id)
 
-    def update_employee_attendance(self,organisation_id : uuid.UUID, attendance : AttendanceUpdate ):
-        employee_id = self.employee_repo.get_employee_id(organisation_id,employee_code=attendance.employee_code)
+    def update_employee_attendance(self,organisation_id : uuid.UUID, attendance_update_schema : AttendanceUpdate ):
+        employee_id = self.employee_repo.get_employee_id(organisation_id,employee_code=attendance_update_schema.employee_code)
 
-        return self.attendacnce_record_repo.update_attendance(organisation_id,employee_id=employee_id[0],update_attendacne= attendance)
+        return self.attendacnce_record_repo.update_attendance(organisation_id,employee_id=employee_id[0],update_attendacne= attendance_update_schema)
+
+    def absent_employee(self, organisation_id: uuid.UUID, attendance_date: date):
+        employees = self.employee_repo.get_all_employee(organisation_id)
+        present_employee_ids = self.attendacnce_record_repo.get_present_employee(
+            organisation_id,
+            attendance_date,
+        )
+        absent_employees = []
+        for employee in employees:
+            if employee.id not in present_employee_ids:
+                absent_employees.append(employee.employee_code)
+
+        return absent_employees
+    def marked_absent_employee(self, organisation_id: uuid.UUID, attendance_date: date, employee_code: str):
+        employee  =self.employee_repo.get_employee_by_employee_code(organisation_id,employee_code=employee_code)
+        attendance_record_repo = self.attendacnce_record_repo.get_employee_attendance_by_date(employee_id=employee.id,organisation_id=organisation_id,attendance_date = attendance_date)
+        if attendance_record_repo:
+            raise ValueError("Attendance record already exists")
+        self.attendacnce_record_repo.mark_absent(organisation_id=organisation_id,employee= employee,attedance_date= attendance_date)
+
+
+
+

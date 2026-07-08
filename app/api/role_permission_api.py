@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter ,Depends
 from typing import List
-
+from fastapi import  Request
 from app.auth.permission_check import PermissionChecker
 from app.dependancy.service_dependancy import get_role_service
 from app.schemas.role_schema import CreateRole, CreatePermision, PermissionResponse, ListOFPermissions
@@ -40,6 +40,10 @@ def get_all_permission( role_service = Depends(get_role_service)) :
 # def create_permission(data : CreatePermision ,role_service : RoleService = Depends(get_role_service)) :
 #     return role_service.create_permission(data)
 
-@permission_router.post("/create-role-permission/{organisation_id}",dependencies = [Depends(PermissionChecker("role"))])
-def creat_role_permission(data : CreateRole,permissions : ListOFPermissions,organisation_id : uuid.UUID,permission_service = Depends(get_role_service)) :
-    return permission_service.create_role_permission(role_creation_schema= data,organisation_id = organisation_id ,permissions = permissions)
+@permission_router.post("/create-role-permission",dependencies = [Depends(PermissionChecker("role"))])
+def creat_role_permission(data : CreateRole,request : Request ,permissions : ListOFPermissions,permission_service = Depends(get_role_service)) :
+    return permission_service.create_role_permission(role_creation_schema= data,organisation_id = request.state.auth.organisation_id ,permissions = permissions)
+
+@permission_router.post("/assign-role",dependencies = [Depends(PermissionChecker("role"))])
+def assign_role_employee():
+    return

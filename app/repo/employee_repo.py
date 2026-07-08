@@ -109,6 +109,7 @@ class EmployeeRepo:
 
         return employee
 
+
     def get_employee_id(self,oganisation_id : uuid.UUID, employee_code: str):
         employee_id = self.db.query(Employee.id).filter(Employee.organisation_id == oganisation_id ,
                                                         Employee.employee_code == employee_code).first()
