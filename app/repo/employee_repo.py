@@ -1,5 +1,6 @@
 import uuid
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy.orm import Session, InstrumentedAttribute
 
@@ -47,13 +48,17 @@ class EmployeeRepo:
             raise
         return employee
 
-    def get_employee_by_employee_code(self, organisation_id: uuid, employee_code: str):
+#employee details by Code
+    def get_employee_by_employee_code(self, organisation_id: uuid, employee_code: str) -> type[Employee] | None:
 
         employee = self.db.query(Employee).filter(Employee.organisation_id == organisation_id,
                                                   Employee.employee_code == employee_code).first()
         if not employee:
             return None
         return employee
+    def get_employee_by_employee_id(self, employee_id: uuid.UUID,organisation_id : uuid.UUID) -> type[Employee] | None:
+        return self.db.query(Employee).filter(Employee.employee_id == employee_id,
+                                              Employee.organisation_id == organisation_id).first()
 
     def get_employee_by_name(self, employee_name: str):
 
@@ -65,6 +70,9 @@ class EmployeeRepo:
             )
             .all()
         )
+    def get_employee_by_department_name(self,department_name: str,organisation_id : uuid.UUID ) -> list[type[Employee]] | None:
+        return self.db.query(Employee).filter(Employee.department_name == department_name,
+                                              Employee.organisation_id== organisation_id).all()
 
     def update_employee_details(
             self,
@@ -110,8 +118,8 @@ class EmployeeRepo:
         return employee
 
 
-    def get_employee_id(self,oganisation_id : uuid.UUID, employee_code: str):
-        employee_id = self.db.query(Employee.id).filter(Employee.organisation_id == oganisation_id ,
+    def get_employee_id(self,organisation_id : uuid.UUID, employee_code: str):
+        employee_id = self.db.query(Employee.id).filter(Employee.organisation_id == organisation_id ,
                                                         Employee.employee_code == employee_code).first()
         return employee_id
     def get_employee_by_user_id(self, user_id: uuid.UUID) -> type[Employee] | None:

@@ -17,7 +17,7 @@ def update_attendance(request : Request, attendance_update_schema : AttendanceUp
         logger.info(f"attendance updated by {request.state.auth.user_id} from {request.state.auth.organisation_id} organisation  for {attendance_update_schema.dict()}")
 
     return attendance_update
-@attendance_manager.get("/abesent-list",response_model=AttendanceResponse,dependencies=[Depends(PermissionChecker("attendance.view"))])
+@attendance_manager.get("/abesent-list",dependencies=[Depends(PermissionChecker("attendance.view"))])
 def absent_list(attendance_date :date ,request : Request,attendance_service : AttendanceService = Depends(get_attendance_service) ):
     absent_list  =attendance_service.absent_employee(
         attendance_date = attendance_date,organisation_id = request.state.auth.organisation_id

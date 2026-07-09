@@ -7,7 +7,7 @@ from app.dependancy.service_dependancy import get_user_service
 from app.schemas.user import UserCreation,UserDetailsRespone,UserStatusUpdate,UserStatus,UserUpdate
 from app.service.user_service import UserService
 
-user_router = APIRouter()
+user_router = APIRouter(prefix="/user",tags=["user"])
 
 @user_router.post("/create-user")
 def create_user(user_data : UserCreation,

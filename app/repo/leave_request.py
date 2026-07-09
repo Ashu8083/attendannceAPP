@@ -1,9 +1,13 @@
 import uuid
+from typing import List
+from uuid import UUID
 from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from app.models import Employee
 from app.models.leave_record_model import LeaveRequest
+from app.schemas import organisation_schema
 from app.schemas.leave_request_schema import LeaveCreate, LeaveUpdate
 from app.enums.leave_status import LeaveStatus
 
@@ -30,8 +34,11 @@ class LeaveRepo:
             raise
 
         return leave_request
+    def get_all_employees_leaves(self,organisation_id : uuid.UUID):
+        leave_record = self.db.query(LeaveRequest).filter(LeaveRequest.organisation_id == organisation_id).all()
+        return self.db.query(leave_record)
 
-    def get_leave(self, leave_id: uuid.UUID):
+    def get_leave_by_leaveID(self, leave_id: uuid.UUID):
         leave = (
             self.db.query(LeaveRequest)
             .filter(LeaveRequest.id == leave_id)
@@ -43,10 +50,11 @@ class LeaveRepo:
 
         return leave
 
-    def get_employee_leaves(self, employee_id: uuid.UUID):
+    def get_employee_leaves(self, employee_id: uuid.UUID,organisation_id :uuid.UUID):
         leaves = (
             self.db.query(LeaveRequest)
-            .filter(LeaveRequest.employee_id == employee_id)
+            .filter(LeaveRequest.employee_id == employee_id,
+                     LeaveRequest.organisation_id == organisation_id)
             .all()
         )
 
@@ -55,25 +63,34 @@ class LeaveRepo:
 
         return leaves
 
-    def get_pending_leaves(self):
+    def get_pending_employee_leaves(self,organisation_id :uuid.UUID,employee_id :uuid.UUID):
         return (
             self.db.query(LeaveRequest)
-            .filter(LeaveRequest.status == LeaveStatus.PENDING)
+            .filter(LeaveRequest.organisation_id == organisation_id,
+                    LeaveRequest.employee_id == employee_id,
+                    LeaveRequest.status == LeaveStatus.PENDING)
             .all()
         )
+    def get_pending_leaves(self,organisation_id :uuid.UUID) -> List[type[LeaveRequest]]:
+        leaves_records = self.db.query(LeaveRequest).filter(LeaveRequest.organisation_id == organisation_id,
+                                                            LeaveRequest.status == LeaveStatus.PENDING).all()
+        return leaves_records
 
     def approve_leave(
         self,
         leave_id: uuid.UUID,
-        approver_id: uuid.UUID
+        approver_by: uuid.UUID,
+        employee_id: UUID,
     ):
-        leave = self.get_leave(leave_id)
+        leave = self.db.query(LeaveRequest).filter(LeaveRequest.id == leave_id,
+                                                   LeaveRequest.employee_id == employee_id
+                                                   ).first()
 
         if leave.status != LeaveStatus.PENDING:
             raise ValueError("Leave request already processed")
 
         leave.status = LeaveStatus.APPROVED
-        leave.approved_by = approver_id
+        leave.approved_by = approver_by
         leave.approved_at = datetime.now()
 
         try:
@@ -85,18 +102,19 @@ class LeaveRepo:
 
         return leave
 
-    def reject_leave(
+    def rejecte_leave(
         self,
         leave_id: uuid.UUID,
-        approver_id: uuid.UUID
+        employee_id: uuid.UUID,
     ):
-        leave = self.get_leave(leave_id)
+        leave = self.db.query(LeaveRequest).filter(LeaveRequest.id == leave_id,
+                                                   LeaveRequest.employee_id == employee_id
+                                                   ).first()
 
         if leave.status != LeaveStatus.PENDING:
             raise ValueError("Leave request already processed")
 
         leave.status = LeaveStatus.REJECTED
-        leave.approved_by = approver_id
         leave.approved_at = datetime.now()
 
         try:
@@ -108,8 +126,10 @@ class LeaveRepo:
 
         return leave
 
-    def cancel_leave(self, leave_id: uuid.UUID):
-        leave = self.get_leave(leave_id)
+    def canceled_leave(self, leave_id: uuid.UUID,employee_id: uuid.UUID):
+        leave = self.db.query(LeaveRequest).filter(LeaveRequest.id == leave_id,
+                                                   LeaveRequest.employee_id == employee_id
+                                                   ).first()
 
         if leave.status == LeaveStatus.APPROVED:
             raise ValueError("Approved leave cannot be cancelled")
@@ -134,3 +154,7 @@ class LeaveRepo:
         except Exception:
             self.db.rollback()
             raise
+    def employees_on_leaves(self, employee_id: uuid.UUID , organisation_id: uuid.UUID):
+        leaves = self.db.query(LeaveRequest).filter(LeaveRequest.employee_id == employee_id,
+                                                    LeaveRequest.organisation_id == organisation_id,
+                                                    LeaveRequest.status == LeaveStatus.APPROVED)

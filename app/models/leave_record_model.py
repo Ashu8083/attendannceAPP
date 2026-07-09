@@ -1,7 +1,8 @@
 import uuid
 from datetime import date,datetime
 
-from sqlalchemy import Date, ForeignKey,DateTime
+
+from sqlalchemy import Date, ForeignKey,DateTime,String
 from sqlalchemy.orm import Mapped, mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
@@ -27,6 +28,9 @@ class LeaveRequest(Base,TimestampMixin):
     end_date: Mapped[date] = mapped_column(Date)
     status: Mapped[LeaveStatus] = mapped_column(
         SQLEnum(LeaveStatus)
+    )
+    reason : Mapped[str] = mapped_column(
+        String(300)
     )
     approved_by :Mapped[uuid.UUID] = mapped_column(
         ForeignKey("user.id")

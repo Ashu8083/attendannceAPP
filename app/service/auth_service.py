@@ -104,8 +104,9 @@ class AuthService:
                 organiasation_id = user.organisation_id,
                 system_role = user.role.value,
                 employee_id =  None,
-                permissions = set()
+                permissions = set(),
             )
+        logger.info(f"auth model for user {user.id} has permissions of {permissions}")
 
         return auth
 

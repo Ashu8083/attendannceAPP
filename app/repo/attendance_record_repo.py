@@ -15,6 +15,8 @@ from app.models.attendance_record_model import Attendance
 class AttendanceRepo:
     def __init__(self,db:Session):
             self.db = db
+
+    # To get employee Attendance  
     def get_employee_attendance_by_date(self, attendance_date: date, employee_id : uuid.UUID , organisation_id : uuid.UUID) -> type[Attendance] | None:
         attendance_record = self.db.query(Attendance).filter(Attendance.employee_id == employee_id,
                                                                 Attendance.organisation_id == organisation_id,

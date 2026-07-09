@@ -1,5 +1,6 @@
 
 import uuid
+from datetime import datetime,date
 from fastapi import  Request
 
 from fastapi import  APIRouter
@@ -14,7 +15,7 @@ from app.schemas.attendance_schema import PunchInSchema, AttendanceResponse, Pun
 from app.service import attendance_service
 from app.service.attendance_service import AttendanceService
 
-attendance_router = APIRouter()
+attendance_router = APIRouter(prefix="/employee/attendance",tags=["attendance"])
 
 
 @attendance_router.post("/punch-in"
@@ -27,12 +28,13 @@ def punch_in_attendance(punch_in :PunchInSchema,request: Request,attendance_serv
     if not attendance:
         return attendance_service.punch_in_attendance(punch_in,
                                                       organisation_id = request.state.auth.organisation_id)
-
     return JSONResponse(content="you are already punchin",
                  status_code=status.HTTP_201_CREATED)
 
 
-@attendance_router.post("/punch-out/{organisation_id}"
+
+
+@attendance_router.post("/punch-out"
                         ,response_model=AttendanceResponse
                         ,dependencies=[Depends(PermissionChecker("employee.self.punchOut"))])
 def punch_out_attendance(punch_out :PunchOutSchema
@@ -49,21 +51,34 @@ def punch_out_attendance(punch_out :PunchOutSchema
 
 
 
-@attendance_router.put("/update-employee-attendance/{organisation_id}"
-                        ,dependencies=[Depends(PermissionChecker("employee.update"))])
-def update_employee_attendance(
-        organisation_id : uuid.UUID,
-        attendance_update : AttendanceUpdate,
-        service : AttendanceService = Depends(get_attendance_service)
-):
-    return service.update_employee_attendance(organisation_id,attendance_update)
+@attendance_router.get("/attendance",dependencies=[Depends(PermissionChecker("employee.self.view"))])
+def attendance_view(request : Request,attendance_date : date, attendance_service : AttendanceService = Depends(get_attendance_service)):
 
-@attendance_router.delete("/employee-attendance",response_model=AttendanceResponse)
-def employee_attendance(
-):
-    return
+    return attendance_service.get_employee_attendance_by_date(attendance_date,organisation_id = request.state.auth.organisation_id, employee_id = request.state.auth.employee_id)
 
-@attendance_router.get("/today-attendance/{organisation_id}"
-                        ,dependencies=[Depends(PermissionChecker("employee.today"))])
-def get_employee_attendance(organisation_id : uuid.UUID ,attendance_service: AttendanceService = Depends(get_attendance_service)):
-    return attendance_service.get_today_attendace(organisation_id = request.state.auth.organisation_id)
+
+
+
+
+
+
+
+
+# @attendance_router.put("/update-employee-attendance/{organisation_id}"
+#                         ,dependencies=[Depends(PermissionChecker("employee.update"))])
+# def update_employee_attendance(
+#         organisation_id : uuid.UUID,
+#         attendance_update : AttendanceUpdate,
+#         service : AttendanceService = Depends(get_attendance_service)
+# ):
+#     return service.update_employee_attendance(organisation_id,attendance_update)
+
+# @attendance_router.delete("/employee-attendance",response_model=AttendanceResponse)
+# def employee_attendance(
+# ):
+#     return
+
+# @attendance_router.get("/today-attendance/{organisation_id}"
+#                         ,dependencies=[Depends(PermissionChecker("employee.today"))])
+# def get_employee_attendance(organisation_id : uuid.UUID ,attendance_service: AttendanceService = Depends(get_attendance_service)):
+#     return attendance_service.get_today_attendace(organisation_id = request.state.auth.organisation_id)

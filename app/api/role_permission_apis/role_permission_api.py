@@ -8,7 +8,7 @@ from app.dependancy.service_dependancy import get_role_service
 from app.schemas.role_schema import CreateRole, CreatePermision, PermissionResponse, ListOFPermissions
 from app.service.role_services.role_creation_service import RoleService
 
-permission_router: APIRouter = APIRouter()
+permission_router: APIRouter = APIRouter(prefix="/role",tags=["role"])
 
 
 @permission_router.get("/get-all-permission/{role_name}/{organisation_id}")

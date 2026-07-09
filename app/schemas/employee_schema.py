@@ -74,3 +74,27 @@ class EmployeeDetailsUpdate(BaseModel):
     address : Optional[str] = None
     city :Optional[str] = None
     state :Optional[str] = None
+
+
+class EmployeeResponse(BaseModel):
+
+    full_name: str
+    email: EmailStr
+    password_hash: str
+    employee_code: str
+
+    department: str
+    designation: str
+    role_id: str
+
+    join_date: date
+    dob: date
+    gender: str
+    marital_status: str
+    address: str
+    city: str
+    state: str
+
+    model_config = {
+        "from_attributes": True
+    }

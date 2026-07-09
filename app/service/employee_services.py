@@ -46,11 +46,20 @@ class EmployeeService:
             raise ValueError("Something went wrong")
         return update_employee_status
 
-    def get_employee_service(self,organisation_id : uuid.UUID, employee_code : str):
+    def get_employee_service(self,organisation_id : uuid.UUID, employee_code : uuid.UUID):
         existing_employee = self.employeeRepo.get_employee_by_employee_code(organisation_id,employee_code)
         if not existing_employee: 
             raise ValueError ("Employee not found")
         return existing_employee
+    def get_employee_by_empID_service(self,organisation_id : uuid.UUID, employee_id : uuid.UUID):
+
+        employee = self.employeeRepo.get_employee_by_employee_id(organisation_id,employee_id)
+        if not employee :
+            raise ValueError ("Employee not found")
+        return employee
+
+
+
         
     def delete_employee_service(self):
         return

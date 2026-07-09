@@ -34,9 +34,10 @@ class AttendanceService:
     def get_today_attendace(self,organisation_id : uuid.UUID):
         return self.attendacnce_record_repo.get_today_attendance(organisation_id)
 
-    def get_employee_employee_attendance(self,organisation_id,employee__id : uuid.UUID):
+    def get_employee_attendance(self,organisation_id,employee__id : uuid.UUID):
         return  self.attendacnce_record_repo.get_employee_attendance(employee_id=employee__id , organisation_id=organisation_id)
 
+    # get
     def get_month_attendance(self,month : int,organisation_id : uuid.UUID):
         return  self.attendacnce_record_repo.get_attendance_by_month(month,organisation_id)
 
@@ -67,6 +68,6 @@ class AttendanceService:
             raise ValueError("Attendance record already exists")
         self.attendacnce_record_repo.mark_absent(organisation_id=organisation_id,employee= employee,attedance_date= attendance_date)
 
-
-
+    def get_employee_attendance_by_date(self,attendance_date : date,organisation_id : uuid.UUID,employee_id : uuid.UUID):
+        return self.attendacnce_record_repo.get_employee_attendance_by_date(attendance_date=attendance_date,organisation_id=organisation_id,employee_id=employee_id)
 

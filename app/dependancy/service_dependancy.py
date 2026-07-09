@@ -8,12 +8,14 @@ from app.repo.AuthRepo import AuthRepo
 from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.department_repo import DepartmentRepo
 from app.repo.employee_repo import EmployeeRepo
+from app.repo.leave_request import LeaveRepo
 from app.repo.role_repo import  RolePermissionRepo
 from app.repo.user_repo import UserRepo
 from app.repo.organisation_repo import OrganisationRepo
 from app.repo.user_repo import UserRepo
 from app.service.attendance_service import AttendanceService
 from app.service.department_service import DepartmentService
+from app.service.leave_service import LeaveService
 from app.service.organisation_service import OrganisationService
 from app.service.role_services.role_creation_service import RoleService
 from app.service.user_service import UserService
@@ -70,3 +72,10 @@ def get_auth_service(
     employee_repo = EmployeeRepo(db)
     return AuthService(auth_repo, user_repo,user_device_repo,employee_repo)
 
+
+def get_leave_service(
+        db: Session = Depends(get_db),
+):
+    leave_repo = LeaveRepo(db)
+    employee_repo = EmployeeRepo(db)
+    return LeaveService(leave_repo = leave_repo, employee_repo= employee_repo)
