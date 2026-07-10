@@ -68,10 +68,11 @@ class AttendanceRepo:
             raise 
         return attendance_record
 
-    def punch_out(self,punch_in_schema : PunchOutSchema):
+    def punch_out(self,employee_id:uuid.UUID,organisation_id : uuid.UUID):
          today = date.today()
          attendance_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
-                                                             Attendance.employee_id == punch_in_schema.employee_id,
+                                                             Attendance.employee_id == employee_id,
+                                                             Attendance.organisation_id == organisation_id,
                                                              Attendance.is_punchout == True).first()
          if attendance_record :
               logger.error("Employee already Punchout")

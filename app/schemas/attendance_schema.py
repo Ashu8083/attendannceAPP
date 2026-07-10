@@ -7,12 +7,11 @@ from app.enums.attandance_status import AttendanceStatus
 from app.enums.work_mode import WorkMode
 
 
-class PunchInSchema(BaseModel):
-    employee_id: uuid.UUID
-    work_mode: WorkMode
 
-class PunchOutSchema(BaseModel):
-    employee_id: uuid.UUID
+
+class PunchInOutSchema(BaseModel):
+    employee_latitude: float
+    employee_longitude: float
 
 class AttendanceResponse(BaseModel):
     employee_code: str
