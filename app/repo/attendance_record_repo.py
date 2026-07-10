@@ -8,6 +8,7 @@ from datetime import date,datetime
 from sqlalchemy.orm import Session, InstrumentedAttribute
 from app.enums.attandance_status import AttendanceStatus
 from app.schemas.attendance_schema import *
+from app.core.logging_config import logger
 
 from app.models.attendance_record_model import Attendance
 
@@ -30,6 +31,7 @@ class AttendanceRepo:
                                                              Attendance.employee_id == employee_id,
                                                              Attendance.organisation_id == organisation_id,
                                                              Attendance.is_punchin == True).first()
+
         return attendance_record
     def today_attendacnce_employee_is_punch_out(self,organisation_id,employee_id):
         today = date.today()
@@ -40,7 +42,11 @@ class AttendanceRepo:
 
     def punch_in(self,employee_id : uuid.UUID, workMode : WorkMode,organisation_id : uuid.UUID):
         today = date.today()
-
+        logger.info(
+            "Employee %s is attempting to check in for attendance in organization %s.",
+            employee_id,
+            organisation_id,
+        )
         attendance_record = Attendance(
                                         organisation_id = organisation_id,
                                         employee_id=employee_id,
@@ -55,7 +61,9 @@ class AttendanceRepo:
             self.db.add(attendance_record)
             self.db.commit()
             self.db.refresh(attendance_record)
+            logger.info("Attendance record for employee %s in organisation  %s is created ", employee_id,organisation_id)
         except Exception:
+            logger.exception("Error while creating attendance record for employee %s in organisation  %s", employee_id, organisation_id)
             self.db.rollback()
             raise 
         return attendance_record
@@ -66,19 +74,25 @@ class AttendanceRepo:
                                                              Attendance.employee_id == punch_in_schema.employee_id,
                                                              Attendance.is_punchout == True).first()
          if attendance_record :
+              logger.error("Employee already Punchout")
               raise ValueError("employee already Punchout")
+
          
          attendance_record  = self.db.query(Attendance).filter(Attendance.attendance_date == today,
                                                               Attendance.employee_id == punch_in_schema.employee_id).first()
          
          if not attendance_record:
+              logger.error("Employee attendance record not found")
               raise ValueError(f"Attendance record not Found {today}")
          attendance_record.is_punchout = True
          attendance_record.punchout_time = datetime.now()
 
-         self.db.commit()
-         self.db.refresh(attendance_record)
-         
+         try:
+            self.db.commit()
+            self.db.refresh(attendance_record)
+         except Exception:
+             logger.exception("Employee attendance record can't created %s", attendance_record)
+             raise
          return attendance_record
 
     def get_today_attendance(self,organisation_id)->list[type[Attendance]]:
@@ -93,6 +107,7 @@ class AttendanceRepo:
     def get_employee_attendance(self,employee_id : uuid.UUID,organisation_id)->list[type[Attendance]]:
          employee_attendance_record = self.db.query(Attendance).filter(Attendance.employee_id == employee_id).where(Attendance.organisation_id == organisation_id).all()
          if not employee_attendance_record:
+              logger.error("Employee attendance record not found")
               raise ValueError("employee attendance record not found")
          return employee_attendance_record
 

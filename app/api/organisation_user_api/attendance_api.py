@@ -22,12 +22,11 @@ attendance_router = APIRouter(prefix="/employee/attendance",tags=["attendance"])
                     ,response_model=AttendanceResponse
                     ,dependencies=[Depends(PermissionChecker("employee.self.punchIn"))])
 
-def punch_in_attendance(punch_in :PunchInSchema,request: Request,attendance_service : AttendanceService = Depends(get_attendance_service)  ):
-    attendance : Attendance = attendance_service.get_today_employee_attendance(punch_in.employee_id,organisation_id = request.state.auth.organisation_id)
-    print(f"inside the model {attendance}")
+def punch_in_attendance(request: Request,attendance_service : AttendanceService = Depends(get_attendance_service)  ):
+    attendance : Attendance = attendance_service.get_today_employee_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id)
     if not attendance:
-        return attendance_service.punch_in_attendance(punch_in,
-                                                      organisation_id = request.state.auth.organisation_id)
+        return attendance_service.punch_in_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id)
+
     return JSONResponse(content="you are already punchin",
                  status_code=status.HTTP_201_CREATED)
 
