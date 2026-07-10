@@ -44,8 +44,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         db_session = SessionLocal()
 
         PUBLIC_ROUTES = [   # all the public api , which are not going throuh the security
-            "/otp-login",
-            "/otp-verify",
+            "/auth/otp-login",
+            "/auth/otp-verify",
             "/docs",
             "/openapi.json",
             "/redoc"

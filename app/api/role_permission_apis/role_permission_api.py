@@ -36,9 +36,9 @@ def get_all_permission( role_service = Depends(get_role_service)) :
 
      return role_service.get_all_permission()
 
-# @permission_router.post("/create-permission")
-# def create_permission(data : CreatePermision ,role_service : RoleService = Depends(get_role_service)) :
-#     return role_service.create_permission(data)
+@permission_router.post("/create-permission")
+def create_permission(data : CreatePermision ,role_service : RoleService = Depends(get_role_service)) :
+    return role_service.create_permission(data)
 
 @permission_router.post("/create-role-permission",dependencies = [Depends(PermissionChecker("role"))])
 def creat_role_permission(data : CreateRole,request : Request ,permissions : ListOFPermissions,permission_service = Depends(get_role_service)) :

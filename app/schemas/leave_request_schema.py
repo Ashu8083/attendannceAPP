@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -26,10 +26,24 @@ class LeaveUpdate(BaseModel):
     end_date: Optional[date] = None
     reason: Optional[str] = Field(default=None, min_length=5, max_length=500)
 
-
-# Response schema
+#Response Schema
 class LeaveResponse(BaseModel):
+    id: Optional[uuid.UUID] = Field(default=None)
+    start_date: date
+    end_date: date
+    reason: str
+    status: LeaveStatus
+    approved_by: Optional[uuid.UUID] = None
+    approved_at: Optional[datetime] = None
+    model_config = {
+        "from_attributes": True
+    }
+
+# Response schema with employee code
+
+class LeaveResponseWithEmployeeCode(BaseModel):
     id: uuid.UUID
+    employee_code : str
     start_date: date
     end_date: date
     reason: str
@@ -47,3 +61,7 @@ class LeaveApproval(BaseModel):
 class LeaveRecordResponse(BaseModel):
     employee_code : str
     leave_response : LeaveResponse
+class LeaveRecordResponseList(BaseModel):
+    employee_code : str
+    employee_name : str
+    leave_response : List[LeaveResponse]

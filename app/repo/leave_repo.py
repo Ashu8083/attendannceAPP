@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.models import Employee
 from app.models.leave_record_model import LeaveRequest
 from app.schemas import organisation_schema
-from app.schemas.leave_request_schema import LeaveCreate, LeaveUpdate
+from app.schemas.leave_request_schema import *
 from app.enums.leave_status import LeaveStatus
 
 
@@ -34,10 +34,9 @@ class LeaveRepo:
             raise
 
         return leave_request
-    def get_all_employees_leaves(self,organisation_id : uuid.UUID):
+    def get_all_employees_leaves(self,organisation_id : uuid.UUID)-> List[type[LeaveResponseWithEmployeeCode]]:
         leave_record = self.db.query(LeaveRequest).filter(LeaveRequest.organisation_id == organisation_id).all()
-        return self.db.query(leave_record)
-
+        return leave_record
     def get_leave_by_leaveID(self, leave_id: uuid.UUID):
         leave = (
             self.db.query(LeaveRequest)
@@ -50,20 +49,20 @@ class LeaveRepo:
 
         return leave
 
-    def get_employee_leaves(self, employee_id: uuid.UUID,organisation_id :uuid.UUID):
-        leaves = (
+    def get_employee_leaves(self, employee_id: uuid.UUID,organisation_id :uuid.UUID) -> List[type[LeaveResponse]]:
+        leaves_records = (
             self.db.query(LeaveRequest)
             .filter(LeaveRequest.employee_id == employee_id,
                      LeaveRequest.organisation_id == organisation_id)
             .all()
         )
 
-        if not leaves:
+        if not leaves_records:
             raise ValueError("No leave requests found")
 
-        return leaves
+        return leaves_records
 
-    def get_pending_employee_leaves(self,organisation_id :uuid.UUID,employee_id :uuid.UUID):
+    def get_pending_employee_leaves(self,organisation_id :uuid.UUID,employee_id :uuid.UUID)-> List[type[LeaveResponse]]:
         return (
             self.db.query(LeaveRequest)
             .filter(LeaveRequest.organisation_id == organisation_id,
@@ -71,7 +70,7 @@ class LeaveRepo:
                     LeaveRequest.status == LeaveStatus.PENDING)
             .all()
         )
-    def get_pending_leaves(self,organisation_id :uuid.UUID) -> List[type[LeaveRequest]]:
+    def get_pending_leaves(self,organisation_id :uuid.UUID) -> List[type[LeaveResponseWithEmployeeCode]]:
         leaves_records = self.db.query(LeaveRequest).filter(LeaveRequest.organisation_id == organisation_id,
                                                             LeaveRequest.status == LeaveStatus.PENDING).all()
         return leaves_records
@@ -81,7 +80,7 @@ class LeaveRepo:
         leave_id: uuid.UUID,
         approver_by: uuid.UUID,
         employee_id: UUID,
-    ):
+    )-> type[LeaveResponseWithEmployeeCode]:
         leave = self.db.query(LeaveRequest).filter(LeaveRequest.id == leave_id,
                                                    LeaveRequest.employee_id == employee_id
                                                    ).first()
@@ -106,7 +105,7 @@ class LeaveRepo:
         self,
         leave_id: uuid.UUID,
         employee_id: uuid.UUID,
-    ):
+    )-> type[LeaveResponseWithEmployeeCode]:
         leave = self.db.query(LeaveRequest).filter(LeaveRequest.id == leave_id,
                                                    LeaveRequest.employee_id == employee_id
                                                    ).first()
@@ -154,7 +153,8 @@ class LeaveRepo:
         except Exception:
             self.db.rollback()
             raise
-    def employees_on_leaves(self, employee_id: uuid.UUID , organisation_id: uuid.UUID):
+    def employees_on_leaves(self, employee_id: uuid.UUID , organisation_id: uuid.UUID)-> List[type[LeaveResponseWithEmployeeCode]]:
         leaves = self.db.query(LeaveRequest).filter(LeaveRequest.employee_id == employee_id,
                                                     LeaveRequest.organisation_id == organisation_id,
-                                                    LeaveRequest.status == LeaveStatus.APPROVED)
+                                                    LeaveRequest.status == LeaveStatus.APPROVED).all()
+        return leaves

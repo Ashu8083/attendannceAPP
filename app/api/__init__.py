@@ -8,6 +8,7 @@ from app.api.organisation_admin_api.department_api import department_router
 from app.api.auth_api import auth_router
 from app.api.organisation_admin_api.attendance_relate_api import attendance_manager
 from app.api.organisation_user_api.leave_related_api import leave_request_router
+from app.api.organisation_admin_api.leave_request_api import leave_manage_router
 
 all_router = [
     organisation_router,
@@ -20,6 +21,7 @@ all_router = [
     attendance_manager,
     employee_self_router,
     leave_request_router,
+    leave_manage_router,
 ]
 
 

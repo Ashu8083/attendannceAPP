@@ -5,14 +5,9 @@ from app.enums.employee_status import EmployeeStatus
 from app.models import LeaveRequest, Employee
 from app.repo import employee_repo
 from app.repo.employee_repo import EmployeeRepo
-from app.repo.leave_request import LeaveRepo
-from app.schemas.leave_request_schema import LeaveCreate, LeaveApproval, LeaveResponse
-
-
-class LeaveRecordResponse:
-    def __init__(self, employee_code : str, leave_record  :List[type[LeaveResponse]]):
-        self.employee_code = employee_code
-        self.leave_record = leave_record
+from app.repo.leave_repo import LeaveRepo
+from app.schemas.leave_request_schema import LeaveCreate, LeaveApproval, LeaveResponse, LeaveRecordResponseList, \
+    LeaveRecordResponse, LeaveResponseWithEmployeeCode
 
 
 class LeaveService:
@@ -29,17 +24,21 @@ class LeaveService:
             raise ValueError(f"Leave with id {leave_id} does not exist")
         return leave_record
 
-    def get_employee_leave(self,employee_code : str, organisation_id : uuid.UUID) -> LeaveRequest:
-        employee_id = self.employee_repo.get_employee_id(employee_code= employee_code,organisation_id = organisation_id)
-        if employee_id is None:
+    def get_employee_leave(self,employee_code : str, organisation_id : uuid.UUID) -> LeaveRecordResponseList:
+        employee = self.employee_repo.get_employee_by_employee_code(employee_code= employee_code,organisation_id = organisation_id)
+        if employee is None:
             raise ValueError(f"Employee with id {employee_code} does not exist")
-        leave_record = self.leave_repo.get_employee_leaves(employee_id)
+        leave_record = self.leave_repo.get_employee_leaves(employee.id,organisation_id=organisation_id)
 
         if leave_record is None:
             raise ValueError(f" Leaves with for {employee_code} does not exist")
-        return leave_record
+        return LeaveRecordResponseList(
+            employee_code = employee_code,
+            employee_name=employee.user.full_name,
+            leave_response = leave_record
+        )
 
-    def get_pending_leave_by_department(self,department_name : str, organisation_id : uuid.UUID ) -> set[type[LeaveRequest]] :
+    def get_pending_leave_by_department(self,department_name : str, organisation_id : uuid.UUID ) -> set[type[LeaveResponseWithEmployeeCode]] :
             employee = self.employee_repo.get_employee_by_department_name(department_name= department_name,organisation_id= organisation_id)
             leave_records = set()
             for leave_record in self.leave_repo.get_pending_employees_leaves(employee_id= employee.id,organisation_id = organisation_id):
@@ -47,23 +46,24 @@ class LeaveService:
 
             return leave_records
 
-    def get_pending_leave(self,organisation_id : uuid.UUID ) -> List[type[LeaveRequest]] :
+    def get_pending_leave(self,organisation_id : uuid.UUID ) -> List[type[LeaveResponseWithEmployeeCode]] :
         leave_record = self.leave_repo.get_pending_leaves(organisation_id= organisation_id)
         if leave_record is None:
             raise ValueError(f"No leave record found ")
         return leave_record
 
 
-    def get_employee_pending_leave(self,employee_code : str,organisation_id :uuid.UUID) -> LeaveRecordResponse:
+    def get_employee_pending_leave(self,employee_code : str,organisation_id :uuid.UUID) -> LeaveRecordResponseList:
         employee = self.employee_repo.get_employee_by_employee_code(employee_code= employee_code,organisation_id= organisation_id)
         leave_record = self.leave_repo.get_pending_employee_leaves(employee_id= employee.id,organisation_id= organisation_id)
-        return LeaveRecordResponse(
+        return LeaveRecordResponseList(
+            emploiye_name = employee.user.full_name,
             employee_code  = employee.code,
-            leave_record = leave_record
+            leave_response = leave_record
         )
 
 
-    def approve_leave(self,organisation_id : uuid.UUID, leave_approve_schema : LeaveApproval, approved_by : uuid.UUID,employee_code :str) -> LeaveRequest:
+    def approve_leave(self,organisation_id : uuid.UUID, leave_approve_schema : LeaveApproval, approved_by : uuid.UUID,employee_code :str) -> LeaveResponseWithEmployeeCode:
         employee  = self.employee_repo.get_employee_by_employee_code(employee_code= employee_code,organisation_id= organisation_id)
         if employee is None:
             raise ValueError(f"Employee with id {employee_code} does not exist")
@@ -72,7 +72,7 @@ class LeaveService:
             raise ValueError(f"Leaves with for {employee.employee_code} does not exist")
         return leave_record
 
-    def reject_leaves(self,organisation_id : uuid.UUID, leave_approve_schema : LeaveApproval, approved_by : uuid.UUID,employee_code :str) -> LeaveRequest:
+    def reject_leaves(self,organisation_id : uuid.UUID, leave_approve_schema : LeaveApproval, approved_by : uuid.UUID,employee_code :str) -> LeaveResponseWithEmployeeCode:
         employee  = self.employee_repo.get_employee_by_employee_code(employee_code= employee_code,organisation_id= organisation_id)
         if employee is None:
             raise ValueError(f"Employee with id {employee_code} does not exist")
@@ -81,7 +81,7 @@ class LeaveService:
             raise ValueError(f"Leaves with for {employee.employee_code} does not exist")
         return leave_record
 
-    def cancel_leave(self,organisation_id : uuid.UUID, leave_approve_schema : LeaveApproval ,employee_code :str) -> LeaveRequest:
+    def cancel_leave(self,organisation_id : uuid.UUID, leave_approve_schema : LeaveApproval ,employee_code :str) -> LeaveResponseWithEmployeeCode:
         employee  = self.employee_repo.get_employee_by_employee_code(employee_code= employee_code,organisation_id= organisation_id)
         if employee is None:
             raise ValueError(f"Employee with id {employee_code} does not exist")

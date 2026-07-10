@@ -42,3 +42,7 @@ class LeaveRequest(Base,TimestampMixin):
                             "Employee",
                             back_populates="leave_requests"
                             )
+
+    @property
+    def employee_code(self):
+        return self.employee.code
