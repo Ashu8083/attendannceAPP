@@ -48,7 +48,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/auth/otp-verify",
             "/docs",
             "/openapi.json",
-            "/redoc"
+            "/redoc",
+            "/email/test"
         ]
 
         if request.url.path in PUBLIC_ROUTES:

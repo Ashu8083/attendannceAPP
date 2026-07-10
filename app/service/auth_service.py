@@ -1,5 +1,7 @@
 import logging
 from urllib import response
+
+from fastapi import BackgroundTasks
 from sqlalchemy import true
 from datetime import date, time, timedelta
 
@@ -19,7 +21,7 @@ from app.core.logging_config import  logger
 from app.security import jwt_handler
 from app.security.jwt_handler import create_access_token, create_refresh_token
 from app.security.jwt_handler import verify_access_token, decode_token
-
+from app.email.service import email_service
 
 
 
@@ -38,7 +40,7 @@ class AuthService:
         user = self.user_repo.get_user_by_email(otp_schema.user_email)
         employee_id = None
         if not user:
-            raise Exception(f"User with email {otp_schema.user_email} not fx und")
+            raise Exception(f"User with email {otp_schema.user_email} not found")
         if user.role == UserRole.USER:
            employee_id =user.employee.id
 
@@ -50,10 +52,7 @@ class AuthService:
         if otp.otp != otp_schema.otp :
             raise Exception(f"otp not found or invalid")
         access_token = create_access_token(user.id,user_role= user.role,organisation_id= user.organisation_id, employee_id = employee_id)
-        refresh_token = create_refresh_token(user.id,user_role= user.role,organisation_id= user.organisation_id ) ## store the refresh token in userdevice
-
-                                                                                         # table in db
-
+        refresh_token = create_refresh_token(user.id,user_role= user.role,organisation_id= user.organisation_id ) ## store the refresh token in userdevice                                                                                         # table in db
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
@@ -61,7 +60,7 @@ class AuthService:
             "expires_in": 3600,
         }
 
-    def generate_otp_service(self,user_email ):
+    async def generate_otp_service(self,user_email,background_task :BackgroundTasks ):
         user_id = self.user_repo.get_id_by_email(user_email)
         if not user_id:
             raise Exception(f"User with email {user_email} not fx und")
@@ -70,7 +69,12 @@ class AuthService:
         if not otp_model:
             logger.error(f"otp model for user {user_id} not created")
             raise Exception(f"otp creation error")
-        return otp_model.otp
+        background_task.add_task(
+            email_service.send_otp,
+            email=user_email,
+            otp=otp_model.otp,
+        )
+        return otp_model
 
     def verify_access_token(self,token):
 

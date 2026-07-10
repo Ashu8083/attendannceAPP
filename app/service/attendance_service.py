@@ -10,6 +10,7 @@ from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.schemas.attendance_schema import  PunchInSchema,PunchOutSchema,AttendanceUpdate
 from app.service import organisation_service
+from app.core.logging_config import logger
 
 
 class AttendanceService:
@@ -21,6 +22,7 @@ class AttendanceService:
     def punch_in_attendance(self,  employee_id :uuid.UUID ,organisation_id : uuid.UUID):
         attendance = self.attendacnce_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
+            logger.info("User Already Punched")
             return attendance
 
         return self.attendacnce_record_repo.punch_in(employee_id,workMode= WorkMode.WFH,organisation_id=organisation_id)

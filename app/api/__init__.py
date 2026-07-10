@@ -1,3 +1,4 @@
+from app.api.role_permission_apis import role_permission_api
 from app.api.system_admin_api.organigastion_api import organisation_router
 from app.api.system_admin_api.user_api import user_router
 from app.api.organisation_admin_api.employee_api import employee_router
@@ -9,6 +10,7 @@ from app.api.auth_api import auth_router
 from app.api.organisation_admin_api.attendance_relate_api import attendance_manager
 from app.api.organisation_user_api.leave_related_api import leave_request_router
 from app.api.organisation_admin_api.leave_request_api import leave_manage_router
+from app.api.testemailrouter import router_email
 
 all_router = [
     organisation_router,
@@ -22,6 +24,7 @@ all_router = [
     employee_self_router,
     leave_request_router,
     leave_manage_router,
+    router_email,
 ]
 
 
