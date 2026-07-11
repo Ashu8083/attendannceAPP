@@ -1,4 +1,6 @@
 import uuid
+from operator import index
+
 from sqlalchemy import String ,ForeignKey ,Boolean
 from sqlalchemy.orm import Mapped , mapped_column
 from sqlalchemy.dialects.postgresql import UUID
@@ -21,7 +23,8 @@ class AttendanceLog(Base,TimestampMixin):
         ForeignKey("attendance_records.id")
     )
     oranisation_id : Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organisation.id")
+        ForeignKey("organisation.id"),
+        index= True
     )
     device_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("userdevice.id")
@@ -33,4 +36,5 @@ class AttendanceLog(Base,TimestampMixin):
         Boolean,
         default= False
     )
+
 

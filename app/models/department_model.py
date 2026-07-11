@@ -1,6 +1,8 @@
 
 import uuid
+from operator import index
 
+from sqlalchemy import Index
 from sqlalchemy import ForeignKey, String, Integer, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnum
@@ -27,6 +29,9 @@ class DepartmentModel(Base,TimestampMixin):
             "name",
             name = "uq_department_org_name"
         ),
+        Index(
+            "organisation_id",
+                "name",)
     )
     name : Mapped[str] = mapped_column(
         String(25)

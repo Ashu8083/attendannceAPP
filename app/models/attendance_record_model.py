@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime,date,time
 
-from sqlalchemy import String ,ForeignKey ,DateTime, UniqueConstraint,Date,Boolean,Time
+
+from sqlalchemy import String ,ForeignKey ,DateTime, UniqueConstraint,Date,Boolean,Time,Index
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum 
@@ -21,8 +22,20 @@ class Attendance(Base,TimestampMixin):
                                         "attendance_date",
                                         name="uq_employee_attendance_date",
                                         ),
+                        Index(
+                            "idx_attendance_date",
+                            "employee_id",
+                            "organisation_id",
+                            "attendance_date"
+                        ),
+                        Index(
+                            "idx_attendance_status",
+                            "organisation_id",
+                            "status"
+                        ),
                         )
     #__table_args__ make sure that combination employee and attendance date must be unique
+
 
     id  : Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid= True),

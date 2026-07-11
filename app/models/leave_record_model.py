@@ -24,6 +24,11 @@ class LeaveRequest(Base,TimestampMixin):
         ForeignKey("employees.id"),
         nullable= False
     )
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("organisation.id"),
+        nullable= True,
+    )
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)
     status: Mapped[LeaveStatus] = mapped_column(
@@ -42,6 +47,10 @@ class LeaveRequest(Base,TimestampMixin):
                             "Employee",
                             back_populates="leave_requests"
                             )
+    organization = relationship(
+        "Organisation",
+        back_populates="leave_requests"
+    )
 
     @property
     def employee_code(self):

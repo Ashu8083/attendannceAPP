@@ -3,17 +3,23 @@ from datetime import date
 from datetime import datetime
 from ..db.database import Base
 from sqlalchemy.orm  import Mapped , mapped_column,relationship
-from sqlalchemy import String,ForeignKey,DateTime
+from sqlalchemy import String,ForeignKey,DateTime,Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
 
 from app.enums.user_status_enums import UserStatus
 from app.enums.role_enums import UserRole
 from app.db.timestamp import TimestampMixin
+from ..schemas import user
 
 
 class User(Base,TimestampMixin):
     __tablename__ = "user"
+    __table_args__ = (
+        Index("idx_user_organisation_id", "organisation_id","id"),
+        Index("idx_user_email", "email","id"),
+
+)
 
     id : Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid= True),

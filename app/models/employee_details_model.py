@@ -1,6 +1,6 @@
 import uuid
 from datetime import date
-from sqlalchemy import ForeignKey,String,Date
+from sqlalchemy import ForeignKey,String,Date,Index
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnums
@@ -10,6 +10,22 @@ from app.db.database import Base
 
 class EmployeeDetails(Base, TimestampMixin):
     __tablename__ = "employee_details"
+
+    __table_args__ = (
+        Index(
+            "employee_id",
+            "full_name",
+            "dob",
+            "gender",
+            "marital_status",
+        ),
+        Index(
+            "idx_city"
+            "employee_id",
+            "full_name",
+            "city"
+    )
+    )
 
     id : Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -22,8 +38,10 @@ class EmployeeDetails(Base, TimestampMixin):
     full_name : Mapped[str] = mapped_column(
         String(50)
     )
-    dob : Mapped[date] = mapped_column
-    Date
+    dob : Mapped[date] = mapped_column(
+        Date
+    )
+
     gender :Mapped[str] = mapped_column(
         String(10)
     )

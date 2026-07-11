@@ -39,7 +39,6 @@ class EmployeeRepo:
             city=employeedata.city,
             state=employeedata.state,
         )
-
         self.db.add(employee_details)
         try:
             self.db.commit()
@@ -52,16 +51,17 @@ class EmployeeRepo:
     def get_employee_by_employee_code(self, organisation_id: uuid, employee_code: str) -> type[Employee] | None:
 
         employee = self.db.query(Employee).filter(Employee.organisation_id == organisation_id,
-                                                  Employee.employee_code == employee_code).first()
+                                                  Employee.employee_code == employee_code,
+                                                  Employee.emplopyee_status == EmployeeStatus.ACTIVE).first()
         if not employee:
-            return None
+
+            raise ValueError("Employee code does not exist")
         return employee
     def get_employee_by_employee_id(self, employee_id: uuid.UUID,organisation_id : uuid.UUID) -> type[Employee] | None:
         return self.db.query(Employee).filter(Employee.employee_id == employee_id,
                                               Employee.organisation_id == organisation_id).first()
 
     def get_employee_by_name(self, employee_name: str):
-
         return (
             self.db.query(Employee)
             .join(Employee.employee_details)
@@ -90,7 +90,6 @@ class EmployeeRepo:
 
         for field, value in employee_details.model_dump(exclude_unset=True).items():
             setattr(details, field, value)
-
         try:
             self.db.commit()
             self.db.refresh(details)

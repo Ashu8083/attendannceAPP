@@ -13,6 +13,7 @@ from app.db.database import Base
 class Permission(Base):
     __tablename__ = "permissions"
 
+
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,

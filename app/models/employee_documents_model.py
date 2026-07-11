@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String,Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,6 +10,9 @@ from app.db.timestamp import TimestampMixin
 
 class EmployeeDocuments(Base, TimestampMixin):
     __tablename__ = "employee_documents"
+    __table_args__ = (
+        Index("employee_id_idx", "employee_id", unique=True),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

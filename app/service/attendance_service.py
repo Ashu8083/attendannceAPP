@@ -42,7 +42,7 @@ class AttendanceService:
         return self.attendacnce_record_repo.punch_in(employee_id,workMode= WorkMode.WFH,organisation_id=organisation_id)
 
     def punch_out_attendance(self,punch_out : PunchInOutSchema , organisation_id : uuid.UUID,employee_id : uuid.UUID):
-        employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id)
+        employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
         if not employee:
             logger.error("employee s% of organisation %s is not found",employee_id ,organisation_id)
             raise

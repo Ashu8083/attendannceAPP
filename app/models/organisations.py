@@ -79,6 +79,10 @@ class Organisation(Base,TimestampMixin):
                         "Shift",
                         back_populates="organisation"
                         )
+    leave_requests = relationship(
+        "LeaveRequest",
+                        back_populates="organisation",
+    )
     user =  relationship(
         "User",
         back_populates="organisation"

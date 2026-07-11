@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String,Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,7 +11,13 @@ from app.db.timestamp import TimestampMixin
 
 class UserDeviceDetails(Base, TimestampMixin):
     __tablename__ = "userdevice"
+    __table_args__ = (
+        Index(
+            "idx_user_device",
+            "user_id",
 
+        ),
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,

@@ -5,7 +5,7 @@ from datetime import date
 from app.enums.work_mode import WorkMode
 
 from ..enums.employee_status import  EmployeeStatus
-from sqlalchemy import ForeignKey,String,Date, UniqueConstraint
+from sqlalchemy import ForeignKey,String,Date, UniqueConstraint,Index
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnums
@@ -29,6 +29,21 @@ class Employee(Base,TimestampMixin):
             "employee_code",
             name="uq_org_employee_code"
         ),
+        Index(
+            "idx_employee_id",
+            "id",
+                        "employee_code",
+                        "organisation_id",
+        ),
+        Index(
+            "idx_employee_code",
+            "employee_code",
+            "organisation_id",
+        ),
+        Index(
+                "idx_employee_status",
+            "employee_status",
+    )
     )
     user_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("user.id")
@@ -48,7 +63,7 @@ class Employee(Base,TimestampMixin):
         String(100),
         nullable=True
     )
-    emplopyee_status : Mapped[EmployeeStatus] = mapped_column(
+    employee_status : Mapped[EmployeeStatus] = mapped_column(
             SQLEnums(EmployeeStatus),
             default=EmployeeStatus.ACTIVE
     )
