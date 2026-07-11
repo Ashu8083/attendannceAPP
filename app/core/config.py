@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     USE_CREDENTIALS: bool
     VALIDATE_CERTS: bool
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore"
