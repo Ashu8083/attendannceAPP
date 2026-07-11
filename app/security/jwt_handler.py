@@ -58,8 +58,6 @@ def create_refresh_token (user_id,user_role,organisation_id) :# life spam will 5
         SECRET_KEY,
         algorithm=ALGORITHM
     )
-
-
     return
 def decode_token(token):
     try:
