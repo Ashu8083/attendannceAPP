@@ -35,7 +35,7 @@ class AuthService:
 
 
 
-    def verify_otp(self,otp_schema : OTPSchema) : ## letter it will replace by redis
+    def verify_otp(self,otp_schema : OTPSchema) : ## letter it will replace by redis_config
 
         user = self.user_repo.get_user_by_email(otp_schema.user_email)
         employee_id = None
