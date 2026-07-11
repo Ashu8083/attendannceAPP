@@ -11,7 +11,7 @@ from starlette import status
 from app.auth.permission_check import PermissionChecker
 from app.models.attendance_record_model import Attendance
 from app.dependancy.service_dependancy import get_attendance_service
-from app.schemas.attendance_schema import PunchInSchema, AttendanceResponse, PunchOutSchema, AttendanceUpdate
+from app.schemas.attendance_schema import PunchInOutSchema, AttendanceResponse, AttendanceUpdate
 from app.service import attendance_service
 from app.service.attendance_service import AttendanceService
 
@@ -36,7 +36,7 @@ def punch_in_attendance(request: Request,attendance_service : AttendanceService 
 @attendance_router.post("/punch-out"
                         ,response_model=AttendanceResponse
                         ,dependencies=[Depends(PermissionChecker("employee.self.punchOut"))])
-def punch_out_attendance(punch_out :PunchOutSchema
+def punch_out_attendance(punch_out :PunchInOutSchema
                           ,request: Request
                          ,attendance_service : AttendanceService = Depends(get_attendance_service) ):
 

@@ -1,0 +1,15 @@
+services :
+    web:
+      build: .
+      container_name: HSRM
+      ports:
+        - "8000 : 8000"
+      volumes:
+        - .:/app/HSRM
+      environment:
+        - ENV=development
+      restart: always
+
+    redis :
+      container_name: Redis
+
