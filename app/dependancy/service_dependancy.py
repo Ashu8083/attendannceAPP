@@ -15,6 +15,7 @@ from app.repo.organisation_repo import OrganisationRepo
 from app.repo.user_repo import UserRepo
 from app.service.attendance_service import AttendanceService
 from app.service.department_service import DepartmentService
+from app.service.face_services.InsightFaceService import InsightFaceService
 from app.service.leave_service import LeaveService
 from app.service.organisation_service import OrganisationService
 from app.service.role_services.role_creation_service import RoleService
@@ -22,6 +23,14 @@ from app.service.user_service import UserService
 from app.service.employee_services import EmployeeService
 from app.service.auth_service import AuthService
 from app.repo.user_device_repo import  UserDeviceDetailRepo
+
+face_service = InsightFaceService()
+
+def get_face_service():
+
+    return face_service
+
+
 
 def get_organaistion_service(
     db: Session = Depends(get_db)
@@ -41,7 +50,8 @@ def get_employee_service(
 ):
     employee_repo = EmployeeRepo(db)
     ueser_repo = UserRepo(db)
-    return EmployeeService(employee_repo=employee_repo,user_repo= ueser_repo)
+    face_embending = face_service
+    return EmployeeService(employee_repo=employee_repo,user_repo= ueser_repo,face_embending = face_service)
 
 
 def get_attendance_service(

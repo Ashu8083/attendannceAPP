@@ -12,39 +12,51 @@ from app.schemas.attendance_schema import  AttendanceUpdate, PunchInOutSchema
 from app.service import organisation_service
 from app.core.logging_config import logger
 from app.helperFunction.locationcheker import get_distance
-
+from app.service.face_services.InsightFaceService import InsightFaceService
 
 class AttendanceService:
-    def __init__(self,attendacnce_record_repo : AttendanceRepo,employee_repo : EmployeeRepo):
+    def __init__(self,attendacnce_record_repo : AttendanceRepo,employee_repo : EmployeeRepo, face_service : InsightFaceService):
         self.attendacnce_record_repo = attendacnce_record_repo
         self.employee_repo = employee_repo
+        self.face_service = face_service
 
 
-    def punch_in_attendance(self,punchInOutSchema: PunchInOutSchema  ,employee_id :uuid.UUID ,organisation_id : uuid.UUID):
+    def punch_in_attendance(self,punchInOutSchema: PunchInOutSchema  ,employee_id :uuid.UUID ,organisation_id : uuid.UUID,image : bytes):
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id)
         if not employee:
             raise
+
         distance = get_distance(office_latitude=employee.organisation.office_latitude,
                                 office_longitude=employee.organisation.office_longitude,
                                 employee_latitude=punchInOutSchema.employee_latitude,
                                 employee_longitude=punchInOutSchema.employee_longitude)
-
-        if distance > employee.organisation.allowed_rediuse:
-            logger.info(f"Employee {employee.employee_code} is not in the office permisiess")
-            raise
+        
+        if employee.work_mode == WorkMode.WFO :
+            if distance > employee.organisation.allowed_rediuse:
+                logger.info(f"Employee {employee.employee_code} is not in the office permisiess")
+                raise
 
         attendance = self.attendacnce_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
             logger.info("User Already Punched")
             raise
+        face_embending = self.face_service.generate_embedding(image_bytes=image)
 
+        if not employee.employee_face_embedding : 
+            raise   
+        face_check = self.face_service.verify_embedding(new_embedding=face_embending, stored_embedding= employee.employee_face_embedding)
+        if face_check == False : 
+            raise 
+        attendance_record = self.attendacnce_record_repo.punch_in(employee_id,workMode= employee.work_mode,organisation_id=organisation_id)
 
-        return self.attendacnce_record_repo.punch_in(employee_id,workMode= WorkMode.WFH,organisation_id=organisation_id)
+        return attendance_record
 
-    def punch_out_attendance(self,punch_out : PunchInOutSchema , organisation_id : uuid.UUID,employee_id : uuid.UUID):
+    def punch_out_attendance(self,punch_out : PunchInOutSchema , organisation_id : uuid.UUID,employee_id : uuid.UUID,image : bytes):
+        
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
+
         if not employee:
-            logger.error("employee s% of organisation %s is not found",employee_id ,organisation_id)
+            logger.error("employee %s of organisation %s is not found",employee_id ,organisation_id)
             raise
         attendance = self.attendacnce_record_repo.today_attendacnce_employee_is_punch_out(organisation_id= organisation_id,employee_id = punch_out.employee_id)
         if attendance:
@@ -55,10 +67,19 @@ class AttendanceService:
                                 ,office_longitude=employee.organisation.office_longitude
                                 ,employee_longitude=punch_out.employee_longitude
                                 ,employee_latitude=punch_out.employee_latitude)
+        if employee.work_mode == WorkMode.WFO :
+            if distance > employee.organisation.allowed_rediuse:
+                logger.error("Employee %s is not in the office permisiess",employee_id)
+                raise
 
-        if distance > employee.organisation.allowed_rediuse:
-            logger.error("Employee %s is not in the office permisiess",employee_id)
-            raise
+        face_embending = self.face_service.generate_embedding(image_bytes=image)
+
+        if not employee.employee_face_embedding : 
+            raise   
+        face_check = self.face_service.verify_embedding(new_embedding=face_embending, stored_embedding= employee.employee_face_embedding)
+
+        if face_check == False : 
+            raise 
         return self.attendacnce_record_repo.punch_out(employee_id=employee_id,organisation_id=organisation_id)
 
 

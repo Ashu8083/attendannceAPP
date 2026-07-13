@@ -4,11 +4,13 @@ import uuid
 from app.repo.user_repo import UserRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.schemas.employee_schema import *
+from app.service.face_services.InsightFaceService import InsightFaceService
 
 class EmployeeService:
-    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo):
+    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,face_embending : InsightFaceService):
         self.employeeRepo = employee_repo
         self.userRepo = user_repo
+        self.face_embending = face_embending
     
     def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
 
@@ -58,11 +60,23 @@ class EmployeeService:
             raise ValueError ("Employee not found")
         return employee
 
-
-
-        
     def delete_employee_service(self):
         return
     def get_all_employee_service(self,organisation_id : uuid.UUID):
 
         return self.employeeRepo.get_all_employee(organisation_id=organisation_id)
+
+    def register_face_id(self,image_bytes : bytes,employee_code: str,organisation_id : uuid.UUID):
+        # embende the face id then store 
+        embedding = self.face_embending.generate_embedding(image_bytes)
+        if not embedding: 
+            raise
+        employee= self.employeeRepo.get_employee_by_employee_code(employee_code,organisation_id=organisation_id)
+        if not employee: 
+            raise
+
+        self.employeeRepo.storeFaceEmbedding(embedding.tolist())
+        return
+
+    def update_face_id(self):
+        return

@@ -7,6 +7,7 @@ from fastapi import  APIRouter
 from fastapi import  Depends
 from fastapi.responses import JSONResponse
 from starlette import status
+from fastapi import UploadFile, File
 
 from app.auth.permission_check import PermissionChecker
 from app.models.attendance_record_model import Attendance
@@ -22,10 +23,11 @@ attendance_router = APIRouter(prefix="/employee/attendance",tags=["attendance"])
                     ,response_model=AttendanceResponse
                     ,dependencies=[Depends(PermissionChecker("employee.self.punchIn"))])
 
-def punch_in_attendance(request: Request,attendance_service : AttendanceService = Depends(get_attendance_service)  ):
+async def punch_in_attendance(request: Request,image: UploadFile = File(...),attendance_service : AttendanceService = Depends(get_attendance_service)  ):
     attendance : Attendance = attendance_service.get_today_employee_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id)
+    image_byte = await image.read()
     if not attendance:
-        return attendance_service.punch_in_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id)
+        return attendance_service.punch_in_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id,image = image_byte)
 
     return JSONResponse(content="you are already punchin",
                  status_code=status.HTTP_201_CREATED)
@@ -38,8 +40,9 @@ def punch_in_attendance(request: Request,attendance_service : AttendanceService 
                         ,dependencies=[Depends(PermissionChecker("employee.self.punchOut"))])
 def punch_out_attendance(punch_out :PunchInOutSchema
                           ,request: Request
-                         ,attendance_service : AttendanceService = Depends(get_attendance_service) ):
-
+                          ,image: UploadFile = File(...)
+                          ,attendance_service : AttendanceService = Depends(get_attendance_service) ):
+    
     attendacne = (attendance_service
                   .get_today_employee_attendance(punch_out.employee_id
                                                  ,organisation_id = request.state.auth.organisation_id))

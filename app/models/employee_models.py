@@ -5,7 +5,8 @@ from datetime import date
 from app.enums.work_mode import WorkMode
 
 from ..enums.employee_status import  EmployeeStatus
-from sqlalchemy import ForeignKey,String,Date, UniqueConstraint,Index
+
+from sqlalchemy import ForeignKey,String,Date, UniqueConstraint,Index,Float,ARRAY
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnums
@@ -79,6 +80,11 @@ class Employee(Base,TimestampMixin):
         back_populates= "employee"
 
     )
+    employee_face_embedding: Mapped[list[float] | None] = mapped_column(
+                                                        ARRAY(Float),
+                                                        nullable= True
+    )
+
     # manaer_id : Mapped[uuid.UUID] = mapped_column(
     #     ForeignKey("user.id")
     # )
