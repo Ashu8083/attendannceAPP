@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from redis import RedisError
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -20,6 +21,7 @@ from app.models.subcription_model import Subscription
 from app.models.leave_record_model import LeaveRequest
 
 from app.core.logging_config import logger
+from app.redis_config.redis import redis_client
 
 
 @asynccontextmanager
@@ -43,6 +45,15 @@ async def lifespan(app: FastAPI):
         raise
 
     yield
+
+    try :
+        logger.info("Verifying Redis connection...")
+        await redis_client.ping()
+        logger.info("Redis connection verified successfully.")
+    except RedisError as error:
+        logger.exception("Failed to connect to Redis.")
+    yield
+    await redis_client.close()
 
     logger.info("Shutting down HRMS Backend...")
 

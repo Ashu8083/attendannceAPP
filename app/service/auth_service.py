@@ -37,7 +37,7 @@ class AuthService:
 
 
 
-    def verify_otp(self,otp_schema : OTPSchema) : ## letter it will replace by redis
+    def verify_otp(self,otp_schema : OTPSchema) : ## letter it will replace by redis_config
 
         logger.info(f"verify otp for user {otp_schema.user_email}")
 
