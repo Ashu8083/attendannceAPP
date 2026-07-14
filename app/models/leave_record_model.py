@@ -47,7 +47,7 @@ class LeaveRequest(Base,TimestampMixin):
                             "Employee",
                             back_populates="leave_requests"
                             )
-    organization = relationship(
+    organisation = relationship(
         "Organisation",
         back_populates="leave_requests"
     )
