@@ -19,7 +19,7 @@ from app.models.subcription_model import Subscription
 from app.models.leave_record_model import LeaveRequest
 
 from app.core.logging_config import logger
-from redis_config.redis import redis_client
+from app.redis_config.redis import redis_client
 
 
 @asynccontextmanager
