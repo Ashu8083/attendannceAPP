@@ -12,7 +12,14 @@ from app.schemas.attendance_schema import  AttendanceUpdate, PunchInOutSchema
 from app.service import organisation_service
 from app.core.logging_config import logger
 from app.helperFunction.locationcheker import get_distance
-
+from app.exceptions.custom_exception import (
+    AttendanceNotFound,
+    TodayAttendanceAlreadyTaken,
+    NotPunchIn,AlreadyPunchIN,
+    AlreadyPunchOut,
+    EmployeeNotFound,
+    EmployeeAlreadyExists,
+    EmailAlreadyExists)
 
 class AttendanceService:
     def __init__(self,attendacnce_record_repo : AttendanceRepo,employee_repo : EmployeeRepo):
@@ -23,20 +30,24 @@ class AttendanceService:
     def punch_in_attendance(self,punchInOutSchema: PunchInOutSchema  ,employee_id :uuid.UUID ,organisation_id : uuid.UUID):
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id)
         if not employee:
-            raise
-        distance = get_distance(office_latitude=employee.organisation.office_latitude,
+            raise EmployeeNotFound
+        if employee.workMode == WorkMode.WHO:
+                     distance = get_distance(office_latitude=employee.organisation.office_latitude,
                                 office_longitude=employee.organisation.office_longitude,
                                 employee_latitude=punchInOutSchema.employee_latitude,
-                                employee_longitude=punchInOutSchema.employee_longitude)
+                                employee_longitude=punchInOutSchema.employee_longitude )
 
-        if distance > employee.organisation.allowed_rediuse:
-            logger.info(f"Employee {employee.employee_code} is not in the office permisiess")
-            raise
+                     if distance > employee.organisation.allowed_rediuse:
+                        logger.info(f"Employee {employee.employee_code} is not in the office permisies")
+                        raise
 
-        attendance = self.attendacnce_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
+        attendance = self.attendacnce_record_repo.get_employee_today_attendance(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
             logger.info("User Already Punched")
-            raise
+            raise TodayAttendanceAlreadyTaken
+        if attendance.is_punchin == True:
+            # logger.error("Employee %s alraedy",employee_id)
+            raise AlreadyPunchIN
 
 
         return self.attendacnce_record_repo.punch_in(employee_id,workMode= WorkMode.WFH,organisation_id=organisation_id)
@@ -45,32 +56,46 @@ class AttendanceService:
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
         if not employee:
             logger.error("employee s% of organisation %s is not found",employee_id ,organisation_id)
-            raise
-        attendance = self.attendacnce_record_repo.today_attendacnce_employee_is_punch_out(organisation_id= organisation_id,employee_id = punch_out.employee_id)
+            raise EmployeeNotFound
+        attendance = self.attendacnce_record_repo.get_employee_today_attendance(organisation_id= organisation_id,employee_id = punch_out.employee_id)
         if attendance:
-            logger.info("Employee %s  of Organisation %s Already Punched ", employee_id,organisation_id)
-            raise
+            logger.info("Employee %s  of Organisation % Attendance Already Taken", employee_id,organisation_id)
+            raise TodayAttendanceAlreadyTaken
+        if attendance.is_punchout == True:
+            raise AlreadyPunchOut
 
-        distance = get_distance(office_latitude=employee.organisation.office_latitude
-                                ,office_longitude=employee.organisation.office_longitude
-                                ,employee_longitude=punch_out.employee_longitude
-                                ,employee_latitude=punch_out.employee_latitude)
+        if employee.workMode == WorkMode.WFO :
 
-        if distance > employee.organisation.allowed_rediuse:
-            logger.error("Employee %s is not in the office permisiess",employee_id)
-            raise
+                distance = get_distance(office_latitude=employee.organisation.office_latitude
+                                     ,office_longitude=employee.organisation.office_longitude
+                                     ,employee_longitude=punch_out.employee_longitude
+                                     ,employee_latitude=punch_out.employee_latitude)
+
+                if distance > employee.organisation.allowed_rediuse:
+                    logger.error("Employee %s is not in the office permisiess",employee_id)
+                    raise
+
         return self.attendacnce_record_repo.punch_out(employee_id=employee_id,organisation_id=organisation_id)
 
 
     def get_today_attendance(self,organisation_id : uuid.UUID):
-        return self.attendacnce_record_repo.get_today_attendance(organisation_id)
+        attendance = self.attendacnce_record_repo.get_today_attendance(organisation_id)
+        if not attendance:
+            raise AttendanceNotFound
+        return attendance
 
     def get_employee_attendance(self,organisation_id,employee__id : uuid.UUID):
-        return  self.attendacnce_record_repo.get_employee_attendance(employee_id=employee__id , organisation_id=organisation_id)
+        attendance_record = self.attendacnce_record_repo.get_employee_attendance(employee_id=employee__id , organisation_id=organisation_id)
+        if not attendance_record:
+            raise AttendanceNotFound
+        return   attendance_record
 
     # get
     def get_month_attendance(self,month : int,organisation_id : uuid.UUID):
-        return  self.attendacnce_record_repo.get_attendance_by_month(month,organisation_id)
+        attendacne_record =   self.attendacnce_record_repo.get_attendance_by_month(month,organisation_id)
+        if not attendacne_record:
+            raise AttendanceNotFound
+        return attendacne_record
 
     def get_today_employee_attendance(self,organisation_id : uuid.UUID,employee_id : uuid.UUID):
         return self.attendacnce_record_repo.get_employee_today_attendance(employee_id=employee_id , organisation_id=organisation_id)

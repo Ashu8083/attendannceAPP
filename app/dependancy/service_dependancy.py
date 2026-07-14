@@ -70,7 +70,8 @@ def get_auth_service(
     user_repo = UserRepo(db)
     user_device_repo = UserDeviceDetailRepo(db)
     employee_repo = EmployeeRepo(db)
-    return AuthService(auth_repo, user_repo,user_device_repo,employee_repo)
+    role_permission_repo = RolePermissionRepo(db)
+    return AuthService(auth_repo, user_repo,user_device_repo,employee_repo,role_permission_repo)
 
 
 def get_leave_service(

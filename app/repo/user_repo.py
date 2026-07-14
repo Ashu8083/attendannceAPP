@@ -90,8 +90,6 @@ class UserRepo:
         return user
     def get_id_by_email(self,email):
         user_id = self.db.query(User.id).filter(User.email == email).scalar()
-        if not user_id:
-            raise Exception(f"User with email {email} not found")
         return user_id
         return user_id[0]
 

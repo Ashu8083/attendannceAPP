@@ -24,6 +24,7 @@ from app.db.database import SessionLocal
 from app.service.role_services.role_creation_service import RoleService
 from app.service.user_service import UserService
 from app.service.auth_service import AuthService
+from app.exceptions.custom_exception import MissingAuthorizationHeader,MissingToken
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -57,22 +58,19 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         auth_header = request.headers.get("Authorization") # extract the token from header
         if not auth_header:
-            return JSONResponse( content={"message": "Missing Authorization header"},
-                                status_code= status.HTTP_401_UNAUTHORIZED)
-
-
+            raise MissingAuthorizationHeader
         scheme , token = auth_header.split() # split the token from the bearer
         if scheme != "Bearer":
-            return JSONResponse(
-                content={"message": "Invalid Authorization header"},
-                status_code=status.HTTP_401_UNAUTHORIZED)
+            raise  MissingAuthorizationHeader
+        if not token:
+            raise MissingToken
 
         auth_service = AuthService(auth_repo=AuthRepo(db_session),user_repo=UserRepo(db_session),employee_repo=EmployeeRepo(db_session),user_device=(UserDeviceDetailRepo(db_session)))
 
         auth =   auth_service.verify_access_token(token)
 
         if auth is None:
-            return JSONResponse( content={"message": "Invalid Authorization header"},)
+            raise
         request.state.auth = auth
         try:
             response = await call_next(request)

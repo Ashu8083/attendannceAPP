@@ -9,6 +9,8 @@ from app.db.database import engine, Base
 from app.middleware.middleware import AuthMiddleware
 from app.api import all_router
 
+from app.exceptions.exception_handaler import *
+
 # Import models so SQLAlchemy registers them
 from app.models.organisations import Organisation
 from app.models.attendance_record_model import Attendance
@@ -58,6 +60,13 @@ app.add_middleware(
 )
 
 app.add_middleware(AuthMiddleware)
+app.add_exception_handler(AppException, app_exception_handler)
+
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+
+app.add_exception_handler(HTTPException, http_exception_handler)
+
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 @app.get("/")

@@ -99,3 +99,6 @@ class RolePermissionRepo:
         def get_all_permission(self) -> list[Any] | list[type[Permission]]:
             return self.db.query(Permission).filter(Permission.assignable == False,
                                                     Permission.scope ==PermissionScopEnum.ORGANIZATION ).all()
+
+
+        # def get_permission_assign_to_role(self,role_id : uuid.UUID ) -> type[Permission] | None:

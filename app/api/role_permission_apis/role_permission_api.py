@@ -32,7 +32,7 @@ def update_permission(self,data):
     return
 
 @permission_router.get("/get-all-permission",response_model= List[PermissionResponse])
-def get_all_permission( role_service = Depends(get_role_service)) :
+def  get_all_permission( role_service = Depends(get_role_service)) :
 
      return role_service.get_all_permission()
 
