@@ -15,7 +15,7 @@ from app.schemas.attendance_schema import PunchInOutSchema, AttendanceResponse, 
 from app.service import attendance_service
 from app.service.attendance_service import AttendanceService
 
-attendance_router = APIRouter(prefix="/employee/attendance",tags=["attendance"])
+attendance_router = APIRouter(prefix="/employee/attendance",tags=["Employee Attendance"])
 
 
 @attendance_router.post("/punch-in"
@@ -50,7 +50,7 @@ def punch_out_attendance(punch_out :PunchInOutSchema
 
 
 
-@attendance_router.get("/attendance",dependencies=[Depends(PermissionChecker("employee.self.view"))])
+@attendance_router.get("/self-attendance",response_model=AttendanceResponse,dependencies=[Depends(PermissionChecker("employee.self.view"))])
 def attendance_view(request : Request,attendance_date : date, attendance_service : AttendanceService = Depends(get_attendance_service)):
 
     return attendance_service.get_employee_attendance_by_date(attendance_date,organisation_id = request.state.auth.organisation_id, employee_id = request.state.auth.employee_id)

@@ -4,6 +4,12 @@ import uuid
 from app.repo.user_repo import UserRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.schemas.employee_schema import *
+from app.exceptions.custom_exception import (
+    UserNotFound,
+    EmailAlreadyExists,
+
+
+)
 
 class EmployeeService:
     def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo):
@@ -14,8 +20,11 @@ class EmployeeService:
 
         
         user = self.userRepo.get_user_by_email(user_email= employee_schema.email)
-        if not user:
-            user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
+        
+        if  user:
+            raise EmailAlreadyExists
+        user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
+        employee = self.employeeRepo.get
         employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
         if not employee :
             raise ValueError("Employee Creation Error")

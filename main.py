@@ -46,14 +46,14 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    try :
-        logger.info("Verifying Redis connection...")
-        await redis_client.ping()
-        logger.info("Redis connection verified successfully.")
-    except RedisError as error:
-        logger.exception("Failed to connect to Redis.")
-    yield
-    await redis_client.close()
+    # try :
+    #     logger.info("Verifying Redis connection...")
+    #     await redis_client.ping()
+    #     logger.info("Redis connection verified successfully.")
+    # except RedisError as error:
+    #     logger.exception("Failed to connect to Redis.")
+    # yield
+    # await redis_client.close()
 
     logger.info("Shutting down HRMS Backend...")
 

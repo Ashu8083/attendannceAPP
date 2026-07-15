@@ -8,7 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 from app.enums.role_enums import UserRole
-from app.models import UserDeviceDetails
+from app.models.userdevice_details import UserDeviceDetails
 from app.repo.AuthRepo import AuthRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.repo.organisation_repo import OrganisationRepo
@@ -49,29 +49,59 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/auth/otp-verify",
             "/docs",
             "/openapi.json",
+            "/favicon.ico",
             "/redoc",
-            "/email/test"
+            "/email/test",
         ]
 
         if request.url.path in PUBLIC_ROUTES:
             return await call_next(request)
 
-        auth_header = request.headers.get("Authorization") # extract the token from header
-        if not auth_header:
-            raise MissingAuthorizationHeader
-        scheme , token = auth_header.split() # split the token from the bearer
-        if scheme != "Bearer":
-            raise  MissingAuthorizationHeader
-        if not token:
-            raise MissingToken
+    #     auth_header = request.headers.get("Authorization") # extract the token from header
+    #     if not auth_header:
+    #         return JSONResponse(
+    #     status_code=401,
+    #     content={
+    #         "success": False,
+    #         "error": {
+    #             "code": "MISSING_AUTHORIZATION_HEADER",
+    #             "message": "Missing Authorization header",
+    #         },
+    #     },
+    # )
+    #     scheme , token = auth_header.split() # split the token from the bearer
+    #     if scheme != "Bearer":
+    #         return JSONResponse(
+    #     status_code=401,
+    #     content={
+    #         "success": False,
+    #         "error": {
+    #             "code": "MISSING_AUTHORIZATION_HEADER",
+    #             "message": "Missing Authorization header",
+    #         },
+    #     },
 
-        auth_service = AuthService(auth_repo=AuthRepo(db_session),user_repo=UserRepo(db_session),employee_repo=EmployeeRepo(db_session),user_device=(UserDeviceDetailRepo(db_session)))
+    # )
+    #     if not token:
+    #         return JSONResponse(
+    #     status_code=401,
+    #     content={
+    #         "success": False,
+    #         "error": {
+    #             "code": "MISSING_TOKEN",
+    #             "message": "Missing Session",
+    #         },
+    #     },
 
-        auth =   auth_service.verify_access_token(token)
+    # )
 
-        if auth is None:
-            raise
-        request.state.auth = auth
+    #     auth_service = AuthService(auth_repo=AuthRepo(db_session),user_repo=UserRepo(db_session),employee_repo=EmployeeRepo(db_session),user_device=(UserDeviceDetailRepo(db_session)))
+
+    #     auth =   auth_service.verify_access_token(token)
+
+    #     if auth is None:
+    #         raise
+    #     request.state.auth = auth
         try:
             response = await call_next(request)
 

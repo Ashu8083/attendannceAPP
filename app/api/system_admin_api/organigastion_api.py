@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from app.schemas.organisation_schema import CreateOrganisation, OrganisationDetailsResponse,OrgnisationDetails,OrganisationUpdateStatus
+from app.schemas.organisation_schema import( CreateOrganisation,
+                                             OrganisationDetailsResponse,
+                                             OrgnisationDetails,
+                                             OrganisationUpdateStatus,
+                                             UpdateOrganisationSubscription)
+
+
 from app.service.organisation_service import OrganisationService
 from app.dependancy.service_dependancy import get_organaistion_service
 
@@ -42,3 +48,7 @@ def upadate_organisation_details(
             status_code=400
         )
     
+@organisation_router.put("/update_organisation_subcription", response_model= OrganisationDetailsResponse)
+def update_organisation_supcription(update_schema :UpdateOrganisationSubscription ):
+
+    return

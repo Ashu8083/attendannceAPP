@@ -1,10 +1,17 @@
 from enum import Enum
 
-class SubscriptionDuration(str, Enum):
-        Freeimium = "Freeimium"
-        Basic = "Basic"
-        Premimum = "Premimum"
+class SubscriptionDuratioORG(str, Enum):
 
-class SubscriptionType(str,Enum):
+        UNDEFIND = "UNDFIND"
         YEARLY = "YEARLY"
         MONTHLY = "MONTHLY"
+
+class SubscriptionTypeORG(str,Enum):
+        FREEIMUM = "FREEMIUM"
+        BASIC = "BASIC"
+        PREMIMUM = "PREMIMUM"
+
+class SubscriptionStatusORG(str,Enum):
+        ACTIVE = "ACTIVE"
+        EXPIRED = "EXPIRED"
+        SUSPENDED = "SUPRNDED"

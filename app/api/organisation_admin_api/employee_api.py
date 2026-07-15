@@ -12,19 +12,15 @@ from app.dependancy.service_dependancy import get_employee_service
 
 employee_router = APIRouter(prefix="/employees",tags=["employees"])
 
-@employee_router.post("/create-employee/{organisation_id}",dependencies=[Depends(PermissionChecker("employee.create"))])
+@employee_router.post("/create-employee",response_model=EmployeeResponse,dependencies=[Depends(PermissionChecker("employee.create"))])
 def create_employee(
     data : CreateEmployee ,
-    organisation_id: uuid.UUID,
+    request : Request,
     employee_service : EmployeeService = Depends (get_employee_service),
   
     ):
-    employee = employee_service.createEmployee_service(organisation_id=organisation_id, employee_schema=data)
-    if not employee: 
-        return JSONResponse(
-            content = "Something Went Wrong",
-            status_code = 500
-        )
+    employee = employee_service.createEmployee_service(organisation_id=request.state.auth.organisation_id, employee_schema=data)
+    
     return employee
 
 @employee_router.get("/get-employee",response_model=EmployeeDetails,dependencies=[Depends(PermissionChecker("employee.view"))])

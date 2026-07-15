@@ -17,6 +17,7 @@ from app.repo.role_repo import RolePermissionRepo
 from app.repo.user_repo import UserRepo
 from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.schemas.otp_schema import OTPSchema
+from app.schemas.auth_schema import AuthResponse
 from app.core.otpgenerate import generate_otp_for_user
 from app.core.logging_config import  logger
 from app.security import jwt_handler
@@ -46,6 +47,7 @@ class AuthService:
         if not user:
             raise UserNotFound(f"User with email {otp_schema.user_email} not found")
 
+
         otp = self.auth_repo.get_otp(user.id)
         if not otp :
              raise Exception(f"otp not found or invalid")
@@ -57,7 +59,7 @@ class AuthService:
             for rp in user.employee.role.role_permissions:
                 permissions.add(rp.permission.name)
                 print(permissions)
-        if user.role in {UserRole.ADMIN or UserRole.SUPER_ADMIN}:
+        if user.role in {UserRole.ADMIN,UserRole.SUPER_ADMIN}:
             permissions = ()
 
 
@@ -69,13 +71,15 @@ class AuthService:
         if not refresh_token :
             raise Exception(f"access_token not generated for user {user.id} : {otp_schema.user_email}")
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "permission_list" : permissions,
-        }
+        return AuthResponse(
+            access_token = access_token,
+            refresh_token = refresh_token[1],
+            token_type = "Bearer",
+            expires_in =  3600,
+            permission_list = list(permissions)
+        )
+            
+        
 
     async def generate_otp_service(self,user_email,background_task :BackgroundTasks ):
         user_id = self.user_repo.get_id_by_email(user_email)
@@ -87,11 +91,11 @@ class AuthService:
             logger.error(f"otp model for user {user_id} not created")
             raise UserNotFound(f"User with email {user_email} not found")
 
-        # background_task.add_task(
-        #     email_service.send_otp,
-        #     email=user_email,
-        #     otp=otp_model.otp,
-        # )
+        background_task.add_task(
+            email_service.send_otp,
+            email=user_email,
+            otp=otp_model.otp,
+        )
         return otp_model
 
     def verify_access_token(self,token):

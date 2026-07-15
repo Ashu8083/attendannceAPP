@@ -1,7 +1,7 @@
 import re
 import uuid
 
-from app.schemas.organisation_schema import CreateOrganisation,OrgnisationDetails,OrganisationUpdateStatus,OrganisationDetailsUpdate
+from app.schemas.organisation_schema import CreateOrganisation,OrgnisationDetails,OrganisationUpdateStatus,OrganisationDetailsUpdate,UpdateOrganisationSubscription
 from app.repo.organisation_repo import OrganisationRepo
 
 
@@ -9,6 +9,7 @@ from app.repo.organisation_repo import OrganisationRepo
 class OrganisationService():
     def __init__(self,organisationrepo :OrganisationRepo):
         self.organisationRepo = organisationrepo
+        
 
     def generate_organissation_code(self,org_name: str) -> str:
 
@@ -59,7 +60,10 @@ class OrganisationService():
              }
         organisation=  self.organisationRepo.update_organisation(organisation_code,data)
         return organisation
+    
+    def update_organisation_subscription(self,organisation_code : str,
+                                             data :UpdateOrganisationSubscription):
         
-         
+         return
 
 
