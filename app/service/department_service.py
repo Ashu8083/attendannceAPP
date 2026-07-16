@@ -16,7 +16,6 @@ class DepartmentService:
     def create_department(self,departmentSchema : DepartmentCreate , organisation_id : uuid.UUID):
 
         department = self.department_repo.get_department(departmentSchema.name,organisation_id = organisation_id )
-
         if  department:
             raise Exception('Department already exists')
         return  self.department_repo.create_departments(departmentSchema,organisation_id)

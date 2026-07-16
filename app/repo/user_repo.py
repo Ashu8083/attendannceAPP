@@ -11,6 +11,8 @@ from app.repo.organisation_repo import Organisation
 from app.schemas.user import UserCreation,UserUpdate
 from app.repo.organisation_repo import OrganisationRepo
 from app.repo.user_device_repo import UserDeviceDetailRepo
+from app.enums.role_enums import UserRoleUpdated
+from app.exceptions.custom_exception import UserNotFound
 
 
 #for adding organisation admin only 
@@ -33,7 +35,7 @@ class UserRepo:
                 .joinedload(Role.role_permissions)
                 .joinedload(RolePermission.permission)
             )
-            .filter(User.id == user_id)
+            .filter(User.id == user_id, User.status == UserStatus.ACTIVE)
             .first()
         )
     def create_user_as_employee(self,full_name,email,organisation_id):
@@ -41,7 +43,7 @@ class UserRepo:
                  full_name = full_name,
                  email = email,
                  organisation_id = organisation_id,
-                 role = UserRole.EMPLOYEE,
+                 role = UserRoleUpdated.SYSTEM_USER,
                  status = UserStatus.ACTIVE
             )
             try :
@@ -91,7 +93,6 @@ class UserRepo:
     def get_id_by_email(self,email):
         user_id = self.db.query(User.id).filter(User.email == email).scalar()
         return user_id
-        return user_id[0]
 
     def get_user_by_id(self,id : uuid.UUID):
         user = self.db.query(User).filter(User.id == id).first()
@@ -99,6 +100,20 @@ class UserRepo:
 
     def create_user_device(self, ):
         return
+
     def get_user_status_by_id(self,id : uuid.UUID):
         user_status = self.db.query(User.status).filter(User.id == id).first()
         return user_status
+
+    def suspend_user(self,user_id: uuid.UUID):
+        user =self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise UserNotFound(str(user_id))
+        user.status = UserStatus.SUSPENDED
+        try:
+            self.db.commit()
+            self.db.refresh(user)
+        except Exception as e :
+            raise
+        return user
+

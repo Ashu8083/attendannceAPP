@@ -23,7 +23,7 @@ def create_employee(
     
     return employee
 
-@employee_router.get("/get-employee",response_model=EmployeeDetails,dependencies=[Depends(PermissionChecker("employee.view"))])
+@employee_router.get("/get-employee",response_model=EmployeeDetailsResponce,dependencies=[Depends(PermissionChecker("employee.view"))])
 def get_employee(
     employee_code: str,
     request : Request,

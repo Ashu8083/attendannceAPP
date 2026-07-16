@@ -1,5 +1,5 @@
 from typing import Optional
-
+from uuid import UUID
 from pydantic import BaseModel,EmailStr
 
 from datetime import date,datetime
@@ -8,46 +8,29 @@ from app.enums.employee_status import EmployeeStatus
 from app.enums.user_status_enums import UserStatus
 from app.models.employee_models import Employee
 
+class CreateEmployeeDetails(BaseModel):
+    employee_code : str
+    dob :date
+    gender : str
+    marital_status: str
+    address : str
+    city :str
+    state :str
+
 class CreateEmployee(BaseModel) :  
 
     full_name : str
     email : EmailStr
-    password_hash : str
+    # password_hash : str
+
     employee_code : str
+    employee_status : EmployeeStatus
 
-
-    department : str
+    department : UUID
     designation : str
-    role_id : str
-    user_status :UserStatus
+    role : str
 
-    join_date : date
-    emplopyee_status : EmployeeStatus
-
-    dob :date
-    gender : str
-    marital_status: str
-    address : str
-    city :str
-    state :str
-
-class EmployeeDetails(BaseModel):
-    employee_code : str
-    dob :date
-    gender : str
-    marital_status: str
-    address : str
-    city :str
-    state :str
-    
-
-class CreateEmployeeDocuments(BaseModel):
-    employee_code: str
-    photo_url : str
-    aadhaar_document_url : str
-    pancard_documents_url : str
-    resume_url :str
-
+    employee_details : CreateEmployeeDetails
 
 
 class EmployeeUpdate(BaseModel):
@@ -66,14 +49,6 @@ class EmployeeStatusUpdate(BaseModel):
 
     employee_status :EmployeeStatus
 
-class EmployeeDetailsUpdate(BaseModel):
-
-    dob :date
-    gender : Optional[str] = None
-    marital_status: Optional[str] = None
-    address : Optional[str] = None
-    city :Optional[str] = None
-    state :Optional[str] = None
 
 
 class EmployeeResponse(BaseModel):
@@ -98,3 +73,52 @@ class EmployeeResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+class CreateEmployeeDocument(BaseModel):
+    full_name : str
+    email : EmailStr
+    photo_url: str
+    aadhaar_document_url:str
+    pan_document_url: str
+    resume_url:str
+    model_config = {
+        "from_attributes": True
+    }
+
+class CreateEmployeeDocumentResponse(BaseModel):
+    full_name : str
+    email : EmailStr
+    photo_url: str
+    aadhaar_document_url:str
+    pan_document_url: str
+    resume_url:str
+    model_config = {
+        "from_attributes": True
+    }
+
+
+
+
+class EmployeeDetailsUpdate(BaseModel):
+    dob: date
+    gender: Optional[str] = None
+    marital_status: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+
+class EmployeeDetailsResponce(BaseModel):
+    
+    dob: date
+    gender: Optional[str] = None
+    marital_status: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+
+    model_config ={
+        
+        "from_attributes": True
+    }
+

@@ -2,7 +2,27 @@ from enum import Enum
 
 class UserRole(str, Enum):
 
-    ADMIN = "ADMIN"
-    USER = "USER"
-    ORG_ADMIN = "ORG_ADMIN"
-    SUPER_ADMIN = "SUPER_ADMIN"
+
+
+    ORGANISATION_USER = "ORGANISATION_USER"
+    ORGANISATION_ADMIN = "ORGANISATION_ADMIN"
+
+    SYSTEM_ACCOUNT = "SYSTEM_ACCOUNT"
+    SYSTEM_MANAGER = "SYSTEM_MANAGER"
+    SYSTEM_ADMIN = "SYSTEM_ADMIN"
+
+
+class UserRoleUpdated(str, Enum):
+
+    #For organisation level
+    SYSTEM_USER = "SYSTEM_USER"
+
+    #For System level
+    SYSTEM_ACCOUNTANT = "SYSTEM_ACCOUNTANT"
+    SYSTEM_MANAGER = "SYSTEM_MANAGER"
+    SYSTEM_ADMIN = "SYSTEM_ADMIN"
+
+class UserScope(str, Enum):
+
+    ORGANISATION = "ORGANISATION"
+    SYSTEM = "SYSTEM"

@@ -7,13 +7,14 @@ from datetime import date
 from app.enums.user_status_enums import UserStatus
 from app.enums.role_enums import UserRole
 from app.schemas.organisation_schema import OrganisationNameResponse
+from app.enums.role_enums import UserRoleUpdated
 
 
 class UserCreation(BaseModel): # for only org_admin creation 
     full_name : str
     email : EmailStr
     organisation_code : str
-    role : Optional[UserRole] = UserRole.USER
+    role : Optional[UserRoleUpdated] = UserRoleUpdated.SYSTEM_USER
 
 
 class UserUpdate(BaseModel):
@@ -38,6 +39,11 @@ class UserDetailsRespone(BaseModel):
     status : UserStatus
 
     organisation :OrganisationNameResponse
+    model_config =ConfigDict(from_attributes=True)
+
+class OrganisationNameResponse(BaseModel):
+    organisation_name : OrganisationNameResponse
+
     model_config =ConfigDict(from_attributes=True)
 
 

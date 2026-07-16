@@ -14,9 +14,7 @@ class OrganisationService():
     def generate_organissation_code(self,org_name: str) -> str:
 
         prefix = re.sub(r'[^A-Za-z]', '', org_name)[:3].upper()
-
         unique_part = str(uuid.uuid4()).replace("-", "")[:6].upper()
-
         return f"{prefix}-{unique_part}"
 
 

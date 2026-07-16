@@ -148,3 +148,4 @@ class PermissionDenied(AppException):
             error_code= "Forbidden"
 
         )
+
