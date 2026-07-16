@@ -41,7 +41,8 @@ def get_employee_service(
 ):
     employee_repo = EmployeeRepo(db)
     ueser_repo = UserRepo(db)
-    return EmployeeService(employee_repo=employee_repo,user_repo= ueser_repo)
+    organisation_repo = OrganisationRepo(db)
+    return EmployeeService(employee_repo=employee_repo,user_repo= ueser_repo,organisation_repo= organisation_repo)
 
 
 def get_attendance_service(

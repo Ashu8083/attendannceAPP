@@ -1,5 +1,6 @@
 from app.exceptions.exception import AppException
 from app.models import Employee
+from app.core.logging_config import logger
 
 
 class UserNotFound(AppException):
@@ -146,6 +147,44 @@ class PermissionDenied(AppException):
             message= "permission denied",
             status_code= 403,
             error_code= "Forbidden"
+
+        )
+class PermissionAlreadyExist(AppException):
+    def __init__(self):
+        super().__init__(
+            message="Permission Aleardy Exist",
+            status_code= 409,
+            error_code="PERMISSION_NOT_FOUND"
+        )
+
+class RoleAlreadyExist(AppException):
+    def __init__():
+        super().__init__(
+            message="Role Aleardy Exist",
+            status_code= 409,
+            error_code="DUPLICATE_RECORD"
+        )
+
+class RoleNotFound(AppException):
+    def __init__(self,role_name: str):
+        super().__init__(
+            message=f"Role Not Found with {role_name}",
+            status_code= 404,
+            error_code="ROLE_NOT_FOUND"
+        )
+class PermissionNotFound(AppException):
+    def __init__(self,permission_name :str):
+        super().__init__(
+            message=f"Permission Not Found with {permission_name}",
+            status_code= 404,
+            error_code="DULICATE_RECORD"
+        )
+class RolePermissionNotFound():
+    def __init__(self):
+        super().__init__(
+            message=f"Role  Not Found with ",
+            status_code= 404,
+            error_code="ROLE_NOT_FOUND"
 
         )
 

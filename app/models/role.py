@@ -37,7 +37,7 @@ class Role(Base, TimestampMixin):
         back_populates="role",
         cascade="all, delete-orphan",
     )
-    user_permissions = relationship(
+    user = relationship(
         "User",
         back_populates="role",
 

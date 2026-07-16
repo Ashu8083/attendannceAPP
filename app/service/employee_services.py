@@ -3,6 +3,7 @@ import uuid
 
 from app.repo.user_repo import UserRepo
 from app.repo.employee_repo import EmployeeRepo
+from app.repo.organisation_repo import OrganisationRepo
 from app.schemas.employee_schema import *
 from app.exceptions.custom_exception import (
     UserNotFound,
@@ -12,9 +13,11 @@ from app.exceptions.custom_exception import (
 )
 
 class EmployeeService:
-    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo):
+    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,organisation_repo :OrganisationRepo):
         self.employeeRepo = employee_repo
         self.userRepo = user_repo
+        self.organisation_repo = organisation_repo
+
     
     def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
 
@@ -23,6 +26,7 @@ class EmployeeService:
         
         if  user:
             raise EmailAlreadyExists
+
         user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
         employee = self.employeeRepo.get
         employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
@@ -30,6 +34,21 @@ class EmployeeService:
             raise ValueError("Employee Creation Error")
         return employee
 
+    def create_employee_service_by_organisation_code(self,organisation_code : str,employee_schema : CreateEmployee):
+
+        organisation_id = self.organisation_repo.get_organisation_by_code(organisation_code)
+
+        user = self.userRepo.get_user_by_email(user_email= employee_schema.email)
+        
+        if  user:
+            raise EmailAlreadyExists
+
+        user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
+        employee = self.employeeRepo.get
+        employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
+        if not employee :
+            raise ValueError("Employee Creation Error")
+        return employee
 
 
     def update_employee_service(self,organisation_id : uuid.UUID , employee_details_schema : EmployeeDetailsUpdate,employee_code : str):

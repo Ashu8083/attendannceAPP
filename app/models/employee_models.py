@@ -79,7 +79,7 @@ class Employee(Base,TimestampMixin):
         back_populates= "employee"
 
     )
-    # manaer_id : Mapped[uuid.UUID] = mapped_column(
+    # manager_id : Mapped[uuid.UUID] = mapped_column(
     #     ForeignKey("user.id")
     # )
 
@@ -89,11 +89,11 @@ class Employee(Base,TimestampMixin):
         "User",
         back_populates= "employee"
     )
-    role_id:Mapped[uuid.UUID] = mapped_column(
-                                                UUID(as_uuid=True),
-                                                ForeignKey("role.id"),
-                                                nullable=True,
-    )
+    # role_id:Mapped[uuid.UUID] = mapped_column(
+    #                                             UUID(as_uuid=True),
+    #                                             ForeignKey("role.id"),
+    #                                             nullable=True,
+    #)
     work_mode : Mapped[WorkMode] = mapped_column(
                                                 SQLEnums(
                                                 WorkMode,
@@ -103,10 +103,10 @@ class Employee(Base,TimestampMixin):
                                                 default=WorkMode.WFO
                                                 )
 
-    role = relationship(
-                        "Role",
-                        back_populates="employee",
-                        )
+    # role = relationship(
+    #                     "Role",
+    #                     back_populates="employee",
+    #                     )
     leave_requests = relationship(
                                 "LeaveRequest",
                                 back_populates= "employee",

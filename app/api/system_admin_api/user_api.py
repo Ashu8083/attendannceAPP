@@ -16,7 +16,7 @@ def create_user(user_data : UserCreation,
     return service.create_user_service(user_data)
     
 
-@user_router.put("/update-user")
+@user_router.put("/update-user",)
 def update_user():
     return
 
@@ -28,4 +28,6 @@ def get_user(user_email : str,
 @user_router.get("/user-status")
 def get_user_status():
     return
+
+
 
