@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
 
 from app.enums.user_status_enums import UserStatus
+from app.enums.scops import AccountType
 from app.enums.role_enums import UserRoleUpdated
 from app.db.timestamp import TimestampMixin
 from ..schemas import user
@@ -44,19 +45,24 @@ class User(Base,TimestampMixin):
         String(225),
         nullable= True
     )
-    system_role : Mapped[UserRoleUpdated] = mapped_column(
-         SQLEnum(UserRoleUpdated),
-         default= UserRoleUpdated.SYSTEM_USER
+    account_type: Mapped[AccountType] = mapped_column(
+        SQLEnum(AccountType),
+        nullable= False
     )
+
+    # system_role : Mapped[UserRoleUpdated] = mapped_column(
+    #      SQLEnum(UserRoleUpdated),
+    #      default= UserRoleUpdated.SYSTEM_USER
+    # )
     status : Mapped [UserStatus] = mapped_column(
         SQLEnum(UserStatus),
         default= UserStatus.ACTIVE,
         nullable= True
     )
-    role_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("role.id"),
-        nullable= True
-    )
+    # role_id: Mapped[uuid.UUID] = mapped_column(
+    #     ForeignKey("role.id"),
+    #     nullable= True
+    # )
     employee = relationship(
         "Employee",
         back_populates="user",
@@ -74,9 +80,9 @@ class User(Base,TimestampMixin):
         "TempOtpStorage",
         back_populates="user"
     )
-    role = relationship(
-        "Role",
-        back_populates="user"
-    )
-    
+    # role = relationship(
+    #     "Role",
+    #     back_populates="user"
+    # )
+
 

@@ -1,30 +1,12 @@
 import time
 import uuid
 
-import jwt
-from fastapi import Request, Depends
-from starlette import status
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
 
-from app.enums.role_enums import UserRole
-from app.models.userdevice_details import UserDeviceDetails
-from app.repo.AuthRepo import AuthRepo
-from app.repo.employee_repo import EmployeeRepo
-from app.repo.organisation_repo import OrganisationRepo
-from app.repo.role_repo import RolePermissionRepo
-from app.repo.user_device_repo import UserDeviceDetailRepo
-from app.repo.user_repo import UserRepo
-from app.security.jwt_handler import decode_token
 from app.core.logging_config import logger
 from app.core.request_context import request_id_ctx
-from app.dependancy.service_dependancy import  get_user_service
-from app.service import user_service
 from app.db.database import SessionLocal
-from app.service.role_services.role_creation_service import RoleService
-from app.service.user_service import UserService
-from app.service.auth_service import AuthService
-from app.exceptions.custom_exception import MissingAuthorizationHeader,MissingToken
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

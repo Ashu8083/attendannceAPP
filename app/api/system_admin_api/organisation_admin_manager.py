@@ -13,6 +13,8 @@ from app.auth.permission_check import PermissionChecker
 employee_route = APIRouter(prefix="organisation_admin",tags=["Organisation Admin"])
 
 @employee_route.post("/create-organisation-admin/{organisation_code}", response_model=EmployeeResponse , dependencies=[Depends(PermissionChecker(""))])
-def create_organiastion_admin(employee: CreateEmployee, organisation_code :str ,employee_service : EmployeeService = Depends(get_employee_service)):
+def create_organisation_admin(employee: CreateEmployee, organisation_code :str ,employee_service : EmployeeService = Depends(get_employee_service)):
 
-    return employee_service.create_employee_service(organisation_id= , employee_schema=employe )
+    return employee_service.create_employee_service_by_organisation_code(organisation_code = organisation_code , employee_schema=employee)
+
+

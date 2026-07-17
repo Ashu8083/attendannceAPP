@@ -1,28 +1,18 @@
-import logging
-from urllib import response
-
 from fastapi import BackgroundTasks
-from sqlalchemy import true
-from datetime import date, time, timedelta
-
 
 from app.auth.auth_cntx import AuthContext
 from app.enums.employee_status import EmployeeStatus
 from app.enums.role_enums import UserRole
-from app.models import Employee, Role
-from app.repo import user_device_repo, employee_repo, role_repo
 from app.repo.AuthRepo import AuthRepo
 from app.repo.employee_repo import EmployeeRepo
-from app.repo.role_repo import RolePermissionRepo
+from repo.RolePermissionRepo.role_repo import RolePermissionRepo
 from app.repo.user_repo import UserRepo
 from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.schemas.otp_schema import OTPSchema
 from app.schemas.auth_schema import AuthResponse
 from app.core.otpgenerate import generate_otp_for_user
-from app.core.logging_config import  logger
-from app.security import jwt_handler
 from app.security.jwt_handler import create_access_token, create_refresh_token
-from app.security.jwt_handler import verify_access_token, decode_token
+from app.security.jwt_handler import decode_token
 from app.email.service import email_service
 from app.exceptions.custom_exception import *
 

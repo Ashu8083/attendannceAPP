@@ -17,3 +17,10 @@ from .rolePermision import RolePermission
 from .employee_details_model import EmployeeDetails
 from .employee_documents_model import EmployeeDocuments
 from .temp_otp_storage import  TempOtpStorage
+
+from .employee_role import EmployeeRoles
+from .user_role import *
+from .system_roles import *
+from .organisation_role import *
+from .system_role_permission import *
+from .organisation_role_permission import *

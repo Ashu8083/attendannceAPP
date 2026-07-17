@@ -39,6 +39,5 @@ class Role(Base, TimestampMixin):
     )
     user = relationship(
         "User",
-        back_populates="role",
 
     )

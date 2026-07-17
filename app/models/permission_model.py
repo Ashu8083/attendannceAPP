@@ -41,7 +41,12 @@ class Permission(Base):
         default=False,
     )
 
-    role_permissions = relationship(
-        "RolePermission",
+    organisation_role_permissions = relationship(
+        "OrganisationRolesPermissions",
         back_populates="permission",
+    )
+    system_role_permissions = relationship(
+        "SystemRolePermissions",
+        back_populates="permission",
+
     )

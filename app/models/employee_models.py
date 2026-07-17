@@ -97,7 +97,7 @@ class Employee(Base,TimestampMixin):
     work_mode : Mapped[WorkMode] = mapped_column(
                                                 SQLEnums(
                                                 WorkMode,
-                                                native_enum=False,
+                                                native_enum=True,
                                                 validate_strings=True,
                                                 ),
                                                 default=WorkMode.WFO

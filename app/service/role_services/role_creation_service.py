@@ -1,9 +1,8 @@
 from typing import List, Any
 
-from app.models import RolePermission, role, Permission
 from app.models.role import Role
 from app.schemas.role_schema import  *
-from app.repo.role_repo import  RolePermissionRepo
+from repo.RolePermissionRepo.role_repo import  RolePermissionRepo
 from app.exceptions.custom_exception import(
                                             RoleAlreadyExist,
                                             RoleNotFound,
