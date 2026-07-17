@@ -14,7 +14,8 @@ from app.service.attendance_service import AttendanceService
 from app.service.department_service import DepartmentService
 from app.service.leave_service import LeaveService
 from app.service.organisation_service import OrganisationService
-from app.service.role_services.role_creation_service import RoleService
+from app.service.role_services.system_role_permission_service import SystemRoleRepo, SystemRoleService
+#from app.service.role_services.organisation_role_permission_service import
 from app.service.user_service import UserService
 from app.service.employee_services import EmployeeService
 from app.service.auth_service import AuthService
@@ -78,3 +79,14 @@ def get_leave_service(
     leave_repo = LeaveRepo(db)
     employee_repo = EmployeeRepo(db)
     return LeaveService(leave_repo = leave_repo, employee_repo= employee_repo)
+
+def get_role_system_role_service(
+        db: Session = Depends(get_db),
+):
+    system_role_repo = SystemRoleRepo(db)
+    return SystemRoleService(system_role_repo)
+def get_organisation_role_service(
+        db: Session = Depends(get_db),
+):
+    organisation_repo = OrganisationRepo(db)
+    return OrganisationService(organisation_repo)

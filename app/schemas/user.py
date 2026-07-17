@@ -17,6 +17,7 @@ class UserCreation(BaseModel): # for only org_admin creation
     role : Optional[UserRoleUpdated] = UserRoleUpdated.SYSTEM_USER
 
 
+
 class UserUpdate(BaseModel):
     full_name :Optional[str] = None
     email : Optional[EmailStr] = None
@@ -41,10 +42,7 @@ class UserDetailsRespone(BaseModel):
     organisation :OrganisationNameResponse
     model_config =ConfigDict(from_attributes=True)
 
-class OrganisationNameResponse(BaseModel):
-    organisation_name : OrganisationNameResponse
 
-    model_config =ConfigDict(from_attributes=True)
 
 
 

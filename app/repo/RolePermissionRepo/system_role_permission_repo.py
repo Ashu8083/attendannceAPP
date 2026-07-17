@@ -7,7 +7,7 @@ from app.core.logging_config import logger
 from app.models.permission_model import Permission
 from app.models.system_roles import SystemRoles
 from app.models.system_role_permission import SystemRolePermissions
-from app.schemas.role_schema import CreateRole
+from app.schemas.role_schema import CreateRoleSchema
 from app.enums.permission_scop import PermissionScopEnumUpdate
 
 
@@ -19,7 +19,7 @@ class SystemRoleRepo:
     # Role
     # -------------------------
 
-    def create_role(self, data: CreateRole) -> SystemRoles:
+    def create_role(self, data: CreateRoleSchema) -> SystemRoles:
         role = SystemRoles(
             role_name=data.name,
             description=data.description,

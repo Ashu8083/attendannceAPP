@@ -12,14 +12,14 @@ from app.models.organisation_role_permission import OrganisationLevelRolePermiss
 from app.models.permission_model import Permission
 
 from app.core.logging_config import logger
-from models import OrganisationRoles
+from app.models import OrganisationRoles
 
 
 class OrganisationLevelRolePermissionsRepo:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_role(self, data: CreateRole, organisation_id: uuid.UUID) -> OrganisationRoles | None:
+    def create_role(self, data: CreateRoleSchema, organisation_id: uuid.UUID) -> OrganisationRoles | None:
         role = OrganisationRoles(organization_id=organisation_id,
                     name=data.name,
                     description=data.description
@@ -37,7 +37,7 @@ class OrganisationLevelRolePermissionsRepo:
 
 
 
-    def create_role_permission(self, organisation_role_id: int, permission_id: int):  # ORG_Admin can create role permission
+    def create_role_permission(self, organisation_role_id: uuid.UUID, permission_id: int):  # ORG_Admin can create role permission
 
         permission = (
             self.db.query(OrganisationLevelRolePermissions).filter(
@@ -52,8 +52,11 @@ class OrganisationLevelRolePermissionsRepo:
 
         logger.info("user create role_permission %s", permission, )
 
-        self.db.add(permission)
-        self.db.commit()
+        try:
+            self.db.add(permission)
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
         self.db.refresh(permission)
         return permission
 
@@ -86,15 +89,15 @@ class OrganisationLevelRolePermissionsRepo:
             return []
         return role
 
-    def get_permission(self, permission_name: str) -> type[Permission] | None:
-        permission = (
-            self.db.query(Permission)
-            .filter(Permission.name == permission_name)
-            .first()
-        )
-        return permission
+    # def get_permission(self, permission_name: str) -> type[Permission] | None:
+    #     permission = (
+    #         self.db.query(Permission)
+    #         .filter(Permission.name == permission_name)
+    #         .first()
+    #     )
+    #     return permission
 
-    def get_all_permission(self) -> list[Any] | list[type[Permission]]:
+    def get_all_permission_organisation(self) -> list[Any] | list[type[Permission]]:
         return self.db.query(Permission).filter(Permission.assignable == True,
                                                 Permission.scope == PermissionScopEnumUpdate.ORGANIZATION).all()
 

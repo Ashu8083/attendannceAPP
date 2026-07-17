@@ -40,3 +40,14 @@ class PermissionRepo:
             logger.exception("permission creation rollback due to %s", e)
             raise e
         return permission
+
+    def get_permission(self, permission_id: int) -> Permission:
+        permission = self.db.query(Permission).filter(Permission.name == permission_id).first()
+        if not permission:
+            raise ValueError("permission does not exist")
+        return permission
+
+    def get_all_permissions(self) -> List[Permission]:
+        permissions = self.db.query(Permission).all()
+        return permissions
+

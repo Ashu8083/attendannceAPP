@@ -9,9 +9,9 @@ from sqlalchemy import Enum as SQLEnum
 
 from app.enums.user_status_enums import UserStatus
 from app.enums.scops import AccountType
-from app.enums.role_enums import UserRoleUpdated
+
 from app.db.timestamp import TimestampMixin
-from ..schemas import user
+
 
 
 class User(Base,TimestampMixin):

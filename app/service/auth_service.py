@@ -5,7 +5,8 @@ from app.enums.employee_status import EmployeeStatus
 from app.enums.role_enums import UserRole
 from app.repo.AuthRepo import AuthRepo
 from app.repo.employee_repo import EmployeeRepo
-from repo.RolePermissionRepo.role_repo import RolePermissionRepo
+from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
+from app.repo.RolePermissionRepo.system_role_permission_repo import  SystemRoleRepo
 from app.repo.user_repo import UserRepo
 from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.schemas.otp_schema import OTPSchema
@@ -19,7 +20,7 @@ from app.exceptions.custom_exception import *
 
 
 class AuthService:
-    def __init__(self,  auth_repo : AuthRepo , user_repo : UserRepo , user_device : UserDeviceDetailRepo , employee_repo : EmployeeRepo ,role_repo :RolePermissionRepo):
+    def __init__(self,  auth_repo : AuthRepo , user_repo : UserRepo , user_device : UserDeviceDetailRepo , employee_repo : EmployeeRepo ,system_role_repo :SystemRoleRepo):
         self.auth_repo = auth_repo
         self.user_repo = user_repo
         self.user_device_repo = user_device

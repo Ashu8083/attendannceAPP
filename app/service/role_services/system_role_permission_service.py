@@ -9,7 +9,7 @@ from app.exceptions.custom_exception import (
 from app.models.system_roles import SystemRoles
 from app.repo.RolePermissionRepo.system_role_permission_repo import SystemRoleRepo
 from app.schemas.role_schema import (
-    CreateRole,
+    CreateRoleSchema,
     ListOFPermissions,
 )
 
@@ -22,7 +22,7 @@ class SystemRoleService:
     # Role
     # -------------------------
 
-    def create_role(self, data: CreateRole) -> SystemRoles:
+    def create_role(self, data: CreateRoleSchema) -> SystemRoles:
         role = self.repo.get_role(data.name)
 
         if role:
