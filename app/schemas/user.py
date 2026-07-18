@@ -8,13 +8,14 @@ from app.enums.user_status_enums import UserStatus
 from app.enums.role_enums import UserRole
 from app.schemas.organisation_schema import OrganisationNameResponse
 from app.enums.role_enums import UserRoleUpdated
+from app.enums.scops import AccountType
 
 
 class UserCreation(BaseModel): # for only org_admin creation 
     full_name : str
     email : EmailStr
     organisation_code : str
-    role : Optional[UserRoleUpdated] = UserRoleUpdated.SYSTEM_USER
+    account_type : Optional[AccountType] = AccountType.ORGANISATION
 
 
 
@@ -23,7 +24,7 @@ class UserUpdate(BaseModel):
     email : Optional[EmailStr] = None
     password_hash : Optional[str] = None
     organisation_code : Optional[str] = None
-    role : Optional[str] = None
+    account_type: Optional[AccountType] = AccountType.SYSTEM
     join_date :Optional[date] = None
 
 class UserStatusUpdate(BaseModel):
@@ -36,7 +37,7 @@ class UserUpdatePassword(BaseModel):
 class UserDetailsRespone(BaseModel):
     full_name :str
     email : EmailStr
-    role : UserRole
+    account_type: Optional[AccountType]
     status : UserStatus
 
     organisation :OrganisationNameResponse

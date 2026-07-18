@@ -28,7 +28,7 @@ role_management_router = APIRouter(
 
 @role_management_router.post(
     "/roles",
-    dependencies=[Depends(PermissionChecker("role.manager"))],
+    dependencies=[Depends(PermissionChecker("role.manager","ORGANISATION"))],
 )
 def create_role(
     role_schema: CreateRoleSchema,
@@ -46,7 +46,7 @@ def create_role(
 @role_management_router.get(
     "/roles",
     response_model=List[OrganisationRoles],
-    dependencies=[Depends(PermissionChecker("role.view"))],
+    dependencies=[Depends(PermissionChecker("role.view","ORGANISATION"))],
 )
 def get_all_roles(
     request: Request,
@@ -62,7 +62,7 @@ def get_all_roles(
 @role_management_router.get(
     "/roles/{role_name}",
     response_model=OrganisationRoles,
-    dependencies=[Depends(PermissionChecker("role.view"))],
+    dependencies=[Depends(PermissionChecker("role.view","ORGANISATION"))],
 )
 def get_role(
     role_name: str,
@@ -83,7 +83,7 @@ def get_role(
 
 @role_management_router.post(
     "/roles/{role_name}/permissions",
-    dependencies=[Depends(PermissionChecker("role.manager"))],
+    dependencies=[Depends(PermissionChecker("role.manager","ORGANISATION"))],
 )
 def assign_permissions(
     role_name: str,
@@ -103,7 +103,7 @@ def assign_permissions(
 @role_management_router.get(
     "/roles/{role_name}/permissions",
     response_model=List[str],
-    dependencies=[Depends(PermissionChecker("role.view"))],
+    dependencies=[Depends(PermissionChecker("role.view","ORGANISATION"))],
 )
 def get_role_permissions(
     role_name: str,
@@ -125,7 +125,7 @@ def get_role_permissions(
 @role_management_router.get(
     "/permissions",
     response_model=List[PermissionResponse],
-    dependencies=[Depends(PermissionChecker("role.view"))],
+    dependencies=[Depends(PermissionChecker("role.view","ORGANISATION"))],
 )
 def get_organisation_permissions(
     service: OrganisationRolePermissionService = Depends(

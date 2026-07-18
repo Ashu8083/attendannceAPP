@@ -33,11 +33,14 @@ class OrganisationDetailsUpdate(BaseModel):
 
 
 class OrganisationDetailsResponse(BaseModel):
-
     name: str
     organisation_code: str
     organisation_email: str
+    address: str
+    phone_number: str
+    number_of_employee: int
     status: OrganizationStatus
+
     model_config = ConfigDict(from_attributes=True)
 
 class OrganisationNameResponse(BaseModel):

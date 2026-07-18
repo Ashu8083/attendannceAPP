@@ -130,7 +130,10 @@ class Employee(Base,TimestampMixin):
                                         "Attendance",
                                          back_populates="employee"
 )
-     
+    employee_roles = relationship(
+        "EmployeeRoles",
+        back_populates="employee"
+     )
      
 
 

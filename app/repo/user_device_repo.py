@@ -1,5 +1,8 @@
+from uuid import UUID
 import uuid
 from datetime import datetime,date
+
+from sqlalchemy import select
 
 from app.models.token import Token
 from app.models.userdevice_details import UserDeviceDetails
@@ -80,4 +83,56 @@ class UserDeviceDetailRepo:
 
         return refresh_token
 
+    def get_by_fcm_token(
+        self,
+        fcm_token: str
+    ) -> UserDeviceDetails | None:
+        stmt = select(UserDeviceDetails).where(
+            UserDeviceDetails.firebase_fcm_token == fcm_token
+        )
+        return self.db.scalar(stmt)
+    
+    def get_active_device(
+        self,
+        user_id: UUID,
+        device_unique_id: str
+    ) -> UserDeviceDetails | None:
+        stmt = select(UserDeviceDetails).where(
+            UserDeviceDetails.user_id == user_id,
+            UserDeviceDetails.device_unique_id == device_unique_id,
+            UserDeviceDetails.is_login.is_(True)
+        )
+        return self.db.scalar(stmt)
+    
+
+    def delete(self, device: UserDeviceDetails) -> None:
+        self.db.delete(device)
+
+    
+    def logout_device(
+        self,
+        device_id: UUID,
+        logout_time
+    ) -> None:
+        stmt = (
+            update(UserDeviceDetails)
+            .where(UserDeviceDetails.id == device_id)
+            .values(
+                is_login=False,
+                logout_time=logout_time
+            )
+        )
+        self.db.execute(stmt)
+
+    
+    def logout_all_devices(self, user_id: UUID, logout_time) -> None:
+        stmt = (
+            update(UserDeviceDetails)
+            .where(UserDeviceDetails.user_id == user_id)
+            .values(
+                is_login=False,
+                logout_time=logout_time
+            )
+        )
+        self.db.execute(stmt)
 

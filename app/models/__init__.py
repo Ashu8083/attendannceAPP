@@ -10,9 +10,9 @@ from .user_models import User
 from .attendance_log_model import AttendanceLog
 from .userdevice_details import UserDeviceDetails
 
-from .role import Role
+# from .role import Role
 from .permission_model import Permission
-from .rolePermision import RolePermission
+# from .rolePermision import RolePermission
 
 from .employee_details_model import EmployeeDetails
 from .employee_documents_model import EmployeeDocuments

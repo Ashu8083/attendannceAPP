@@ -18,6 +18,11 @@ class EmployeeRoles(Base, TimestampMixin):
         UUID(as_uuid=True),
         ForeignKey("employees.id", ondelete="CASCADE"),
     )
+    role_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("roles.id", ondelete="CASCADE"),
+        nullable=True
+    )
     organisation_roles_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("organisation_roles.id")

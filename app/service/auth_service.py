@@ -16,16 +16,18 @@ from app.security.jwt_handler import create_access_token, create_refresh_token
 from app.security.jwt_handler import decode_token
 from app.email.service import email_service
 from app.exceptions.custom_exception import *
+from app.enums.scops import AccountType
 
 
 
 class AuthService:
-    def __init__(self,  auth_repo : AuthRepo , user_repo : UserRepo , user_device : UserDeviceDetailRepo , employee_repo : EmployeeRepo ,system_role_repo :SystemRoleRepo):
+    def __init__(self,  auth_repo : AuthRepo , user_repo : UserRepo , user_device : UserDeviceDetailRepo , employee_repo : EmployeeRepo ,system_role_repo :SystemRoleRepo , org_role_repo : OrganisationLevelRolePermissionsRepo):
         self.auth_repo = auth_repo
         self.user_repo = user_repo
         self.user_device_repo = user_device
         self.employee_repo = employee_repo
-        self.role_repo = role_repo
+        self.org_role_repo = org_role_repo
+        self.sys_role_repo =  system_role_repo
 
 
 
@@ -89,41 +91,51 @@ class AuthService:
         )
         return otp_model
 
-    def verify_access_token(self,token):
+    def verify_access_token(self,token) -> AuthContext:
 
         payload = decode_token(token)
         user = self.user_repo.get_user(payload["user_id"])
 
         if not user:
             raise UserNotFound(f"User with email {payload['email']} not found")
-        if user.role == UserRole.USER:
-            employee = user.employee
+        user_role = ""
+        if user.account_type == AccountType.ORGANISATION:
+
+            employee :Employee = user.employee
 
             if  employee.emplopyee_status != EmployeeStatus.ACTIVE:
                 raise EmployeeIsInactive
-            if employee.role is None:
+            if employee.employee_roles is None:
                 raise Exception("Employee role not assigned")
 
             permissions = set()
-            for rp in employee.role.role_permissions :
+            for rp in employee.employee_roles.organisation_permissions :
                 permissions.add(rp.permission.name)
 
             auth  = AuthContext(
                                 user_id=user.id,
                                 organisation_id=user.organisation_id,
-                                system_role=user.role.value,
+                                system_role=user.account_type.value,
                                 employee_id=user.employee.id if user.employee else None,
                                 permissions=permissions,
                                 )
-        if user.role in  {UserRole.ADMIN or UserRole.SUPER_ADMIN}:
+            user_role = employee.employee_roles.role.name
+        if user.account_type == AccountType.SYSTEM:
+
+            if user.system_role is None:
+                raise Exception("System role not assigned")
+            permissions = set()
+            for rp in user.system_roles.system_role_permissions :
+                permissions.add(rp.permission.name)
             auth = AuthContext(
                 user_id = user.id,
-                organiasation_id = user.organisation_id,
-                system_role = user.role.value,
+                organiasation_id = None,
+                system_role = user.account_type.value,
                 employee_id =  None,
-                permissions = set(),
+                permissions = permissions,
             )
-        logger.info(f"auth model for user {user.id} has permissions of {permissions}")
+            user_role = user.system_roles.system_role.name
+        logger.info(f"auth model for user {user.id} has permissions of {permissions} for user role {user_role}")
 
         return auth
 

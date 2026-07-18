@@ -85,4 +85,9 @@ class User(Base,TimestampMixin):
     #     back_populates="user"
     # )
 
+    user_role = relationship(
+        "UserRole",
+        back_populates="user"
+    )
+
 

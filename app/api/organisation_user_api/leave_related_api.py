@@ -12,12 +12,12 @@ leave_request_router = APIRouter(
     prefix="/leave-request",
     tags=["leave-request"],
 )
-@leave_request_router.post("/request-leave",response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("leave.request.view"))])
+@leave_request_router.post("/request-leave",response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("leave.request.view","ORGANISATION"))])
 def create_leave_request(leave_request_schema : LeaveCreate,request : Request, leave_service: LeaveService = Depends(get_leave_service))  :
     leave_request_schema = leave_request_schema.employee_id == request.state.auth.employee_id
     return  leave_service.apply_leave(leave_request_schema)
 
-@leave_request_router.get("/leave-list",response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("leave.self.request"))])
+@leave_request_router.get("/leave-list",response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("leave.self.request","ORGANISATION"))])
 def get_employee_leave_list(request: Request, leave_service: LeaveService = Depends(get_leave_service)) :
     return leave_service.get_employee_leave(request.state.auth.employee_id,organisation_id=request.state.auth.organisation_id)
 

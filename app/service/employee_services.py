@@ -8,15 +8,17 @@ from app.schemas.employee_schema import *
 from app.exceptions.custom_exception import (
     UserNotFound,
     EmailAlreadyExists,
-
-
 )
+from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
+from app.models import OrganisationRoles
+
 
 class EmployeeService:
-    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,organisation_repo :OrganisationRepo):
+    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,organisation_repo :OrganisationRepo,organisation_role_repo : OrganisationLevelRolePermissionsRepo) :
         self.employeeRepo = employee_repo
         self.userRepo = user_repo
         self.organisation_repo = organisation_repo
+        self.organisation_role_repo = organisation_role_repo
 
     
     def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
@@ -94,3 +96,12 @@ class EmployeeService:
     def get_all_employee_service(self,organisation_id : uuid.UUID):
 
         return self.employeeRepo.get_all_employee(organisation_id=organisation_id)
+
+    def assign_admin(self, organisation_code : str,employee_code : str):
+        organisation_id = self.organisation_repo.get_organisation_by_code(organisation_code)
+        employee = self.employeeRepo.get_employee_by_employee_code(organisation_id= organisation_id, employee_code= employee_code)
+        if not employee :
+            raise ValueError("Employee not exist")
+        
+        organisation_role_id = self.organisation_role_repo.get_role(organisation_id= organisation_id, role_name= "ADMIN")
+        new_admin = self.employeeRepo.assign_admin(employee_code,organisation_id,organisation_role_id=organisation_role_id)

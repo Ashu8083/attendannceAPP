@@ -9,7 +9,7 @@ from app.service.user_service import UserService
 
 user_router = APIRouter(prefix="/user",tags=["user"])
 
-@user_router.post("/create-user")
+@user_router.post("/create-user",response_model=UserDetailsRespone)
 def create_user(user_data : UserCreation,
                 service : UserService = Depends(get_user_service) ):
     
@@ -23,7 +23,7 @@ def update_user():
 @user_router.get("/get-user/{user_email}",response_model=UserDetailsRespone)
 def get_user(user_email : str,
                 service : UserService = Depends(get_user_service) ):
-    return service.get_user(user_email= user_email)
+    return service.get_user(user_email)
 
 @user_router.get("/user-status")
 def get_user_status():

@@ -25,6 +25,6 @@ class UserRole(Base, TimestampMixin):
 
 
     user = relationship("User",
-                        back_populates="user_role",)
-    system_roles = relationship("SystemRoles",
-                                back_populates="user_role",)
+                        back_populates="user_role",
+                        )
+

@@ -21,7 +21,7 @@ def create(
     organisation = service.create_oranisation(data)
     return organisation
 
-@organisation_router.get("/get_organisation/{organisation_code}")
+@organisation_router.get("/get_organisation/{organisation_code}",response_model=OrganisationDetailsResponse)
 def get_organisation_details(
     organisation_code: str,
     service: OrganisationService = Depends(get_organaistion_service)

@@ -27,7 +27,7 @@ system_role_router = APIRouter(
 @system_role_router.post(
     "",
     response_model=SystemRoles,
-    dependencies=[Depends(PermissionChecker("system_role.create"))],
+    dependencies=[Depends(PermissionChecker("system_role.create","SYSTEM"))],
 )
 def create_role(data: CreateRoleSchema,service: SystemRoleService = Depends(get_role_system_role_service)):
     return service.create_role(data)
@@ -35,7 +35,7 @@ def create_role(data: CreateRoleSchema,service: SystemRoleService = Depends(get_
 @system_role_router.get(
     "",
     response_model=List[SystemRoles],
-    dependencies=[Depends(PermissionChecker("system_role.view"))],
+    dependencies=[Depends(PermissionChecker("system_role.view","SYSTEM"))],
 )
 def get_all_roles(
     service: SystemRoleService = Depends(get_role_system_role_service),
@@ -46,7 +46,7 @@ def get_all_roles(
 @system_role_router.get(
     "/{role_name}",
     response_model=SystemRoles,
-    dependencies=[Depends(PermissionChecker("system_role.view"))],
+    dependencies=[Depends(PermissionChecker("system_role.view","SYSTEM"))],
 )
 def get_role(
     role_name: str,
@@ -57,7 +57,7 @@ def get_role(
 
 @system_role_router.delete(
     "/{role_name}",
-    dependencies=[Depends(PermissionChecker("system_role.delete"))],
+    dependencies=[Depends(PermissionChecker("system_role.delete","SYSTEM"))],
 )
 def delete_role(
     role_name: str,
@@ -76,7 +76,7 @@ def delete_role(
 
 @system_role_router.post(
     "/{role_name}/permissions",
-    dependencies=[Depends(PermissionChecker("system_role.permission.assign"))],
+    dependencies=[Depends(PermissionChecker("system_role.permission.assign","SYSTEM"))],
 )
 def assign_permissions(
     role_name: str,
@@ -92,7 +92,7 @@ def assign_permissions(
 @system_role_router.get(
     "/{role_name}/permissions",
     response_model=List[str],
-    dependencies=[Depends(PermissionChecker("system_role.permission.view"))],
+    dependencies=[Depends(PermissionChecker("system_role.permission.view","SYSTEM"))],
 )
 def get_role_permissions(
     role_name: str,
@@ -108,7 +108,7 @@ def get_role_permissions(
 @system_role_router.get(
     "/permissions/all",
     response_model=List[PermissionResponse],
-    dependencies=[Depends(PermissionChecker("permission.view"))],
+    dependencies=[Depends(PermissionChecker("permission.view","SYSTEM"))],
 )
 def get_all_system_permissions(
     service: SystemRoleService = Depends(get_role_system_role_service),

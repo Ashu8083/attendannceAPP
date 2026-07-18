@@ -20,7 +20,7 @@ attendance_router = APIRouter(prefix="/employee/attendance",tags=["Employee Atte
 
 @attendance_router.post("/punch-in"
                     ,response_model=AttendanceResponse
-                    ,dependencies=[Depends(PermissionChecker("employee.self.punchIn"))])
+                    ,dependencies=[Depends(PermissionChecker("employee.self.punchIn","ORGANISATION"))])
 
 def punch_in_attendance(request: Request,attendance_service : AttendanceService = Depends(get_attendance_service)  ):
     attendance : Attendance = attendance_service.get_today_employee_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id)
@@ -35,7 +35,7 @@ def punch_in_attendance(request: Request,attendance_service : AttendanceService 
 
 @attendance_router.post("/punch-out"
                         ,response_model=AttendanceResponse
-                        ,dependencies=[Depends(PermissionChecker("employee.self.punchOut"))])
+                        ,dependencies=[Depends(PermissionChecker("employee.self.punchOut","ORGANISATION"))])
 def punch_out_attendance(punch_out :PunchInOutSchema
                           ,request: Request
                          ,attendance_service : AttendanceService = Depends(get_attendance_service) ):
@@ -50,7 +50,7 @@ def punch_out_attendance(punch_out :PunchInOutSchema
 
 
 
-@attendance_router.get("/self-attendance",response_model=AttendanceResponse,dependencies=[Depends(PermissionChecker("employee.self.view"))])
+@attendance_router.get("/self-attendance",response_model=AttendanceResponse,dependencies=[Depends(PermissionChecker("employee.self.view","ORGANISATION"))])
 def attendance_view(request : Request,attendance_date : date, attendance_service : AttendanceService = Depends(get_attendance_service)):
 
     return attendance_service.get_employee_attendance_by_date(attendance_date,organisation_id = request.state.auth.organisation_id, employee_id = request.state.auth.employee_id)

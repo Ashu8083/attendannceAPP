@@ -35,6 +35,6 @@ class OrganisationRoles(Base, TimestampMixin):
     )
 
     organisation = relationship("Organisation", back_populates="organisation_lvl_roles")
-    role_permission = relationship("OrganisationRolePermissions", back_populates="role",
+    organisation_role_permissions = relationship("OrganisationLevelRolePermissions", back_populates="role",
                                    cascade="all, delete-orphan")
     employee_roles = relationship("EmployeeRoles", back_populates="role")

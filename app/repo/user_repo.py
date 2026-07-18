@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session,joinedload
 
-from app.models import Employee, RolePermission, Role
+from app.models import Employee
 from app.models.user_models import User
 import uuid
 from app.enums.role_enums import UserRole
@@ -13,6 +13,7 @@ from app.repo.organisation_repo import OrganisationRepo
 from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.enums.role_enums import UserRoleUpdated
 from app.exceptions.custom_exception import UserNotFound
+from app.enums.scops import AccountType
 
 
 #for adding organisation admin only 
@@ -32,8 +33,6 @@ class UserRepo:
             .options(
                 joinedload(User.employee)
                 .joinedload(Employee.role)
-                .joinedload(Role.role_permissions)
-                .joinedload(RolePermission.permission)
             )
             .filter(User.id == user_id, User.status == UserStatus.ACTIVE)
             .first()
@@ -43,7 +42,7 @@ class UserRepo:
                  full_name = full_name,
                  email = email,
                  organisation_id = organisation_id,
-                 role = UserRoleUpdated.SYSTEM_USER,
+                 account_type = AccountType.SYSTEM,
                  status = UserStatus.ACTIVE
             )
             try :
@@ -62,7 +61,7 @@ class UserRepo:
                  full_name = data.full_name,
                  organisation_id = organisation_id,
                  email = data.email,
-                 role = data.role
+                 account_type = data.account_type,
             )
             try:
                 self.db.add(user)

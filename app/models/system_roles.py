@@ -27,3 +27,4 @@ class SystemRoles(Base,TimestampMixin):
     )
 
     system_role_permissions = relationship("SystemRolePermissions", back_populates="system_roles")
+

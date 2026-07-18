@@ -9,7 +9,7 @@ class OrganisationRepo:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_organisation_by_code(self, code: str) -> Organisation | None:
+    def get_organisation_by_code(self, code: str) :
         return (
             self.db.query(Organisation)
             .filter(Organisation.organisation_code == code)

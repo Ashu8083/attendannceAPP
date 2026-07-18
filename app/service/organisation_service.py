@@ -33,17 +33,8 @@ class OrganisationService():
         organisation = self.organisationRepo.get_organisation_by_code(organisation_code)
         if not organisation:
             return
-        response  = OrgnisationDetails(
-                    organisation_name= organisation.name,
-                    organisation_code= organisation.organisation_code,
-                    organisation_status=organisation.status,
-                    subscription_type=  (
-                                            organisation.subscription.subscription_type
-                                            if organisation.subscription
-                                            else None
-                                         )
-        )
-        return response
+
+        return organisation
     
     def get_organisation_id(self, organisation_code):
          

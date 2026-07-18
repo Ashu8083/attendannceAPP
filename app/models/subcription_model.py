@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnum
 
+
 from sqlalchemy import Enum as SQLEnum
 from app.db.database import Base
 from app.enums.subcription_type import (SubscriptionTypeORG
@@ -23,13 +24,14 @@ class Subscription(Base, TimestampMixin):
         default=uuid.uuid4
     )
 
-    organisation_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("organisation.id"),
-        unique=True
-    )
-
     subscription_type: Mapped[SubscriptionTypeORG] = mapped_column(
         SQLEnum(SubscriptionTypeORG)
+    )
+    organisation_id = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("organisation.id", ondelete="CASCADE"),
+        unique=True,  # one subscription per organisation
+        nullable=False,
     )
 
     starting_date: Mapped[datetime] = mapped_column(
@@ -51,7 +53,7 @@ class Subscription(Base, TimestampMixin):
     )
 
 
-    organisation: Mapped["Organisation"] = relationship(
+    organisation = relationship(
         "Organisation",
         back_populates="subscription"
     )

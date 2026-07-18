@@ -11,6 +11,8 @@ from app.api.organisation_admin_api.attendance_relate_api import attendance_mana
 from app.api.organisation_user_api.leave_related_api import leave_request_router
 from app.api.organisation_admin_api.leave_request_api import leave_manage_router
 from app.api.organisation_admin_api.organisation_role_management import role_management_router
+from app.api.system_admin_api.organisation_admin_manager import admin_employee_route
+
 
 from app.api.testemailrouter import router_email
 
@@ -28,6 +30,7 @@ all_router = [
     leave_request_router,
     leave_manage_router,
     router_email,
+    admin_employee_route,
 ]
 
 

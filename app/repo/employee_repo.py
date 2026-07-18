@@ -3,10 +3,12 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy.orm import Session, InstrumentedAttribute
+from sqlalchemy import Select, select
 
 from app.models import Employee
-from app.models.employee_details_model import EmployeeDetails as ED
+from app.models.employee_details_model import EmployeeDetails as ED, EmployeeDetails
 from app.schemas.employee_schema import *
+from app.models import Employee, EmployeeRoles
 
 
 class EmployeeRepo:
@@ -123,3 +125,16 @@ class EmployeeRepo:
         return employee_id
     def get_employee_by_user_id(self, user_id: uuid.UUID) -> type[Employee] | None:
         return self.db.query(Employee).filter(Employee.user_id == user_id).first()
+
+    def assign_admin(self, organisation_id: uuid.UUID, employee_code: str, organisation_role_id:uuid.UUID) :
+        smts = select(Employee).where(Employee.organisation_id == organisation_id,
+                                             Employee.employee_code == employee_code)
+
+        employee = self.db.execute(smts).scalar()
+        employee.employee_roles.role_id = organisation_role_id
+
+    def remove_admin(self, organisation_id: uuid.UUID, employee_code: uuid.UUID) :
+        smts = select(Employee).where(Employee.organisation_id == organisation_id,
+                                      Employee.employee_code == employee_code)
+        employee = self.db.execute(smts).scalar()
+        employee.employee_roles.role_id = None

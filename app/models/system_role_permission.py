@@ -10,7 +10,7 @@ from app.db.database import Base
 class SystemRolePermissions(Base):
     __tablename__ = "system_role_permissions"
 
-    system_roles: Mapped[uuid.UUID] = mapped_column(
+    system_roles_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("system_roles.id", ondelete="CASCADE"),
         primary_key=True,

@@ -6,10 +6,11 @@ from ..db.database import Base
 
 from sqlalchemy.orm import relationship
 from sqlalchemy import String , ForeignKey,Float,Integer
-from sqlalchemy.dialects.postgresql import UUID 
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped , mapped_column
 from ..enums.organissation_status_enums import OrganizationStatus
+from app.models.subcription_model import  Subscription
 
 
 from ..enums.organissation_status_enums import OrganizationStatus
@@ -28,15 +29,17 @@ class Organisation(Base,TimestampMixin):
     organisation_code : Mapped[str] = mapped_column(
                                                     String(20),
                                                     unique= True,
-                                                    index=True)    
+                                                    index=True)
     status: Mapped[OrganizationStatus]= mapped_column(
         SQLEnum(OrganizationStatus)
     )
+
     subscription: Mapped["Subscription"] = relationship(
-    "Subscription",
-    back_populates="organisation",
-    uselist=False
-    )
+                                                "Subscription",
+                                            back_populates="organisation",
+                                            uselist=False
+                                                        )
+
     organisation_email : Mapped[str] = mapped_column(
       String(225),
       unique= True,
@@ -63,7 +66,7 @@ class Organisation(Base,TimestampMixin):
                                  back_populates="organization",
                                  cascade="all, delete-orphan"
                                 )
-   
+
     attendance_records = relationship(
                         "Attendance",
                         back_populates="organisation",
@@ -87,3 +90,8 @@ class Organisation(Base,TimestampMixin):
         "User",
         back_populates="organisation"
     )
+    organisation_lvl_roles = relationship(
+        "OrganisationRoles",
+        back_populates="organisation",
+    )
+

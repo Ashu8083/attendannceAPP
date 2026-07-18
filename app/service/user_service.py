@@ -8,6 +8,8 @@ from app.service.organisation_service import OrganisationService
 
 
 from app.schemas.user import UserCreation,UserStatusUpdate,UserUpdate,UserUpdatePassword
+from app.core.logging_config import logger
+from app.exceptions.custom_exception import UserNotFound
 
 
 class UserService():
@@ -29,7 +31,8 @@ class UserService():
     def get_user(self,user_email :str ):
         user = self.userrepo.get_user_by_email(user_email)
         if not user:
-           print( "user not found")
+           logger.info("user not found")
+           raise UserNotFound("user not found")
         return user
     def get_user_status(self,user_email:str,data: UserStatusUpdate):
 
@@ -51,13 +54,13 @@ class UserService():
     def get_user_by_id(self,user_id :uuid.UUID):
         return self.userrepo.get_user_by_id(user_id)
 
-    def get_user(self,user_id : uuid.UUID):
-        if not self.userrepo.get_user_by_id(user_id):
-            raise ValueError("user not found")
-        user_status = self.userrepo.sta
-        if user_status != UserStatus.ACTIVE:
-            raise ValueError("user is Inactive")
-        return self.userrepo.get_user(user_id)
+    # def get_user(self,user_id : uuid.UUID):
+    #     if not self.userrepo.get_user_by_id(user_id):
+    #         raise ValueError("user not found")
+    #     user_status = self.userrepo.sta
+    #     if user_status != UserStatus.ACTIVE:
+    #         raise ValueError("user is Inactive")
+    #     return self.userrepo.get_user(user_id)
 
 
 
