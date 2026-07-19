@@ -24,6 +24,6 @@ def assign_admin(employee_code:str,organisation_code :str,employee_service : Emp
 # @admin_employee_route.delete("/remove-admin/{organisation_id}")
 # def remove_admi
 
-@admin_employee_route.post("/create-employee")
+@admin_employee_route.post("/create-employee-existing-user")
 def create_employee(employee: CreateEmployee,):
-
+    return

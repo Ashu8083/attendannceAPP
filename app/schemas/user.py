@@ -14,7 +14,7 @@ from app.enums.scops import AccountType
 class UserCreation(BaseModel): # for only org_admin creation 
     full_name : str
     email : EmailStr
-    organisation_code : str
+    organisation_code : str | None
     account_type : Optional[AccountType] = AccountType.ORGANISATION
 
 

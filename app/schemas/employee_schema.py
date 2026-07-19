@@ -9,7 +9,7 @@ from app.enums.user_status_enums import UserStatus
 from app.models.employee_models import Employee
 
 class CreateEmployeeDetails(BaseModel):
-    employee_code : str
+    # employee_code : str
     dob :date
     gender : str
     marital_status: str
@@ -31,6 +31,20 @@ class CreateEmployee(BaseModel) :
     role : str
 
     employee_details : CreateEmployeeDetails
+class CreateExistingEmployee(BaseModel):
+    full_name : str
+    email : EmailStr
+    employee_code: str
+    employee_status: EmployeeStatus
+
+
+class create_employee_exising_user(CreateEmployee):
+
+    email : EmailStr
+    employee_code : str
+    employee_status : EmployeeStatus
+    organisation_id : UUID
+
 
 
 class EmployeeUpdate(BaseModel):

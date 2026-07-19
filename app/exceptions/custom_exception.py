@@ -1,7 +1,34 @@
 from app.exceptions.exception import AppException
 from app.models import Employee
 from app.core.logging_config import logger
+from app.schemas import organisation_schema
 
+
+class OraganisationNotFound(AppException):
+    def __init__(self,organisation_code : str | None):
+        message =( f"Oraganisation Not Found with {organisation_code}"
+                   if  organisation_code
+                   else "Oraganisation Not Found"
+                   )
+
+        super().__init__(
+            message= message,
+            status_code= 404,
+            error_code= "ORGANISATION_NOT_FOUND"
+        )
+
+
+class OrganisationAlreadyExists(AppException):
+    def __init__(self,organisation_code : str | None):
+        messsage =( f"Organisation Already Exists with {organisation_code}"
+                    if organisation_code
+                    else "Organisation Already Exists"
+                    )
+        super().__init__(
+            message= messsage,
+            status_code= 409,
+            error_code= "ORGANISATION_ALREADY_EXIST"
+        )
 
 class UserNotFound(AppException):
     def __init__(self, user_identi : str | None = None):

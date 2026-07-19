@@ -20,7 +20,7 @@ from app.service.user_service import UserService
 from app.service.employee_services import EmployeeService
 from app.service.auth_service import AuthService
 from app.repo.user_device_repo import  UserDeviceDetailRepo
-
+from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
 def get_organaistion_service(
     db: Session = Depends(get_db)
 ):
@@ -38,9 +38,11 @@ def get_employee_service(
         db: Session = Depends(get_db)
 ):
     employee_repo = EmployeeRepo(db)
-    ueser_repo = UserRepo(db)
+    user_repo = UserRepo(db)
     organisation_repo = OrganisationRepo(db)
-    return EmployeeService(employee_repo=employee_repo,user_repo= ueser_repo,organisation_repo= organisation_repo)
+    organisation_role_repo = OrganisationLevelRolePermissionsRepo(db)
+
+    return EmployeeService(employee_repo=employee_repo,user_repo= user_repo,organisation_repo= organisation_repo,db = db,organisation_role_repo = organisation_role_repo)
 
 
 def get_attendance_service(

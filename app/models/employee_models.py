@@ -43,7 +43,12 @@ class Employee(Base,TimestampMixin):
         Index(
                 "idx_employee_status",
             "employee_status",
-    )
+            ),
+        Index(
+            "idx_user_id",
+            "user_id",
+            "organisation_id",
+        )
     )
     user_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("user.id")
@@ -72,7 +77,9 @@ class Employee(Base,TimestampMixin):
         nullable= True
     )
     join_date : Mapped[date] = mapped_column(
-        Date
+        Date,
+        nullable= True
+
     )
     shift =  relationship(
         "Shift",

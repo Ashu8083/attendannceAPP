@@ -32,7 +32,7 @@ class UserService():
         user = self.userrepo.get_user_by_email(user_email)
         if not user:
            logger.info("user not found")
-           raise UserNotFound("user not found")
+           raise UserNotFound(user_email)
         return user
     def get_user_status(self,user_email:str,data: UserStatusUpdate):
 

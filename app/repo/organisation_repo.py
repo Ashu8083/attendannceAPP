@@ -1,5 +1,7 @@
-from sqlalchemy.orm import Session
+import uuid
 
+from sqlalchemy.orm import Session
+from sqlalchemy import func, select
 from app.models.organisations import Organisation
 from app.schemas.organisation_schema import CreateOrganisation,OrganisationDetailsUpdate,OrganisationDetailsResponse
 
@@ -8,6 +10,10 @@ class OrganisationRepo:
 
     def __init__(self, db: Session):
         self.db = db
+
+    def check_organisation(self, organisation_id: uuid.UUID) :
+        return self.db.query(Organisation.id).filter(Organisation.id == organisation_id).first()
+
 
     def get_organisation_by_code(self, code: str) :
         return (
@@ -32,11 +38,7 @@ class OrganisationRepo:
     def get_organisation_id(self, organisation_code: str):
         return (
             self.db.query(Organisation.id)
-            .filter(
-                Organisation.organisation_code == organisation_code
-            )
-            .scalar()
-        )
+            .filter(Organisation.organisation_code == organisation_code).scalar())
 
     def create_organisation(
         self,

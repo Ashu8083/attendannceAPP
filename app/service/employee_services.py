@@ -1,40 +1,98 @@
 import uuid
+from urllib import request
 
+from redis.commands.search.reducers import random_sample
 
+from app.db.UnitOfWork import UnitOfWork
 from app.repo.user_repo import UserRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.repo.organisation_repo import OrganisationRepo
 from app.schemas.employee_schema import *
 from app.exceptions.custom_exception import (
     UserNotFound,
-    EmailAlreadyExists,
+    EmailAlreadyExists, EmployeeAlreadyExists, EmployeeNotFound,
+    OraganisationNotFound
 )
 from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
 from app.models import OrganisationRoles
+from sqlalchemy.orm import Session
+
+
 
 
 class EmployeeService:
-    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,organisation_repo :OrganisationRepo,organisation_role_repo : OrganisationLevelRolePermissionsRepo) :
+    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,organisation_repo :OrganisationRepo,organisation_role_repo : OrganisationLevelRolePermissionsRepo ,db:Session) :
         self.employeeRepo = employee_repo
         self.userRepo = user_repo
         self.organisation_repo = organisation_repo
         self.organisation_role_repo = organisation_role_repo
+        self.db = db
 
-    
+    def generate_employee_code_by_organisation_id(self,oranisation_id :uuid) -> str:
+        organisation_id = self.organisation_repo.check_organisation(oranisation_id)
+        if not organisation_id :
+            raise OraganisationNotFound
+        return self.employeeRepo.generate_employee_code(organisation_id)
+
+    def generate_employee_code(self,organisation_code : str) -> str:
+        organisation_id = self.organisation_repo.get_organisation_id(organisation_code)
+        if not organisation_id :
+            raise OraganisationNotFound
+        return self.employeeRepo.generate_employee_code(organisation_id)
+
+    def add_existing_user_to_organisation(self,organisation_code :str,user_email:EmailStr, employee_detail_schema : CreateEmployeeDetails ,):
+
+        organisation_id = self.organisation_repo.get_organisation_id(organisation_code)
+        if not organisation_id :
+            raise OraganisationNotFound
+
+
+        user = self.userRepo.get_user_by_email(user_email= user_email)
+        if not user:
+            raise UserNotFound(user_email)
+        if user.employee :
+            raise EmployeeAlreadyExists
+
+        employee_code = self.employeeRepo.generate_employee_code(organisation_id= organisation_id)
+        create_employee = CreateExistingEmployee(
+            full_name = user.full_name,
+            email = user.email,
+            employee_code = employee_code,
+            employee_status= EmployeeStatus.ACTIVE
+        )
+
+        with UnitOfWork(self.db):
+            employee = self.employeeRepo.add_user_to_organisation(create_employee=create_employee,organisation_id=organisation_id,user_id=user.id)
+
+            employee_details = self.employeeRepo.add_employee_details(employee_details_schema =employee_detail_schema,employee_id = employee.id ,user_full_name= user.full_name)
+
+        return {"employee":employee,
+                "employee_details":employee_details}
+
+
+    # ====================================================================================================================
+    #          Employee Create Service
+    # ====================================================================================================================
+
     def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
 
-        
         user = self.userRepo.get_user_by_email(user_email= employee_schema.email)
-        
         if  user:
             raise EmailAlreadyExists
 
-        user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
-        employee = self.employeeRepo.get
-        employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
-        if not employee :
-            raise ValueError("Employee Creation Error")
-        return employee
+        employee = self.employeeRepo.get_employee_by_user_id(user.id)
+        if employee:
+            raise EmployeeAlreadyExists
+
+        with UnitOfWork(self.db):
+
+            user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
+            employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
+
+            if not employee :
+                raise ValueError("Employee Creation Error")
+
+            return employee
 
     def create_employee_service_by_organisation_code(self,organisation_code : str,employee_schema : CreateEmployee):
 
@@ -46,12 +104,16 @@ class EmployeeService:
             raise EmailAlreadyExists
 
         user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
-        employee = self.employeeRepo.get
+
+
         employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
         if not employee :
             raise ValueError("Employee Creation Error")
         return employee
 
+    # ====================================================================================================================
+    #           Employee Update Service
+    # ====================================================================================================================
 
     def update_employee_service(self,organisation_id : uuid.UUID , employee_details_schema : EmployeeDetailsUpdate,employee_code : str):
 
@@ -76,6 +138,10 @@ class EmployeeService:
             raise ValueError("Something went wrong")
         return update_employee_status
 
+    # ====================================================================================================================
+    #           All The Employee Get Method
+    # ====================================================================================================================
+
     def get_employee_service(self,organisation_id : uuid.UUID, employee_code : uuid.UUID):
         existing_employee = self.employeeRepo.get_employee_by_employee_code(organisation_id,employee_code)
         if not existing_employee: 
@@ -88,20 +154,34 @@ class EmployeeService:
             raise ValueError ("Employee not found")
         return employee
 
-
-
-        
-    def delete_employee_service(self):
-        return
     def get_all_employee_service(self,organisation_id : uuid.UUID):
 
         return self.employeeRepo.get_all_employee(organisation_id=organisation_id)
 
+    # ====================================================================================================================
+    #           Admin Assign  and Remove
+    # ====================================================================================================================
+
     def assign_admin(self, organisation_code : str,employee_code : str):
         organisation_id = self.organisation_repo.get_organisation_by_code(organisation_code)
+        if not organisation_id :
+            raise
         employee = self.employeeRepo.get_employee_by_employee_code(organisation_id= organisation_id, employee_code= employee_code)
         if not employee :
-            raise ValueError("Employee not exist")
+            raise EmployeeNotFound
         
         organisation_role_id = self.organisation_role_repo.get_role(organisation_id= organisation_id, role_name= "ADMIN")
         new_admin = self.employeeRepo.assign_admin(employee_code,organisation_id,organisation_role_id=organisation_role_id)
+        return new_admin
+
+
+    def remove_admin(self,employee_code : str, organisation_code : str):
+
+        organisation_id = self.organisation_repo.get_organisation_by_code(organisation_code)
+        if not organisation_id :
+            raise
+        employee_id = self.employeeRepo.check_existing_employee(employee_code,organisation_id)
+        if not employee_id :
+            raise EmployeeNotFound
+
+        return self.employeeRepo.remove_admin(employee_code=employee_code ,organisation_id= organisation_id)

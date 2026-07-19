@@ -14,7 +14,7 @@ from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.enums.role_enums import UserRoleUpdated
 from app.exceptions.custom_exception import UserNotFound
 from app.enums.scops import AccountType
-
+from app.core.logging_config import logger
 
 #for adding organisation admin only 
 # repo are only made for communicate with db 
@@ -45,14 +45,9 @@ class UserRepo:
                  account_type = AccountType.SYSTEM,
                  status = UserStatus.ACTIVE
             )
-            try :
-                self.db.add(user)
-                self.db.commit()
-                self.db.refresh(user)
-            except Exception as e :
-                 self.db.rollback()
-                 raise e
-
+            logger.info("Trying to creating user for Employee with Info %s",user)
+            self.db.add(user)
+            self.db.flush()
             return user
         
     def create_user(self,data:UserCreation,organisation_id):
