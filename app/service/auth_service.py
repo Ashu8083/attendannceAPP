@@ -21,11 +21,11 @@ from app.enums.scops import AccountType
 
 
 class AuthService:
-    def __init__(self,  auth_repo : AuthRepo , user_repo : UserRepo , user_device : UserDeviceDetailRepo , employee_repo : EmployeeRepo ,system_role_repo :SystemRoleRepo , org_role_repo : OrganisationLevelRolePermissionsRepo):
+    def __init__(self,  auth_repo : AuthRepo , user_repo : UserRepo ,system_role_repo :SystemRoleRepo , org_role_repo : OrganisationLevelRolePermissionsRepo):
         self.auth_repo = auth_repo
         self.user_repo = user_repo
-        self.user_device_repo = user_device
-        self.employee_repo = employee_repo
+
+
         self.org_role_repo = org_role_repo
         self.sys_role_repo =  system_role_repo
 

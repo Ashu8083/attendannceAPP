@@ -37,63 +37,38 @@ class TestAttendanceService:
             assert result == attendance
 
     def test_employee_not_found(
-
                     self,
-
                     attendance_service,
-
                     employee_repo,
-
                     employee_id,
-
                     organisation_id,
-
                     punch_schema,
-
             ):
                 employee_repo.get_employee_by_employee_id.return_value = None
-
                 with pytest.raises(EmployeeNotFound):
                     attendance_service.punch_in_attendance(
-
                         punch_schema,
-
                         employee_id,
-
                         organisation_id,
-
                     )
 
     def test_already_punched(
-
                     self,
-
                     attendance_service,
-
                     employee_repo,
-
                     attendance_repo,
-
                     employee,
-
                     employee_id,
-
                     organisation_id,
-
                     punch_schema,
-
             ):
                 employee_repo.get_employee_by_employee_id.return_value = employee
-
                 attendance_repo.today_attendance_employee_is_punch_in.return_value = object()
 
                 with pytest.raises(TodayAttendanceAlreadyTaken):
                     attendance_service.punch_in_attendance(
-
                         punch_schema,
-
                         employee_id,
-
                         organisation_id,
 
                     )
