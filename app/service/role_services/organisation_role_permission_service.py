@@ -50,5 +50,10 @@ class OrganisationRolePermissionService:
 
     def create_role_permision(self,organisation_role_id :UUID,permission_id : int ):
 
-        role_permission = self.create_role_permision(organisation_role_id=organisation_role_id, permission_id=permission_id)
+        role_permission = self.repo.create_role_permission(organisation_role_id=organisation_role_id, permission_id=permission_id)
         return role_permission
+
+    def default_role_permission(self,organisation_id :UUID):
+        admin_permission = self.repo.get_all_role(organisation_id=organisation_id)
+        if not admin_permission:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,)

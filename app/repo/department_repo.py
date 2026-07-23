@@ -36,10 +36,11 @@ class DepartmentRepo:
 
         return departments
 
-    def department_id (self,organisation_id : uuid.UUID, department_name : str) -> type[DepartmentModel] | None:
+    def department_id (self,organisation_id : uuid.UUID, department_name : str) :
 
-        return self.db.query(DepartmentModel).filter(DepartmentModel.name == department_name,
+        return self.db.query(DepartmentModel.id).filter(DepartmentModel.name == department_name,
                                                      DepartmentModel.organisation_id == organisation_id).one_or_none()
+
 
     def get_department(self, department_name : str , organisation_id : uuid.UUID) -> type[DepartmentModel] | None:
         return self.db.query(DepartmentModel).filter(DepartmentModel.name == department_name,

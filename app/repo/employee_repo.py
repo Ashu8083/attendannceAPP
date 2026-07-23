@@ -123,7 +123,7 @@ class EmployeeRepo:
 
         employee = self.db.query(Employee).filter(Employee.organisation_id == organisation_id,
                                                   Employee.employee_code == employee_code,
-                                                  Employee.emplopyee_status == EmployeeStatus.ACTIVE).first()
+                                                  Employee.employee_status == EmployeeStatus.ACTIVE).first()
         if not employee:
             raise ValueError("Employee code does not exist")
 
@@ -131,7 +131,7 @@ class EmployeeRepo:
 
 
     def get_employee_by_employee_id(self, employee_id: uuid.UUID,organisation_id : uuid.UUID) -> type[Employee] | None:
-        return self.db.query(Employee).filter(Employee.employee_id == employee_id,
+        return self.db.query(Employee).filter(Employee.id == employee_id,
                                               Employee.organisation_id == organisation_id).first()
 
     def get_employee_by_name(self, employee_name: str):
@@ -144,7 +144,7 @@ class EmployeeRepo:
             .all()
         )
     def get_employee_by_department_name(self,department_name: str,organisation_id : uuid.UUID ) -> list[type[Employee]] | None:
-        return self.db.query(Employee).filter(Employee.department_name == department_name,
+        return self.db.query(Employee).filter(Employee.department == department_name,
                                               Employee.organisation_id== organisation_id).all()
 
 
@@ -156,7 +156,7 @@ class EmployeeRepo:
 
     def get_employee_id(self,organisation_id : uuid.UUID, employee_code: str):
         employee_id = self.db.query(Employee.id).filter(Employee.organisation_id == organisation_id ,
-                                                        Employee.employee_code == employee_code).first()
+                                                        Employee.employee_code == employee_code).scalar()
         return employee_id
     def get_employee_by_user_id(self, user_id: uuid.UUID) -> type[Employee] | None:
         return self.db.query(Employee).filter(Employee.user_id == user_id).first()
@@ -214,7 +214,6 @@ class EmployeeRepo:
 
         employee = self.db.execute(stmt).scalar()
         employee.employee_roles.role_id = organisation_role_id
-        employee.save()
         self.db.commit()
         self.db.refresh(employee)
         return employee

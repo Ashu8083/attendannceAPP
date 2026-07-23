@@ -36,11 +36,6 @@ class Employee(Base,TimestampMixin):
                         "organisation_id",
         ),
         Index(
-            "idx_employee_code",
-            "employee_code",
-            "organisation_id",
-        ),
-        Index(
                 "idx_employee_status",
             "employee_status",
             ),
@@ -58,7 +53,6 @@ class Employee(Base,TimestampMixin):
     )
     employee_code: Mapped[str] = mapped_column(
         String(50),
-        unique = True
     )
     department: Mapped[str] = mapped_column(
         String(100),

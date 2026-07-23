@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from datetime import date
 
@@ -28,10 +29,10 @@ class AttendanceService:
 
 
     def punch_in_attendance(self,punchInOutSchema: PunchInOutSchema  ,employee_id :uuid.UUID ,organisation_id : uuid.UUID):
-        employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id)
+        employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
         if not employee:
             raise EmployeeNotFound
-        if employee.workMode == WorkMode.WHO:
+        if employee.work_mode == WorkMode.WFO:
                      distance = get_distance(office_latitude=employee.organisation.office_latitude,
                                 office_longitude=employee.organisation.office_longitude,
                                 employee_latitude=punchInOutSchema.employee_latitude,
@@ -41,14 +42,10 @@ class AttendanceService:
                         logger.info(f"Employee {employee.employee_code} is not in the office permisies")
                         raise
 
-        attendance = self.attendacnce_record_repo.get_employee_today_attendance(organisation_id= organisation_id,employee_id = employee_id)
+        attendance = self.attendacnce_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
             logger.info("User Already Punched")
             raise TodayAttendanceAlreadyTaken
-        if attendance.is_punchin == True:
-            # logger.error("Employee %s alraedy",employee_id)
-            raise AlreadyPunchIN
-
 
         return self.attendacnce_record_repo.punch_in(employee_id,workMode= WorkMode.WFH,organisation_id=organisation_id)
 
@@ -57,12 +54,10 @@ class AttendanceService:
         if not employee:
             logger.error("employee s% of organisation %s is not found",employee_id ,organisation_id)
             raise EmployeeNotFound
-        attendance = self.attendacnce_record_repo.get_employee_today_attendance(organisation_id= organisation_id,employee_id = punch_out.employee_id)
+        attendance = self.attendacnce_record_repo.today_attendacnce_employee_is_punch_out(organisation_id= organisation_id,employee_id = punch_out.employee_id)
         if attendance:
             logger.info("Employee %s  of Organisation % Attendance Already Taken", employee_id,organisation_id)
             raise TodayAttendanceAlreadyTaken
-        if attendance.is_punchout == True:
-            raise AlreadyPunchOut
 
         if employee.workMode == WorkMode.WFO :
 
@@ -100,10 +95,12 @@ class AttendanceService:
     def get_today_employee_attendance(self,organisation_id : uuid.UUID,employee_id : uuid.UUID):
         return self.attendacnce_record_repo.get_employee_today_attendance(employee_id=employee_id , organisation_id=organisation_id)
 
+
+
     def update_employee_attendance(self,organisation_id : uuid.UUID, attendance_update_schema : AttendanceUpdate ):
         employee_id = self.employee_repo.get_employee_id(organisation_id,employee_code=attendance_update_schema.employee_code)
 
-        return self.attendacnce_record_repo.update_attendance(organisation_id,employee_id=employee_id[0],update_attendacne= attendance_update_schema)
+        return self.attendacnce_record_repo.update_attendance(organisation_id,employee_id=employee_id,update_attendacne= attendance_update_schema)
 
     def absent_employee(self, organisation_id: uuid.UUID, attendance_date: date):
         employees = self.employee_repo.get_all_employee(organisation_id)
@@ -126,4 +123,5 @@ class AttendanceService:
 
     def get_employee_attendance_by_date(self,attendance_date : date,organisation_id : uuid.UUID,employee_id : uuid.UUID):
         return self.attendacnce_record_repo.get_employee_attendance_by_date(attendance_date=attendance_date,organisation_id=organisation_id,employee_id=employee_id)
+
 

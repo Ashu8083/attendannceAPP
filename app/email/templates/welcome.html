@@ -2,9 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
 </head>
-<body>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f4f4;padding:40px 0;">
+    <tr>
+        <td align="center">
+
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+                <!-- Header -->
+                <tr>
+                    <td align="center" style="background:#2563eb;padding:35px;">
+                        <h1 style="margin:0;color:#ffffff;font-size:30px;">
+                            Welcome!
+                        </h1>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:40px 35px;color:#333333;">
+
+                        <h2 style="margin-top:0;">
+                            Hello {{name}},
+                        </h2>
+
+                        <p style="font-size:16px;line-height:26px;">
+                            Welcome to <strong>Attendance Management System</strong>! We're excited
+                            to have you on board.
+                        </p>
+
+                        <p style="font-size:16px;line-height:26px;">
+                            Your account has been successfully created. You can now securely log in,
+                            manage attendance, track leaves, view reports, and access all the features
+                            available to your organization.
+                        </p>
+
+                        <table role="presentation" cellspacing="0" cellpadding="0" style="margin:30px auto;">
+                            <tr>
+                                <td align="center" bgcolor="#2563eb" style="border-radius:6px;">
+                                    <a href="{{login_url}}"
+                                       style="display:inline-block;padding:14px 30px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;">
+                                        Login to Your Account
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="font-size:15px;line-height:24px;">
+                            If the button doesn't work, copy and paste the following link into your browser:
+                        </p>
+
+                        <p style="word-break:break-word;color:#2563eb;">
+                            {{login_url}}
+                        </p>
+
+                        <hr style="border:none;border-top:1px solid #eeeeee;margin:30px 0;">
+
+                        <p style="font-size:14px;color:#666666;line-height:22px;">
+                            If you did not create this account, please ignore this email or contact
+                            your administrator.
+                        </p>
+
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td align="center" style="background:#f8f9fa;padding:25px;color:#888888;font-size:13px;">
+
+                        <strong>Attendance Management System</strong><br>
+                        Making workforce management simple and efficient.
+                        <br><br>
+
+                        © 2026 Attendance Management System. All rights reserved.
+
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+</table>
 
 </body>
 </html>

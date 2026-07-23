@@ -9,10 +9,10 @@ from app.service.organisation_service import OrganisationService
 
 from app.schemas.user import UserCreation,UserStatusUpdate,UserUpdate,UserUpdatePassword
 from app.core.logging_config import logger
-from app.exceptions.custom_exception import UserNotFound
+from app.exceptions.custom_exception import UserNotFound, EmailAlreadyExists
 
 
-class UserService():
+class UserService:
     def __init__(self,userrepo: UserRepo , organisation_repo : OrganisationRepo):
         self.userrepo = userrepo
         self.organisation_repo = organisation_repo
@@ -23,7 +23,7 @@ class UserService():
         organisation_id = self.organisation_repo.get_organisation_id(organisation_code=user_data.organisation_code)
         print (organisation_id)
         if  user:
-               return ("user already exist")
+               raise EmailAlreadyExists
         user = self.userrepo.create_user(user_data,organisation_id)
         print (user)
         return user

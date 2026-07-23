@@ -1,6 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+
 from app.db.database import get_db
 from app.repo.AuthRepo import AuthRepo
 from app.repo.attendance_record_repo import AttendanceRepo
@@ -21,6 +22,8 @@ from app.service.employee_services import EmployeeService
 from app.service.auth_service import AuthService
 from app.repo.user_device_repo import  UserDeviceDetailRepo
 from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
+from app.service.role_services.role_creation_service import RoleService
+from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
 def get_organaistion_service(
     db: Session = Depends(get_db)
 ):
@@ -41,8 +44,9 @@ def get_employee_service(
     user_repo = UserRepo(db)
     organisation_repo = OrganisationRepo(db)
     organisation_role_repo = OrganisationLevelRolePermissionsRepo(db)
+    department_repo = DepartmentRepo(db)
 
-    return EmployeeService(employee_repo=employee_repo,user_repo= user_repo,organisation_repo= organisation_repo,db = db,organisation_role_repo = organisation_role_repo)
+    return EmployeeService(employee_repo=employee_repo,user_repo= user_repo,organisation_repo= organisation_repo,db = db,organisation_role_repo = organisation_role_repo,department_repo=department_repo)
 
 
 def get_attendance_service(
@@ -72,7 +76,9 @@ def get_auth_service(
     user_device_repo = UserDeviceDetailRepo(db)
     employee_repo = EmployeeRepo(db)
     # role_permission_repo = RolePermissionRepo(db)
-    return AuthService(auth_repo, user_repo,user_device_repo,employee_repo,role_permission_repo)
+    organisation_role = OrganisationLevelRolePermissionsRepo(db)
+    system_role = SystemRoleRepo(db)
+    return AuthService(auth_repo, user_repo,user_device_repo,employee_repo,system_role,organisation_role )
 
 
 def get_leave_service(
@@ -92,3 +98,8 @@ def get_organisation_role_service(
 ):
     organisation_repo = OrganisationRepo(db)
     return OrganisationService(organisation_repo)
+def get_permission_service(
+        db: Session = Depends(get_db),
+):
+    permission_repo = RolePermissionRepo(db)
+    return RoleService(permission_repo)

@@ -28,7 +28,8 @@ class User(Base,TimestampMixin):
         default=uuid.uuid4
     )
     organisation_id : Mapped [uuid.UUID] = mapped_column(
-        ForeignKey("organisation.id")
+        ForeignKey("organisation.id"),
+        nullable= True
     )
     full_name : Mapped [str] = mapped_column(
         String (225)

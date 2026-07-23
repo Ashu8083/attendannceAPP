@@ -25,7 +25,7 @@ class AttendanceRepo:
                                                               ).first()
         return attendance_record
 
-    def today_attendance_employee_is_punch_in(self,organisation_id,employee_id):
+    def today_attendance_employee_is_punch_in(self,organisation_id,employee_id)->type[Attendance] | None:
         today = date.today()
         attendance_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
                                                              Attendance.employee_id == employee_id,
@@ -33,14 +33,15 @@ class AttendanceRepo:
                                                              Attendance.is_punchin == True).first()
 
         return attendance_record
-    def today_attendacnce_employee_is_punch_out(self,organisation_id,employee_id):
+    def today_attendacnce_employee_is_punch_out(self,organisation_id,employee_id)->type[Attendance] | None:
         today = date.today()
         attendace_record = self.db.query(Attendance).filter(Attendance.attendance_date == today,
-                                                            Attendance.employee_id == organisation_id,
+                                                            Attendance.employee_id == employee_id,
+                                                            Attendance.organisation_id == organisation_id,
                                                             Attendance.is_punchout == True).first()
         return attendace_record
 
-    def punch_in(self,employee_id : uuid.UUID, workMode : WorkMode,organisation_id : uuid.UUID):
+    def punch_in(self,employee_id : uuid.UUID, workmode : WorkMode,organisation_id : uuid.UUID):
         today = date.today()
         logger.info(
             "Employee %s is attempting to check in for attendance in organization %s.",
@@ -50,9 +51,9 @@ class AttendanceRepo:
         attendance_record = Attendance(
                                         organisation_id = organisation_id,
                                         employee_id=employee_id,
-                                        work_mode = workMode,
+                                        work_mode = workmode,
                                         attendance_date = today,
-                                        punchin_time = datetime.now(),
+                                        punchin_time = datetime.now().time(),
                                         is_punchin = True,
                                         status = AttendanceStatus.PRESENT
                                         )
@@ -65,7 +66,8 @@ class AttendanceRepo:
         except Exception:
             logger.exception("Error while creating attendance record for employee %s in organisation  %s", employee_id, organisation_id)
             self.db.rollback()
-            raise 
+            raise
+
         return attendance_record
 
     def punch_out(self,employee_id:uuid.UUID,organisation_id : uuid.UUID):
@@ -80,19 +82,20 @@ class AttendanceRepo:
 
          
          attendance_record  = self.db.query(Attendance).filter(Attendance.attendance_date == today,
-                                                              Attendance.employee_id == punch_in_schema.employee_id).first()
+                                                              Attendance.employee_id ==employee_id).first()
          
          if not attendance_record:
               logger.error("Employee attendance record not found")
               raise ValueError(f"Attendance record not Found {today}")
          attendance_record.is_punchout = True
-         attendance_record.punchout_time = datetime.now()
+         attendance_record.punchout_time = datetime.now().time()
 
          try:
             self.db.commit()
             self.db.refresh(attendance_record)
          except Exception:
              logger.exception("Employee attendance record can't created %s", attendance_record)
+             self.db.rollback()
              raise
          return attendance_record
 
@@ -101,8 +104,7 @@ class AttendanceRepo:
          today = date.today()
          attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
                                                               Attendance.attendance_date == today).all()
-         if not attendance_record:
-              raise ValueError(f"{today} :Attendacne record not found ")
+
          return attendance_record
 
     def get_employee_attendance(self,employee_id : uuid.UUID,organisation_id)->list[type[Attendance]]:
@@ -120,10 +122,9 @@ class AttendanceRepo:
          attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
                                                               Attendance.employee_id == employee_id,
                                                               Attendance.attendance_date == update_attendacne.date).first()
-         if not attendance_record: 
-              raise ValueError("Attendance Record not Found")
 
-
+         if attendance_record is None:
+             return None
          # setattr() built-in function for  python to set the attribute manually
          for feld,value in update_attendacne.model_dump().items():
               setattr(attendance_record,feld,value)
@@ -133,7 +134,9 @@ class AttendanceRepo:
             self.db.refresh(attendance_record)
          except Exception:
             self.db.rollback()
-            raise ValueError("unknow error found")
+            logger.error("Employee attendance record can't update %s", attendance_record)
+            raise
+
 
          return attendance_record
 
@@ -147,15 +150,17 @@ class AttendanceRepo:
                                         punchin_time = None,
                                         punchout_time = None,
                                         is_punchin = False,
-                                        is_pucnhout = False,
+                                        is_punchout = False,
                                         status = AttendanceStatus.ABSENT
                                         )
 
         try  :
+            self.db.add(attendance_record)
             self.db.commit()
             self.db.refresh(attendance_record)
         except Exception:
-            raise ValueError("unknow error found")
+            self.db.rollback()
+            raise
         return attendance_record
 
     def get_attendance_by_date(self,date :date,organisation_id :uuid.UUID ) -> list[type[Attendance]]:
@@ -170,8 +175,8 @@ class AttendanceRepo:
          
          attendance_record = self.db.query(Attendance).filter(Attendance.organisation_id == organisation_id,
                                                               extract("month", Attendance.attendance_date) == month).all()# extract the month from the date 
-         if not attendance_record:
-              raise ValueError(f"{month} :Attendacne record not found ")
+         # if not attendance_record:
+         #      raise ValueError(f"{month} :Attendacne record not found ")
          return attendance_record
 
 

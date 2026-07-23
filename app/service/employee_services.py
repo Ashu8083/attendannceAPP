@@ -2,7 +2,6 @@ import uuid
 from urllib import request
 
 from redis.commands.search.reducers import random_sample
-
 from app.db.UnitOfWork import UnitOfWork
 from app.repo.user_repo import UserRepo
 from app.repo.employee_repo import EmployeeRepo
@@ -13,19 +12,21 @@ from app.exceptions.custom_exception import (
     EmailAlreadyExists, EmployeeAlreadyExists, EmployeeNotFound,
     OraganisationNotFound
 )
+from app.email.service import email_service
 from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
 from app.models import OrganisationRoles
 from sqlalchemy.orm import Session
-
+from app.repo.department_repo import DepartmentRepo
 
 
 
 class EmployeeService:
-    def __init__(self,employee_repo : EmployeeRepo,user_repo : UserRepo,organisation_repo :OrganisationRepo,organisation_role_repo : OrganisationLevelRolePermissionsRepo ,db:Session) :
+    def __init__(self, employee_repo : EmployeeRepo, user_repo : UserRepo, organisation_repo :OrganisationRepo, organisation_role_repo : OrganisationLevelRolePermissionsRepo, db:Session, department_repo : DepartmentRepo) :
         self.employeeRepo = employee_repo
         self.userRepo = user_repo
         self.organisation_repo = organisation_repo
         self.organisation_role_repo = organisation_role_repo
+        self.department_repo = department_repo
         self.db = db
 
     def generate_employee_code_by_organisation_id(self,oranisation_id :uuid) -> str:
@@ -74,7 +75,7 @@ class EmployeeService:
     #          Employee Create Service
     # ====================================================================================================================
 
-    def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
+    async def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
 
         user = self.userRepo.get_user_by_email(user_email= employee_schema.email)
         if  user:
@@ -83,6 +84,7 @@ class EmployeeService:
         employee = self.employeeRepo.get_employee_by_user_id(user.id)
         if employee:
             raise EmployeeAlreadyExists
+        department_id = self.department_repo.department_id(organisation_id=organisation_id,department_name=employee_schema.department)
 
         with UnitOfWork(self.db):
 
@@ -91,6 +93,7 @@ class EmployeeService:
 
             if not employee :
                 raise ValueError("Employee Creation Error")
+            await email_service.send_welcome_email(email=user.email)
 
             return employee
 

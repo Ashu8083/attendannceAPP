@@ -51,5 +51,20 @@ class EmailService:
             template_name="test.html",
 
         )
+
+    async def send_welcome_email(self,email:str):
+        message = MessageSchema(
+            subject="Welcome Test Email",
+            recipients=[email],
+            template_body={
+                "name": "welcome mail",
+            },
+           subtype=MessageType.html,
+        )
+        fm = FastMail(conf)
+        await fm.send_message(
+            message,
+            template_name="welcome.html",
+        )
 email_service = EmailService()
 # all done

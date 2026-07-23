@@ -23,11 +23,12 @@ class CreateEmployee(BaseModel) :
     email : EmailStr
     # password_hash : str
 
-    employee_code : str
+    employee_code : str |None
     employee_status : EmployeeStatus
 
-    department : UUID
-    designation : str
+    department : str | None
+    designation : str | None
+    join_date : date
     role : str
 
     employee_details : CreateEmployeeDetails

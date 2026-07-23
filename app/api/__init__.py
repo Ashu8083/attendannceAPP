@@ -13,6 +13,7 @@ from app.api.organisation_admin_api.leave_request_api import leave_manage_router
 from app.api.organisation_admin_api.organisation_role_management import role_management_router
 from app.api.system_admin_api.organisation_admin_manager import admin_employee_route
 from app.api.system_admin_api.employee_API import damage_router
+from app.api.role_permission_apis.role_permission_api import permission_router
 
 from app.api.testemailrouter import router_email
 
@@ -32,6 +33,8 @@ all_router = [
     router_email,
     admin_employee_route,
     damage_router,
+    permission_router,
+
 ]
 
 

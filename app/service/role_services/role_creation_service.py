@@ -1,21 +1,21 @@
-# from typing import List, Any
-#
-# from app.models.role import Role
-# from app.schemas.role_schema import  *
-# from repo.RolePermissionRepo.role_repo import  RolePermissionRepo
-# from app.exceptions.custom_exception import(
-#                                             RoleAlreadyExist,
-#                                             RoleNotFound,
-#                                             PermissionAlreadyExist,
-#                                             PermissionNotFound,
-#                                             RolePermissionNotFound
-#
-# )
-# from uuid import UUID
-#
-# class RoleService:
-#     def __init__(self,role_repo : RolePermissionRepo) -> None:
-#         self.role_repo = role_repo
+from typing import List, Any
+
+from app.schemas.role_schema import  *
+
+from app.exceptions.custom_exception import(
+                                            RoleAlreadyExist,
+                                            RoleNotFound,
+                                            PermissionAlreadyExist,
+                                            PermissionNotFound,
+                                            RolePermissionNotFound
+)
+from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
+
+from uuid import UUID
+
+class RoleService:
+    def __init__(self,role_repo : RolePermissionRepo) -> None:
+        self.role_repo : RolePermissionRepo = role_repo
 #
 #     def get_role_details(self,organisation_id : UUID,role_name :str):
 #         role_details = self.role_repo.get_role_details( role_name = role_name ,organisation_id= organisation_id,)
@@ -42,13 +42,14 @@
 #              if permission_id :
 #                  role_permission = self.role_repo.create_role_permission(role.id,permission_id.id)
 #                  return  role_permission
-#
-#     def create_permission (self,create_permission_schema : CreatePermision) :
-#         permission = self.role_repo.get_permission(create_permission_schema.name)
-#         if permission :
-#             raise PermissionAlreadyExist
-#         permission = self.role_repo.create_permission(create_permission_schema)
-#         return permission
+
+
+    def create_permission (self,create_permission_schema : CreatePermision) :
+         permission = self.role_repo.get_permission(create_permission_schema.name)
+         if permission :
+            raise PermissionAlreadyExist
+         permission = self.role_repo.create_permission(create_permission_schema)
+         return permission
 #     def get_all_roles (self,organisation_id : uuid.UUID ) -> list[Role] :
 #
 #         role = self.role_repo.get_role(organisation_id )

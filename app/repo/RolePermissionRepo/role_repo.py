@@ -1,22 +1,21 @@
-# from typing import Any, List
-# from uuid import UUID
+from typing import Any, List
+from uuid import UUID
+
+from alembic.ddl import oracle
+from sqlalchemy import ColumnElement
+from sqlalchemy.orm import Session, InstrumentedAttribute
+
+from app.models import  Permission
+from app.schemas.role_schema import *
+
+from app.models.permission_model import Permission
+
+from app.core.logging_config import logger
 #
-# from alembic.ddl import oracle
-# from sqlalchemy import ColumnElement
-# from sqlalchemy.orm import Session, InstrumentedAttribute
-#
-# from app.models import role, Role, Permission
-# from app.schemas.role_schema import *
-# from app.models.role import Role
-# from app.models.rolePermision import RolePermission
-# from app.models.permission_model import Permission
-#
-# from app.core.logging_config import logger
-#
-#
-# class RolePermissionRepo:
-#         def __init__(self,db:Session) :
-#                 self.db = db
+
+class RolePermissionRepo:
+        def __init__(self,db:Session) :
+                self.db = db
 #         def create_role(self,data : CreateRole , organisation_id : uuid.UUID ) -> Role | None:
 #             role = Role(    organization_id = organisation_id,
 #                             name = data.name,
@@ -33,27 +32,27 @@
 #                        raise e
 #             return role
 #
-#         def create_permission(self, data : CreatePermision): #permission can only create by SuperAdmin
-#
-#                 logger.info("user creating permision")
-#                 permission = self.db.query(Permission).filter(Permission.name == data.name).first()
-#                 if  permission:
-#                        raise ValueError("permission already exist ")
-#                 permission = Permission(name = data.name,
-#                                         description = data.description,
-#                                         scope = data.scope,
-#                                         assignable = data.assignable
-#                                          )
-#                 logger.info("permission create %s",permission)
-#                 try :
-#                        self.db.add(permission)
-#                        self.db.commit()
-#                        self.db.refresh(permission)
-#                 except Exception as e:
-#                         self.db.rollback()
-#                         logger.exception("permission creation rollback due to %s",e)
-#                         raise e
-#                 return permission
+        def create_permission(self, data : CreatePermision): #permission can only create by SuperAdmin
+
+                logger.info("user creating permision")
+                permission = self.db.query(Permission).filter(Permission.name == data.name).first()
+                if  permission:
+                       raise ValueError("permission already exist ")
+                permission = Permission(name = data.name,
+                                        description = data.description,
+                                        scope = data.scope,
+                                        assignable = data.assignable
+                                         )
+                logger.info("permission create %s",permission)
+                try :
+                       self.db.add(permission)
+                       self.db.commit()
+                       self.db.refresh(permission)
+                except Exception as e:
+                        self.db.rollback()
+                        logger.exception("permission creation rollback due to %s",e)
+                        raise e
+                return permission
 #
 #         def create_role_permission(self,role_id: int  ,permission_id : int ):#ORG_Admin can create role permission
 #
@@ -105,13 +104,13 @@
 #             return role
 #
 #
-#         def get_permission(self,permission_name: str ) -> type[Permission] | None:
-#             permission = (
-#                 self.db.query(Permission)
-#                 .filter(Permission.name == permission_name)
-#                 .first()
-#             )
-#             return permission
+        def get_permission(self,permission_name: str ) -> type[Permission] | None:
+            permission = (
+                self.db.query(Permission)
+                .filter(Permission.name == permission_name)
+                .first()
+            )
+            return permission
 #         def get_all_permission(self) -> list[Any] | list[type[Permission]]:
 #             return self.db.query(Permission).filter(Permission.assignable == True,
 #                                                     Permission.scope ==PermissionScopEnumUpdate.ORGANIZATION ).all()

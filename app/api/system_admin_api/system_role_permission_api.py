@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 
 from app.auth.permission_check import PermissionChecker
 from app.dependancy.service_dependancy import get_role_system_role_service
-from app.schemas.role_schema import SystemRoleResponse  as SystemRoles
+from app.schemas.role_schema import SystemRoleResponse as SystemRoles, SystemRoleResponse
 from app.schemas.role_schema import PermissionResponse
 from app.schemas.role_schema import (
     CreateRoleSchema,
@@ -25,7 +25,7 @@ system_role_router = APIRouter(
 # --------------------------------------------------
 
 @system_role_router.post(
-    "",
+    "/create-role",
     response_model=SystemRoles,
     dependencies=[Depends(PermissionChecker("system_role.create","SYSTEM"))],
 )

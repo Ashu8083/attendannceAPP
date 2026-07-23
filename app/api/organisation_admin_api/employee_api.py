@@ -12,7 +12,7 @@ from app.dependancy.service_dependancy import get_employee_service
 
 employee_router = APIRouter(prefix="/employees",tags=["employees"])
 
-@employee_router.post("/create-employee-employeecode",response_model=EmployeeDetailsResponce)
+@employee_router.get("/create-employee-employeecode",response_model=EmployeeDetailsResponce)
 def create_employee_code(
     request : Request,
     employee_service : EmployeeService = Depends(get_employee_service),
