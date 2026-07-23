@@ -97,7 +97,7 @@ class AuthService:
         user = self.user_repo.get_user(payload["user_id"])
 
         if not user:
-            raise UserNotFound(f"User with email {payload['email']} not found")
+            raise UserNotFound()
         user_role = ""
         if user.account_type == AccountType.ORGANISATION:
 
