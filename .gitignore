@@ -1,4 +1,4 @@
-    # Virtual Environments
+# Virtual Environments
 env/
 venv/
 .venv/
@@ -10,4 +10,19 @@ chatenv/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
