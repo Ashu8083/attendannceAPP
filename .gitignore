@@ -3,10 +3,12 @@ env/
 venv/
 .venv/
 chatenv/
+.newenv
 
 # Environment Files
 .env
 .env.*
+
 
 # Python
 __pycache__/
