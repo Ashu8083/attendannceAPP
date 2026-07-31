@@ -13,6 +13,11 @@ from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
 
 from uuid import UUID
 
+from app.models.permission_model import Permission
+
+
+# For creating Permission  Only
+
 class RoleService:
     def __init__(self,role_repo : RolePermissionRepo) -> None:
         self.role_repo : RolePermissionRepo = role_repo
@@ -50,6 +55,38 @@ class RoleService:
             raise PermissionAlreadyExist
          permission = self.role_repo.create_permission(create_permission_schema)
          return permission
+
+    def create_list_permission(
+            self,
+            schema: CreateListOfPermissions
+    ):
+
+        names = [p.name for p in schema.permissions]
+
+        existing = self.role_repo.get_permissions_by_names(names)
+
+        existing_names = {p.name for p in existing}
+
+        permission_models = []
+
+        for permission in schema.permissions:
+
+            if permission.name in existing_names:
+                continue
+
+            permission_models.append(
+                Permission(
+                    name=permission.name,
+                    description=permission.description,
+                    scope=permission.scope,
+                    assignable=permission.assignable,
+                )
+            )
+
+        if permission_models:
+            return self.role_repo.create_permissions(permission_models)
+
+        return []
 #     def get_all_roles (self,organisation_id : uuid.UUID ) -> list[Role] :
 #
 #         role = self.role_repo.get_role(organisation_id )

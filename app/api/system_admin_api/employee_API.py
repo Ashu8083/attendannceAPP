@@ -10,7 +10,7 @@ from app.schemas.employee_schema import *
 from app.service.employee_services import EmployeeService
 from app.dependancy.service_dependancy import get_employee_service
 
-damage_router = APIRouter(prefix="/damage_controll",tags=["employees"])
+damage_router = APIRouter(prefix="/damage_controll",tags=["DamageController"])
 
 
 @damage_router.post("/add-exiting-employee",dependencies=[Depends(PermissionChecker("employee.create","ORGANISATION"))])
@@ -22,7 +22,7 @@ def add_employee_to_organisation(organisation_code :str,
 
     return employee_service.add_existing_user_to_organisation(organisation_code= organisation_code,user_email= user_email,employee_detail_schema = employee_details)
 
-@damage_router.post("/generate-employee-code",dependencies=[Depends(PermissionChecker("employee.create","ORGANISATION"))])
+@damage_router.post("/generate-employee-code")#dependencies=[Depends(PermissionChecker("employee.create","ORGANISATION"))])
 def generate_employee_code(organisation_code :str, employee_service :EmployeeService = Depends(get_employee_service)) -> str :
 
     return employee_service.generate_employee_code(organisation_code)

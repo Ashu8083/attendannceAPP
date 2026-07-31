@@ -83,6 +83,18 @@ class EmployeeRepo:
 
         return employee
 
+    def create_employee_admin(self,user_id :uuid.UUID ,organisation_id: uuid.UUID,admin_schema: CreateAdminEmployee | None) -> type[Employee] | None:
+        logger.info(f"Trying to create Admin for organisation {organisation_id}")
+        employee_record = Employee(
+            user_id=user_id,
+            organisation_id=organisation_id,
+            employee_code=admin_schema.employee_code,
+            department=admin_schema.department,
+            join_date=admin_schema.join_date,
+
+        )
+        return employee_record
+
     def add_employee_details(self,user_full_name : str,employee_details_schema : CreateEmployeeDetails, employee_id : UUID) -> type[EmployeeDetails] | None:
         logger.info(f"Trying to add Employee details ")
         employee_details = ED(

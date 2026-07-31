@@ -9,13 +9,14 @@ from app.schemas.employee_schema import(CreateEmployee,
 from app.service.employee_services import EmployeeService
 from app.auth.permission_check import PermissionChecker
 from app.models import Employee
+from app.schemas.employee_schema import CreateAdminEmployee
 
 admin_employee_route = APIRouter(prefix="/organisation_admin",tags=["Organisation Admin"])
 
-@admin_employee_route.post("/create-organisation-admin/{organisation_code}", response_model=EmployeeResponse , dependencies=[Depends(PermissionChecker("admin.manager","SYSTEM"))])
-def create_organisation_admin(employee: CreateEmployee, organisation_code :str ,employee_service : EmployeeService = Depends(get_employee_service)):
+@admin_employee_route.post("/create-organisation-admin/{organisation_code}" ) #dependencies=[Depends(PermissionChecker("admin.manager","SYSTEM"))])
+async def create_organisation_admin(admin_schema: CreateAdminEmployee, organisation_code :str ,employee_service : EmployeeService = Depends(get_employee_service)):
 
-    return employee_service.create_employee_service_by_organisation_code(organisation_code = organisation_code , employee_schema=employee)
+     return await employee_service.create_admin_service(organisation_code = organisation_code , admin_schema=admin_schema)
 
 @admin_employee_route.put("/assign-admin/{organisation_id}")
 def assign_admin(employee_code:str,organisation_code :str,employee_service : EmployeeService = Depends(get_employee_service) ):

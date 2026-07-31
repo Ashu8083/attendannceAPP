@@ -15,6 +15,8 @@ class CreatePermision(BaseModel):
     scope : PermissionScopEnumUpdate
     assignable : bool
 
+class CreateListOfPermissions(BaseModel):
+    permissions : list[CreatePermision]
     
 class CreateRolePermision(BaseModel):
     role_id : uuid.UUID

@@ -29,7 +29,7 @@ class CreateEmployee(BaseModel) :
     department : str | None
     designation : str | None
     join_date : date
-    role : str
+
 
     employee_details : CreateEmployeeDetails
 class CreateExistingEmployee(BaseModel):
@@ -137,3 +137,13 @@ class EmployeeDetailsResponce(BaseModel):
         "from_attributes": True
     }
 
+
+class CreateAdminEmployee(BaseModel):
+    full_name: str
+    email: EmailStr
+    # password_hash : str
+    employee_code: str | None
+    employee_status: EmployeeStatus
+    department: str | None
+    designation: str | None
+    join_date: date

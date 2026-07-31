@@ -1,4 +1,5 @@
 import uuid
+from logging import raiseExceptions
 from urllib import request
 
 from redis.commands.search.reducers import random_sample
@@ -36,14 +37,14 @@ class EmployeeService:
         return self.employeeRepo.generate_employee_code(organisation_id)
 
     def generate_employee_code(self,organisation_code : str) -> str:
-        organisation_id = self.organisation_repo.get_organisation_id(organisation_code)
+        organisation_id = self.organisation_repo.get_organisation_id_by_organisation_code(organisation_code)
         if not organisation_id :
             raise OraganisationNotFound
         return self.employeeRepo.generate_employee_code(organisation_id)
 
     def add_existing_user_to_organisation(self,organisation_code :str,user_email:EmailStr, employee_detail_schema : CreateEmployeeDetails ,):
 
-        organisation_id = self.organisation_repo.get_organisation_id(organisation_code)
+        organisation_id = self.organisation_repo.get_organisation_id_by_organisation_code(organisation_code)
         if not organisation_id :
             raise OraganisationNotFound
 
@@ -72,7 +73,7 @@ class EmployeeService:
 
 
     # ====================================================================================================================
-    #          Employee Create Service
+    #          Employee & Admin Create Service
     # ====================================================================================================================
 
     async def create_employee_service(self,organisation_id : uuid.UUID,employee_schema : CreateEmployee):
@@ -85,6 +86,7 @@ class EmployeeService:
         if employee:
             raise EmployeeAlreadyExists
         department_id = self.department_repo.department_id(organisation_id=organisation_id,department_name=employee_schema.department)
+        employee_schema.department = department_id
 
         with UnitOfWork(self.db):
 
@@ -97,6 +99,28 @@ class EmployeeService:
 
             return employee
 
+    async def create_admin_service(self,organisation_code : str,admin_schema : CreateAdminEmployee):
+        organisation_id = self.organisation_repo.get_organisation_id_by_organisation_code(organisation_code)
+        if not organisation_id :
+            raise OraganisationNotFound
+        user = self.userRepo.get_user_by_email(user_email= admin_schema.email)
+        if user:
+            raise EmailAlreadyExists
+        with UnitOfWork(self.db):
+            user = self.userRepo.create_user_as_employee(full_name=admin_schema.full_name,
+                                                         email=admin_schema.email, organisation_id=organisation_id)
+
+            organisation_admin_role = self.organisation_role_repo.create_role()
+            admin = self.employeeRepo.create_employee_admin(user_id=user.id, admin_schema=admin_schema,
+                                                        organisation_id=organisation_id)
+            if not admin:
+                raise ValueError("Employee Creation Error")
+            await email_service.send_welcome_email(email=user.email)
+
+            return admin
+
+
+
     def create_employee_service_by_organisation_code(self,organisation_code : str,employee_schema : CreateEmployee):
 
         organisation_id = self.organisation_repo.get_organisation_by_code(organisation_code)
@@ -107,7 +131,6 @@ class EmployeeService:
             raise EmailAlreadyExists
 
         user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
-
 
         employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
         if not employee :

@@ -35,7 +35,7 @@ class OrganisationRepo:
             .first()
         )
 
-    def get_organisation_id(self, organisation_code: str):
+    def get_organisation_id_by_organisation_code(self, organisation_code: str):
         return (
             self.db.query(Organisation.id)
             .filter(Organisation.organisation_code == organisation_code).scalar())

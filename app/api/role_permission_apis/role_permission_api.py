@@ -11,7 +11,9 @@ from app.dependancy.service_dependancy import get_permission_service
 from app.core.logging_config import logger
 from app.service.role_services.organisation_role_permission_service import OrganisationRolePermissionService
 from app.dependancy.service_dependancy import get_organisation_role_service
-from app.service.role_services.role_creation_service import RoleService
+from app.service.role_services.permission_service import RoleService
+from app.schemas.role_schema import CreateListOfPermissions
+
 permission_router: APIRouter = APIRouter(prefix="/role",tags=["role"])
 
 
@@ -44,6 +46,10 @@ permission_router: APIRouter = APIRouter(prefix="/role",tags=["role"])
 @permission_router.post("/create-permission",response_model=PermissionResponse)
 def create_permission(permission: CreatePermision, permission_service:RoleService  = Depends(get_permission_service)):
     return permission_service.create_permission(permission)
+@permission_router.post("/create-list-permissions")
+def create_list_of_permission(permission_list : CreateListOfPermissions, permission_service:RoleService = Depends(get_permission_service)):
+    return permission_service.create_list_permission(permission_list)
+
 
 # @permission_router.post("/create-role-permission",dependencies = [Depends(PermissionChecker("role"))])
 # def creat_role_permission(data : CreateRole,request : Request ,permissions : ListOFPermissions,permission_service = Depends(get_role_service)) :

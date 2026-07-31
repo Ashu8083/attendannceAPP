@@ -22,7 +22,7 @@ from app.service.employee_services import EmployeeService
 from app.service.auth_service import AuthService
 from app.repo.user_device_repo import  UserDeviceDetailRepo
 from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
-from app.service.role_services.role_creation_service import RoleService
+from app.service.role_services.permission_service import RoleService
 from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
 def get_organaistion_service(
     db: Session = Depends(get_db)
