@@ -239,3 +239,14 @@ class EmployeeRepo:
         self.db.commit()
         self.db.refresh(employee)
         return employee
+
+
+    def assign_role_repo(self, organisation_id: uuid.UUID, employee_code: str, organisation_role_id:uuid.UUID) :
+        stmt = select(Employee).where(Employee.organisation_id == organisation_id,
+                                             Employee.employee_code == employee_code)
+
+        employee = self.db.execute(stmt).scalar()
+        employee.employee_roles.role_id = organisation_role_id
+        self.db.commit()
+        self.db.refresh(employee)
+        return employee

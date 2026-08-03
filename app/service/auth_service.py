@@ -1,5 +1,9 @@
-from fastapi import BackgroundTasks
+from urllib import request
 
+from fastapi import BackgroundTasks
+from sqlalchemy.orm import Session
+
+from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.auth.auth_cntx import AuthContext
 from app.enums.employee_status import EmployeeStatus
 from app.enums.role_enums import UserRole
@@ -8,7 +12,7 @@ from app.repo.employee_repo import EmployeeRepo
 from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
 from app.repo.RolePermissionRepo.system_role_permission_repo import SystemRoleRepo
 from app.repo.user_repo import UserRepo
-from app.repo.user_device_repo import UserDeviceDetailRepo
+
 from app.schemas.otp_schema import OTPSchema
 from app.schemas.auth_schema import AuthResponse
 from app.core.otpgenerate import generate_otp_for_user
@@ -17,56 +21,87 @@ from app.security.jwt_handler import decode_token
 from app.email.service import email_service
 from app.exceptions.custom_exception import *
 from app.enums.scops import AccountType
+from app.models import User
+from app.schemas.userdevice_schema import UserDeviceCreate
+from app.repo.token_type import TokenRepo
+from app.db.UnitOfWork import UnitOfWork
+from app.models.token import Token
 
 
 class AuthService:
-    def __init__(self, auth_repo: AuthRepo, user_repo: UserRepo, system_role_repo: SystemRoleRepo,
+    def __init__(self,
+                 db: Session,
+                 auth_repo: AuthRepo,
+                 user_repo: UserRepo,
+                 system_role_repo: SystemRoleRepo,
+                 user_device_repo: UserDeviceDetailRepo,
+                 token_repo: TokenRepo,
                  org_role_repo: OrganisationLevelRolePermissionsRepo):
+        self.db = db
         self.auth_repo = auth_repo
         self.user_repo = user_repo
-
+        self.user_device_repo = user_device_repo
+        self.token_repo = token_repo
         self.org_role_repo = org_role_repo
         self.sys_role_repo = system_role_repo
 
-    def verify_otp(self, otp_schema: OTPSchema):  ## letter it will replace by redis_config
+    def verify_otp(self, otp_schema: OTPSchema, ):  ## letter it will replace by redis_config
 
         logger.info(f"verify otp for user {otp_schema.user_email}")
-
         user = self.user_repo.get_user_by_email(otp_schema.user_email)
         employee_id = None
         if not user:
             raise UserNotFound(f"User with email {otp_schema.user_email} not found")
-
         otp = self.auth_repo.get_otp(user.id)
+        logger.info(f"otp for user id{otp.user_id}")
+        logger.info(f"otp :{otp.otp}")
         if not otp:
             raise OtpInValid
         if otp.otp != otp_schema.otp:
             raise OtpInValid
+
         permissions = set()
+
         if user.account_type == AccountType.ORGANISATION:
             role = user.employee.employee_roles.role
             for rp in role.organisation_role_permissions:
                 permissions.add(rp.permission.name)
             logger.info(permissions)
-        if user.account_type == AccountType.SYSTEM:
-            role = user.user_role.system_role
+            employee_id = user.employee.employee_id
 
+        if user.account_type == AccountType.SYSTEM:
+            role = user.user_role.system_roles
             for rp in role.system_role_permissions:
                 permissions.add(rp.permission.name)
-
+            employee_id = None
         access_token = create_access_token(user.id, user_role=user.account_type, organisation_id=user.organisation_id,
                                            employee_id=employee_id)
-
         if not access_token:
             raise Exception(f"access_token not generated for user {user.id} : {otp_schema.user_email}")
-        refresh_token = create_refresh_token(user.id, user_role=user.account_type,
-                                             organisation_id=user.organisation_id)  ## store the refresh token in userdevice
+
+        expire_time ,refresh_token = create_refresh_token(user.id, user_role=user.account_type,
+                                             organisation_id=user.organisation_id)
+        user_device_schema = UserDeviceCreate(
+            device_type="app",  # <---- change it letter
+            device_unique_id="letter will add",  # < -----------
+            firebaseFCM_token="letter will add",
+        )
+        with UnitOfWork(self.db):
+            user_device = self.user_device_repo.create_user_device(user.id, user_device_schema)
+            token = Token(
+                device_id=user_device.id,
+                token=refresh_token,
+                expire_at = expire_time
+            )
+            refresh_token = self.token_repo.create(token)
+
+        ## store the refresh token in user device
         if not refresh_token:
             raise Exception(f"access_token not generated for user {user.id} : {otp_schema.user_email}")
 
         return AuthResponse(
             access_token=access_token,
-            refresh_token=refresh_token[1],
+            refresh_token=refresh_token,
             token_type="Bearer",
             expires_in=3600,
             permission_list=list(permissions)
@@ -74,10 +109,13 @@ class AuthService:
 
     async def generate_otp_service(self, user_email, background_task: BackgroundTasks):
         user_id = self.user_repo.get_id_by_email(user_email)
+
         if not user_id:
             raise UserNotFound(f"User with email {user_email} not found")
+
         otp = generate_otp_for_user()
         otp_model = self.auth_repo.create_otp(user_id, otp)
+
         if not otp_model:
             logger.error(f"otp model for user {user_id} not created")
             raise UserNotFound(f"User with email {user_email} not found")
@@ -136,7 +174,7 @@ class AuthService:
             user_role = user.system_roles.system_role.name
         logger.info(f"auth model for user {user.id} has permissions of {permissions} for user role {user_role}")
 
-        return auth
+        return
 
 
 

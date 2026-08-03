@@ -38,7 +38,7 @@ class PermissionResponse(BaseModel):
     description : str
 
 class ListOFPermissions(BaseModel):
-     permissions : list[str]
+     permissions : list[CreatePermision]
 
 class SystemRoleResponse(BaseModel):
 

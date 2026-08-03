@@ -4,19 +4,24 @@ from uuid import UUID
 from app.exceptions.custom_exception import (
     RoleAlreadyExist,
     RoleNotFound,
-    PermissionNotFound,
+    PermissionNotFound, UserNotFound,
 )
 from app.models.system_roles import SystemRoles
+from app.models.system_role_permission import SystemRolePermissions
 from app.repo.RolePermissionRepo.system_role_permission_repo import SystemRoleRepo
 from app.schemas.role_schema import (
     CreateRoleSchema,
     ListOFPermissions,
 )
+from app.repo.user_repo import UserRepo
+from app.enums.scops import AccountType
+
 
 
 class SystemRoleService:
-    def __init__(self, repo: SystemRoleRepo):
+    def __init__(self, repo: SystemRoleRepo,user_repo: UserRepo):
         self.repo = repo
+        self.user_repo = user_repo
 
     # -------------------------
     # Role
@@ -56,9 +61,9 @@ class SystemRoleService:
     # -------------------------
 
     def create_role_permissions(
-        self,
-        role_name: str,
-        permissions: ListOFPermissions,
+            self,
+            role_name: str,
+            permissions: ListOFPermissions,
     ) -> SystemRoles:
 
         role = self.repo.get_role(role_name)
@@ -66,17 +71,23 @@ class SystemRoleService:
         if not role:
             raise RoleNotFound(role_name=role_name)
 
-        for permission_name in permissions.permissions:
+        role_permissions = []
 
-            permission = self.repo.get_permission(permission_name)
+        for permission_data in permissions.permissions:
+
+            permission = self.repo.get_permission(permission_data.name)
 
             if not permission:
-                raise PermissionNotFound(permission_name)
+                raise PermissionNotFound(permission_data.name)
 
-            self.repo.create_role_permission(
-                role.id,
-                permission.id,
+            role_permissions.append(
+                SystemRolePermissions(
+                    system_roles_id=role.id,
+                    permission_id=permission.id,
+                )
             )
+
+        self.repo.create_role_permissions_system(role_permissions)
 
         return role
 
@@ -98,3 +109,16 @@ class SystemRoleService:
 
     def get_all_system_permissions(self) -> List[Any]:
         return self.repo.get_all_system_permissions()
+
+    def assign_sytem_role_permission (self,user_email, user_role,permission_list):
+
+        role = self.repo.get_role(user_role)
+        if not role:
+            raise RoleNotFound(role_name=user_role)
+        user = self.user_repo.get_user(user_email)
+        if not user:
+            raise UserNotFound(user_email=user_email)
+        if user.account_type == AccountType.ORGANISATION:
+            raise ValueError("User have no Access to  System")
+
+

@@ -40,20 +40,21 @@ class AuthRepo :
         expire_time = (datetime.now() + timedelta(minutes=5)).time()
 
 
-        temp_otp : TempOtpStorage = self.db.query(TempOtpStorage).filter(TempOtpStorage.user_id == user_id)
+        temp_otp : TempOtpStorage = self.db.query(TempOtpStorage).filter(TempOtpStorage.user_id == user_id).first()
+        logger.info( f"previous otp storge {temp_otp}")
         if temp_otp :
             temp_otp.otp = otp
-            temp_otp.date = date.today
+            temp_otp.date = date.today()
             temp_otp.is_expired = False
             temp_otp.expire_time = expire_time
-
-        temp_otp = TempOtpStorage(
-            otp = otp,
-            date= date.today(),
-            expire_time = expire_time,
-            user_id = user_id,
-            is_expired = False
-        )
+        if not temp_otp:
+            temp_otp = TempOtpStorage(
+                 otp = otp,
+                date= date.today(),
+                expire_time = expire_time,
+                user_id = user_id,
+                is_expired = False
+            )
         try:
             self.db.add(temp_otp)
             self.db.commit()

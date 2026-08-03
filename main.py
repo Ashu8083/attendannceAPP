@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.openapi.models import HTTPBearer
 from redis import RedisError
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -22,6 +23,8 @@ from app.models.leave_record_model import LeaveRequest
 
 from app.core.logging_config import logger
 from app.redis_config.redis import redis_client
+
+
 
 
 @asynccontextmanager
@@ -62,7 +65,7 @@ app = FastAPI(
     title="HRMS API",
     lifespan=lifespan,
 )
-
+bearer_scheme = HTTPBearer()
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

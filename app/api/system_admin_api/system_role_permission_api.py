@@ -1,11 +1,14 @@
 from typing import List
 
 from fastapi import APIRouter, Depends
+from fastapi.params import Security
 
 from app.auth.permission_check import PermissionChecker
 from app.dependancy.service_dependancy import get_role_system_role_service
 from app.schemas.role_schema import SystemRoleResponse as SystemRoles, SystemRoleResponse
 from app.schemas.role_schema import PermissionResponse
+from fastapi import Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.schemas.role_schema import (
     CreateRoleSchema,
     ListOFPermissions,
@@ -13,6 +16,8 @@ from app.schemas.role_schema import (
 from app.service.role_services.system_role_permission_service import (
     SystemRoleService,
 )
+
+bearer_scheme = HTTPBearer()
 
 system_role_router = APIRouter(
     prefix="/system-roles",
@@ -26,16 +31,16 @@ system_role_router = APIRouter(
 
 @system_role_router.post(
     "/create-role",
-    response_model=SystemRoles,
-    dependencies=[Depends(PermissionChecker("system_role.create","SYSTEM"))],
-)
+    response_model=SystemRoles)
+    #dependencies=[Depends(PermissionChecker("system_role.create","SYSTEM"))],
+
 def create_role(data: CreateRoleSchema,service: SystemRoleService = Depends(get_role_system_role_service)):
     return service.create_role(data)
 
 @system_role_router.get(
     "",
     response_model=List[SystemRoles],
-    dependencies=[Depends(PermissionChecker("system_role.view","SYSTEM"))],
+    # dependencies=[Depends(PermissionChecker("system_role.view","SYSTEM"))],
 )
 def get_all_roles(
     service: SystemRoleService = Depends(get_role_system_role_service),
@@ -76,7 +81,7 @@ def delete_role(
 
 @system_role_router.post(
     "/{role_name}/permissions",
-    dependencies=[Depends(PermissionChecker("system_role.permission.assign","SYSTEM"))],
+    # dependencies=[Depends(PermissionChecker("system_role.permission.assign","SYSTEM"))],
 )
 def assign_permissions(
     role_name: str,
@@ -111,6 +116,13 @@ def get_role_permissions(
     dependencies=[Depends(PermissionChecker("permission.view","SYSTEM"))],
 )
 def get_all_system_permissions(
+    credentials=Security(bearer_scheme),
     service: SystemRoleService = Depends(get_role_system_role_service),
 ):
     return service.get_all_system_permissions()
+
+
+@system_role_router.post("/assign-role-system-level")
+def assign_role_employee(user_email, user_role,system_service : SystemRoleService = Depends(get_role_system_role_service)):
+
+    return

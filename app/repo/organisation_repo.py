@@ -15,6 +15,11 @@ class OrganisationRepo:
         return self.db.query(Organisation.id).filter(Organisation.id == organisation_id).first()
 
 
+    def get_organisation_id(self, organisation_code) -> uuid.UUID:
+        return (
+            self.db.query(Organisation.id).filter(Organisation.organisation_code == organisation_code).scalar()
+        )
+    
     def get_organisation_by_code(self, code: str) :
         return (
             self.db.query(Organisation)

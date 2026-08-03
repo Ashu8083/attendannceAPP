@@ -1,26 +1,21 @@
-import datetime
+
+# import datetime
 import uuid
 from datetime import date
 
 from dateutil.utils import today
 
 from app.enums.work_mode import WorkMode
-from app.models import Employee
-from app.repo import attendance_record_repo, employee_repo
+
 from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.employee_repo import EmployeeRepo
 from app.schemas.attendance_schema import  AttendanceUpdate, PunchInOutSchema
-from app.service import organisation_service
 from app.core.logging_config import logger
 from app.helperFunction.locationcheker import get_distance
 from app.exceptions.custom_exception import (
     AttendanceNotFound,
     TodayAttendanceAlreadyTaken,
-    NotPunchIn,AlreadyPunchIN,
-    AlreadyPunchOut,
-    EmployeeNotFound,
-    EmployeeAlreadyExists,
-    EmailAlreadyExists)
+    EmployeeNotFound)
 
 class AttendanceService:
     def __init__(self,attendacnce_record_repo : AttendanceRepo,employee_repo : EmployeeRepo):
@@ -94,8 +89,6 @@ class AttendanceService:
 
     def get_today_employee_attendance(self,organisation_id : uuid.UUID,employee_id : uuid.UUID):
         return self.attendacnce_record_repo.get_employee_today_attendance(employee_id=employee_id , organisation_id=organisation_id)
-
-
 
     def update_employee_attendance(self,organisation_id : uuid.UUID, attendance_update_schema : AttendanceUpdate ):
         employee_id = self.employee_repo.get_employee_id(organisation_id,employee_code=attendance_update_schema.employee_code)

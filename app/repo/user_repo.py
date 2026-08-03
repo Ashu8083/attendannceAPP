@@ -16,7 +16,9 @@ from app.exceptions.custom_exception import UserNotFound
 from app.enums.scops import AccountType
 from app.core.logging_config import logger
 
-#for adding organisation admin only 
+
+
+#for adding organisation admin only
 # repo are only made for communicate with db 
 class UserRepo:
 
@@ -37,6 +39,14 @@ class UserRepo:
             .filter(User.id == user_id, User.status == UserStatus.ACTIVE)
             .first()
         )
+
+    def get_users_by_account_scope(self,account_scope : str):
+
+        return (
+            self.db.query(User).filter(User.account_type == account_scope).all()
+        )
+
+
     def create_user_as_employee(self,full_name,email,organisation_id):
             user = User(
                  full_name = full_name,
@@ -58,15 +68,8 @@ class UserRepo:
                  email = data.email,
                  account_type = data.account_type,
             )
-            try:
-                self.db.add(user)
-                self.db.commit()
-                self.db.refresh(user)
-            except Exception as e:
-                self.db.rollback()
-                print(e)
-                raise e
-            print(user.email)
+            self.db.add(user)
+            self.db.flush()
             return user
 
     def updateUser(self,data:UserUpdate):

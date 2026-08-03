@@ -2,11 +2,18 @@ import time
 import uuid
 
 from fastapi import Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.logging_config import logger
 from app.core.request_context import request_id_ctx
 from app.db.database import SessionLocal
+from app.repo.AuthRepo import AuthRepo
+from app.repo.user_repo import UserRepo
+from app.repo.employee_repo import EmployeeRepo
+from app.repo.user_device_repo import UserDeviceDetailRepo
+from app.service.auth_service import AuthService
+
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -36,9 +43,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/email/test",
         ]
 
-        if request.url.path in PUBLIC_ROUTES:
-            return await call_next(request)
-
+    #     if request.url.path in PUBLIC_ROUTES:
+    #         return await call_next(request)
+    #
     #     auth_header = request.headers.get("Authorization") # extract the token from header
     #     if not auth_header:
     #         return JSONResponse(
@@ -62,7 +69,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     #             "message": "Missing Authorization header",
     #         },
     #     },
-
+    #
     # )
     #     if not token:
     #         return JSONResponse(
@@ -74,13 +81,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
     #             "message": "Missing Session",
     #         },
     #     },
-
+    #
     # )
-
+    #
     #     auth_service = AuthService(auth_repo=AuthRepo(db_session),user_repo=UserRepo(db_session),employee_repo=EmployeeRepo(db_session),user_device=(UserDeviceDetailRepo(db_session)))
-
+    #
     #     auth =   auth_service.verify_access_token(token)
-
+    #
     #     if auth is None:
     #         raise
     #     request.state.auth = auth

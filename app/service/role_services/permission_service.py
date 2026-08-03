@@ -50,9 +50,7 @@ class RoleService:
 
 
     def create_permission (self,create_permission_schema : CreatePermision) :
-         permission = self.role_repo.get_permission(create_permission_schema.name)
-         if permission :
-            raise PermissionAlreadyExist
+
          permission = self.role_repo.create_permission(create_permission_schema)
          return permission
 

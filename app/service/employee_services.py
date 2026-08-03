@@ -18,7 +18,7 @@ from app.repo.RolePermissionRepo.organisation_role_permission import Organisatio
 from app.models import OrganisationRoles
 from sqlalchemy.orm import Session
 from app.repo.department_repo import DepartmentRepo
-
+from app.repo.employee_repo import EmployeeRepo
 
 
 class EmployeeService:
@@ -211,3 +211,28 @@ class EmployeeService:
             raise EmployeeNotFound
 
         return self.employeeRepo.remove_admin(employee_code=employee_code ,organisation_id= organisation_id)
+
+##=================================================================================================
+#======================================= Assign Role ========================================
+#=================================================================================================
+
+    def assign_role_to_employee(
+        self,
+        employee_code : str,
+        organisation_id : UUID,
+        organisation_role_name : str,
+
+    ):
+
+        organisation_role_id = self.organisation_role_repo.get_role(organisation_id= organisation_id, role_name= organisation_role_name)
+        if not organisation_role_id :
+            raise
+        employee = self.employeeRepo.get_employee_by_employee_code(employee_code)
+        if not employee :
+            raise
+        self.employeeRepo.assign_role_repo(organisation_id= organisation_id,employee_code= employee_code ,organisation_role_id= organisation_role_id)
+
+        return employee
+
+
+

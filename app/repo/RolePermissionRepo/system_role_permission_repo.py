@@ -9,6 +9,7 @@ from app.models.system_roles import SystemRoles
 from app.models.system_role_permission import SystemRolePermissions
 from app.schemas.role_schema import CreateRoleSchema
 from app.enums.permission_scop import PermissionScopEnumUpdate
+from app.models import UserRole
 
 
 class SystemRoleRepo:
@@ -39,10 +40,13 @@ class SystemRoleRepo:
         return role
 
     def get_role(self, role_name: str) -> SystemRoles | None:
+
+        role = self.db.query(SystemRoles).filter(SystemRoles.role_name == role_name).first()
+        return role
+
+    def get_role_id(self, role_name: str) -> uuid.UUID | None:
         return (
-            self.db.query(SystemRoles)
-            .filter(SystemRoles.role_name == role_name)
-            .first()
+            self.db.query(SystemRoles.id).filter(SystemRoles.role_name == role_name).scalar()
         )
 
     def get_role_by_id(self, role_id: uuid.UUID) -> SystemRoles | None:
@@ -83,34 +87,54 @@ class SystemRoleRepo:
     # Role Permission
     # -------------------------
 
-    def create_role_permission(
-        self,
-        role_id: uuid.UUID,
-        permission_id: uuid.UUID,
-    ) -> SystemRolePermissions:
+    def create_role_permissions_system(
+            self,
+            role_permissions: list[SystemRolePermissions],
+    ):
 
-        role_permission = (
-            self.db.query(SystemRolePermissions)
-            .filter(
-                SystemRolePermissions.system_role_id == role_id,
-                SystemRolePermissions.permission_id == permission_id,
+        for rp in role_permissions:
+            exists = (
+                self.db.query(SystemRolePermissions)
+                .filter(
+                    SystemRolePermissions.system_roles_id == rp.system_roles_id,
+                    SystemRolePermissions.permission_id == rp.permission_id,
+                )
+                .first()
             )
-            .first()
-        )
 
-        if role_permission:
-            return role_permission
+            if not exists:
+                self.db.add(rp)
 
-        role_permission = SystemRolePermissions(
-            system_role_id=role_id,
-            permission_id=permission_id,
-        )
-
-        self.db.add(role_permission)
         self.db.commit()
-        self.db.refresh(role_permission)
 
-        return role_permission
+    # def create_role_permission(
+    #     self,
+    #     role_id: uuid.UUID,
+    #     permission_id: uuid.UUID,
+    # ) -> SystemRolePermissions:
+    #
+    #     role_permission = (
+    #         self.db.query(SystemRolePermissions)
+    #         .filter(
+    #             SystemRolePermissions.system_role_id == role_id,
+    #             SystemRolePermissions.permission_id == permission_id,
+    #         )
+    #         .first()
+    #     )
+    #
+    #     if role_permission:
+    #         return role_permission
+    #
+    #     role_permission = SystemRolePermissions(
+    #         system_role_id=role_id,
+    #         permission_id=permission_id,
+    #     )
+    #
+    #     self.db.add(role_permission)
+    #     self.db.commit()
+    #     self.db.refresh(role_permission)
+    #
+    #     return role_permission
 
     def get_role_permissions(
         self,
@@ -129,3 +153,18 @@ class SystemRoleRepo:
             rp.permission.name
             for rp in role_permissions
         ]
+
+    def create_system_role(self,user_id: uuid.UUID,
+                           system_role_id: uuid.UUID) :
+        user_role = UserRole(
+                        user_id = user_id,
+                        system_roles_id = system_role_id
+                    )
+        self.db.add(user_role)
+        self.db.flush()
+        self.db.refresh(user_role)
+
+        return user_role
+
+
+

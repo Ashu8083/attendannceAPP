@@ -10,7 +10,6 @@ class UserDeviceCreate(BaseModel):
     device_type: str
     device_unique_id: str
     firebaseFCM_token: str
-    refresh_token_id: uuid.UUID
 
 
 class UserDeviceUpdate(BaseModel):

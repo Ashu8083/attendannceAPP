@@ -13,7 +13,7 @@ from app.dependancy.service_dependancy import get_organaistion_service
 
 organisation_router = APIRouter(prefix="/organisation",tags=["organisation"])
 
-@organisation_router.post("/create",response_model=OrganisationDetailsResponse)
+@organisation_router.post("/create")
 def create(
     data: CreateOrganisation,
     service: OrganisationService = Depends(get_organaistion_service)

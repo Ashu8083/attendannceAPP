@@ -29,5 +29,17 @@ def get_user(user_email : str,
 def get_user_status():
     return
 
+@user_router.post("/get_user_role_permissions")
+def get_user_role_permissions(useremail : str,):
+    return
+
+@user_router.get("/get-user-by-account-scope",response_model=list[UserDetailsRespone])
+def get_user_account_scope(account_scope : str, service: UserService = Depends(get_user_service)):
+    return service.get_user_by_account_scope(account_scope)
+
+@user_router.post("/assign-user-role")
+def assign_user_role(user_id , user_role ,service : UserService = Depends(get_user_service)):
+    return service.assign_role_user(user_id,user_role)
+
 
 

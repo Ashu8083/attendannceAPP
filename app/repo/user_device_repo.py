@@ -2,6 +2,7 @@ from uuid import UUID
 import uuid
 from datetime import datetime,date
 
+from dns import update
 from sqlalchemy import select
 
 from app.models.token import Token
@@ -14,18 +15,12 @@ class UserDeviceDetailRepo:
         self.db = db
     
     def create_user_device(self,user_id :uuid.UUID ,userdevice : UserDeviceCreate):
-        user_device = self.db.query(UserDeviceDetails).filter(UserDeviceDetails.user_id == user_id,
-                                                UserDeviceDetails.device_unique_id == userdevice.device_unique_id).first()
-        
-        if  user_device:
-            raise ValueError("User Device Record alread Exist")
-        
+
         user_device = UserDeviceDetails(
                                         user_id = user_id,
                                         device_unique_id = userdevice.device_unique_id,
                                         device_type = userdevice.device_type,
                                         firebaseFCM_token = userdevice.firebaseFCM_token,
-                                        refresh_token_id = userdevice.refresh_token_id,
                                         last_login = date.now(),
                                         is_login = True
                                          )

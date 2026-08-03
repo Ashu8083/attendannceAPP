@@ -24,18 +24,25 @@ from app.repo.user_device_repo import  UserDeviceDetailRepo
 from app.repo.RolePermissionRepo.organisation_role_permission import OrganisationLevelRolePermissionsRepo
 from app.service.role_services.permission_service import RoleService
 from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
+from app.service.role_services.defult_role_permission import DefaultRolePermissionService
+from app.repo.token_type import TokenRepo
+
+
 def get_organaistion_service(
     db: Session = Depends(get_db)
 ):
     repo = OrganisationRepo(db)
-    return OrganisationService(repo)
+    organaistion_deful_role = DefaultRolePermissionService(db)
+    return OrganisationService(repo,organaistion_deful_role)
 
 def get_user_service(
         db: Session = Depends(get_db)
 ):
     user_repo = UserRepo(db)
     organisation_repo = OrganisationRepo(db)
-    return UserService(user_repo,organisation_repo)
+    system_role_repo = SystemRoleRepo(db)
+    db = db
+    return UserService(user_repo,organisation_repo,system_role_repo,db= db)
 
 def get_employee_service(
         db: Session = Depends(get_db)
@@ -73,12 +80,13 @@ def get_auth_service(
 ):
     auth_repo = AuthRepo(db)
     user_repo = UserRepo(db)
-    # user_device_repo = UserDeviceDetailRepo(db)
+    user_device_repo = UserDeviceDetailRepo(db)
+    token_repo = TokenRepo(db)
     #employee_repo = EmployeeRepo(db)
     # role_permission_repo = RolePermissionRepo(db)
     organisation_role = OrganisationLevelRolePermissionsRepo(db)
     system_role = SystemRoleRepo(db)
-    return AuthService(auth_repo, user_repo,system_role,organisation_role )
+    return AuthService(db,auth_repo, user_repo,system_role,user_device_repo=user_device_repo,token_repo=token_repo,org_role_repo=organisation_role )
 
 
 def get_leave_service(
@@ -92,7 +100,8 @@ def get_role_system_role_service(
         db: Session = Depends(get_db),
 ):
     system_role_repo = SystemRoleRepo(db)
-    return SystemRoleService(system_role_repo)
+    user_repo = UserRepo(db)
+    return SystemRoleService(system_role_repo,user_repo)
 def get_organisation_role_service(
         db: Session = Depends(get_db),
 ):

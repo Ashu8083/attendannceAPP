@@ -1,18 +1,11 @@
 import uuid
 
 from fastapi import APIRouter ,Depends
-from typing import List
-from fastapi import  Request
-from app.auth.permission_check import PermissionChecker
-from app.dependancy.service_dependancy import get_role_system_role_service
 from app.schemas.role_schema import  CreatePermision, PermissionResponse, ListOFPermissions
 from app.dependancy.service_dependancy import get_permission_service
-# from app.service.role_services.system_role_permission_service import
-from app.core.logging_config import logger
-from app.service.role_services.organisation_role_permission_service import OrganisationRolePermissionService
-from app.dependancy.service_dependancy import get_organisation_role_service
 from app.service.role_services.permission_service import RoleService
-from app.schemas.role_schema import CreateListOfPermissions
+
+
 
 permission_router: APIRouter = APIRouter(prefix="/role",tags=["role"])
 
@@ -46,18 +39,14 @@ permission_router: APIRouter = APIRouter(prefix="/role",tags=["role"])
 @permission_router.post("/create-permission",response_model=PermissionResponse)
 def create_permission(permission: CreatePermision, permission_service:RoleService  = Depends(get_permission_service)):
     return permission_service.create_permission(permission)
-@permission_router.post("/create-list-permissions")
-def create_list_of_permission(permission_list : CreateListOfPermissions, permission_service:RoleService = Depends(get_permission_service)):
-    return permission_service.create_list_permission(permission_list)
+
 
 
 # @permission_router.post("/create-role-permission",dependencies = [Depends(PermissionChecker("role"))])
 # def creat_role_permission(data : CreateRole,request : Request ,permissions : ListOFPermissions,permission_service = Depends(get_role_service)) :
 #     return permission_service.create_role_permission(role_creation_schema= data,organisation_id = request.state.auth.organisation_id ,permissions = permissions)
 
-@permission_router.post("/assign-role")
-def assign_role_employee():
-    return
+
 # @permission_router.posr("/create-default-role/{organisation_code}")
 # def create_default_role(organisation_code: str, organisation_role_service : OrganisationRolePermissionService = Depends(get_organisation_role_service)):
 #     return organisation_role_service

@@ -77,3 +77,25 @@ def get_employee_service(
         employee_service : EmployeeService = Depends(get_employee_service)
 ):
     return employee_service.get_all_employee_service(organisation_id= request.state.auth.organisation_id)
+
+
+#=================================================================================================
+##=====================================     Assign Role       ====================================
+##================================================================================================
+
+@employee_router.post("/assign-role-to-employee",
+                      response_model=EmployeeDetailsResponce,
+                      dependencies=[Depends(PermissionChecker("role","ORGANISATION"))])
+def assign_role_to_employee(
+        employee_code : str,
+        role_name : str,
+        employee_service : EmployeeService = Depends(get_employee_service)
+):
+    responses = employee_service.assign_role_to_employee(
+        organisation_id= request.state.auth.organisation_id,
+        employee_code= employee_code,
+        organisation_role_name = role_name
+    )
+    return responses
+
+

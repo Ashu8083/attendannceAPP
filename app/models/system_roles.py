@@ -16,15 +16,19 @@ class SystemRoles(Base,TimestampMixin):
         default=uuid.uuid4
                       )
     role_name : Mapped[str] = mapped_column(
-      String(255),
-      unique=True,
-      nullable=False
-    )
+                String(255),
+                unique=True,
+                nullable=False
+                )
 
     description: Mapped[str | None] = mapped_column(
-        String(255),
-        nullable=True,
-    )
+                        String(255),
+                        nullable=True,
+                        )
 
     system_role_permissions = relationship("SystemRolePermissions", back_populates="system_roles")
+    user_role = relationship(
+        "UserRole",
+        back_populates="system_roles"
+    )
 

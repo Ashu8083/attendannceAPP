@@ -24,7 +24,7 @@ class Token(Base, TimestampMixin):
         nullable=False
     )
 
-    token: Mapped[str] = mapped_column(String)
+    refresh_token: Mapped[str] = mapped_column(String)
     is_revoked: Mapped[bool] = mapped_column(
         Boolean,
         default=False

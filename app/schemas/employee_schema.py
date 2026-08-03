@@ -133,7 +133,6 @@ class EmployeeDetailsResponce(BaseModel):
     state: Optional[str] = None
 
     model_config ={
-        
         "from_attributes": True
     }
 

@@ -21,7 +21,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 
-def create_access_token(user_id,user_role,organisation_id,employee_id :uuid.UUID) -> str:# life spam will 1 week generate new token on the use of the access token
+def create_access_token(user_id,user_role,organisation_id,employee_id :uuid.UUID | None) -> str:# life spam will 1 week generate new token on the use of the access token
 
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
@@ -30,7 +30,7 @@ def create_access_token(user_id,user_role,organisation_id,employee_id :uuid.UUID
         "user_id": str(user_id),
         "system_role" : user_role,
         "organisation_id": str(organisation_id),
-        "employee_id": str(employee_id),
+        "employee_id": str(employee_id) if employee_id else None,
         "token_type" : "access",
         "exp": expire,
     }
@@ -58,7 +58,7 @@ def create_refresh_token (user_id,user_role,organisation_id) :# life spam will 5
         SECRET_KEY,
         algorithm=ALGORITHM
     )
-    return
+
 def decode_token(token):
     try:
         payload = jwt.decode(

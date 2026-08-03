@@ -3,12 +3,16 @@ import uuid
 
 from app.schemas.organisation_schema import CreateOrganisation,OrgnisationDetails,OrganisationUpdateStatus,OrganisationDetailsUpdate,UpdateOrganisationSubscription
 from app.repo.organisation_repo import OrganisationRepo
+from app.service.role_services.defult_role_permission import DefaultRolePermissionService
+
 
 
 
 class OrganisationService():
-    def __init__(self,organisationrepo :OrganisationRepo):
+    def __init__(self,organisationrepo :OrganisationRepo,defultOrganisationRole : DefaultRolePermissionService):
         self.organisationRepo = organisationrepo
+        self.defultOrganisationRole = defultOrganisationRole
+
         
 
     def generate_organissation_code(self,org_name: str) -> str:
@@ -25,8 +29,9 @@ class OrganisationService():
                 raise ValueError("Organisation already exists")
         code =self.generate_organissation_code(data.organisation_name)
         organisation = self.organisationRepo.create_organisation(data,code=code)
+        defult_role_permission =self.defultOrganisationRole.create_default_roles(organisation_id= organisation.id)
 
-        return organisation
+        return organisation, defult_role_permission
     
     def get_organisation(self,organisation_code):
 

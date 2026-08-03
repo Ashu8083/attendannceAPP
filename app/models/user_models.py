@@ -88,7 +88,8 @@ class User(Base,TimestampMixin):
 
     user_role = relationship(
         "UserRole",
-        back_populates="user"
+        back_populates="user",
+        uselist=False,
     )
 
 
