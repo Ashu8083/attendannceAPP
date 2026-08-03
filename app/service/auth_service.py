@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib import request
 
 from fastapi import BackgroundTasks
@@ -79,7 +80,7 @@ class AuthService:
         if not access_token:
             raise Exception(f"access_token not generated for user {user.id} : {otp_schema.user_email}")
 
-        expire_time ,refresh_token = create_refresh_token(user.id, user_role=user.account_type,
+        refresh_token = create_refresh_token(user.id, user_role=user.account_type,
                                              organisation_id=user.organisation_id)
         user_device_schema = UserDeviceCreate(
             device_type="app",  # <---- change it letter
@@ -88,10 +89,14 @@ class AuthService:
         )
         with UnitOfWork(self.db):
             user_device = self.user_device_repo.create_user_device(user.id, user_device_schema)
+            logger.info(f"user device unique id{user_device.id}")
+            logger.info(f"user device unique id{user_device.device_unique_id}")
+            if not user_device:
+                raise ValueError("device not created")
             token = Token(
                 device_id=user_device.id,
-                token=refresh_token,
-                expire_at = expire_time
+                refresh_token=refresh_token[1],
+                expires_at = refresh_token[0]
             )
             refresh_token = self.token_repo.create(token)
 
@@ -101,7 +106,7 @@ class AuthService:
 
         return AuthResponse(
             access_token=access_token,
-            refresh_token=refresh_token,
+            refresh_token=refresh_token[1],
             token_type="Bearer",
             expires_in=3600,
             permission_list=list(permissions)
@@ -176,6 +181,67 @@ class AuthService:
 
         return
 
+    def verify_refresh_token(self, token) -> AuthContext:
+        token = self.token_repo.get_by_token(token)
+        if not token:
+            raise
+        if token.expires_at < datetime.now():
+            raise
+        if token.is_revoked is True:
+            raise
+
+        payload = decode_token(token)
+        user = self.user_repo.get_user(payload["user_id"])
+        if not user:
+            raise UserNotFound(f"User with email {payload['email']} not found")
+        user_role = ""
+        permissions = set()
+
+        if user.account_type == AccountType.ORGANISATION:
+            role = user.employee.employee_roles.role
+            for rp in role.organisation_role_permissions:
+                permissions.add(rp.permission.name)
+            logger.info(permissions)
+            employee_id = user.employee.employee_id
+
+        if user.account_type == AccountType.SYSTEM:
+            role = user.user_role.system_roles
+            for rp in role.system_role_permissions:
+                permissions.add(rp.permission.name)
+            employee_id = None
+        access_token = create_access_token(user.id, user_role=user.account_type, organisation_id=user.organisation_id,
+                                           employee_id=employee_id)
+
+        refresh_token = create_refresh_token(user.id, user_role=user.account_type,
+                                             organisation_id=user.organisation_id)
+        user_device_schema = UserDeviceCreate(
+            device_type="app",  # <---- change it letter
+            device_unique_id="letter will add",  # < -----------
+            firebaseFCM_token="letter will add",
+        )
+        with UnitOfWork(self.db):
+            user_device = self.user_device_repo.create_user_device(user.id, user_device_schema)
+            logger.info(f"user device unique id{user_device.id}")
+            logger.info(f"user device unique id{user_device.device_unique_id}")
+            if not user_device:
+                raise ValueError("device not created")
+            token = Token(
+                device_id=user_device.id,
+                refresh_token=refresh_token[1],
+                expires_at=refresh_token[0]
+            )
+            refresh_token = self.token_repo.create(token)
+
+        ## store the refresh token in user device
+       
+
+        return AuthResponse(
+            access_token=access_token,
+            refresh_token=refresh_token[1],
+            token_type="Bearer",
+            expires_in=3600,
+            permission_list=list(permissions)
+        )
 
 
 

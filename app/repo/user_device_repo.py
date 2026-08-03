@@ -20,11 +20,12 @@ class UserDeviceDetailRepo:
                                         user_id = user_id,
                                         device_unique_id = userdevice.device_unique_id,
                                         device_type = userdevice.device_type,
-                                        firebaseFCM_token = userdevice.firebaseFCM_token,
-                                        last_login = date.now(),
+                                        firebase_fcm_token = userdevice.firebaseFCM_token,
+                                        last_login = datetime.now(),
                                         is_login = True
                                          )
         self.db.add(user_device)
+        self.db.flush()
         return user_device
     
     def update_on_user_logout(self,user_id,user_device_id,userdeviceupdate : UserDeviceUpdate):
