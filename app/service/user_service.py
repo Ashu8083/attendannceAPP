@@ -34,13 +34,17 @@ class UserService:
 
         user = self.userrepo.get_user_by_email(user_email= user_data.email)
         organisation_id = self.organisation_repo.get_organisation_id(user_data.organisation_code)
-        role_id = self.system_role_permission_repo.get_role(role_name= user_data.role_name)
+        role = self.system_role_permission_repo.get_role(role_name= user_data.role_name)
         print (organisation_id)
         if  user:
                raise EmailAlreadyExists
-        with UnitOfWork(self.db):
-            user = self.userrepo.create_user(user_data,organisation_id)
-            system_role_permission = self.system_role_permission_repo.create_system_role(user.id,system_role_id=role_id)
+        try:
+            with UnitOfWork(self.db):
+                user = self.userrepo.create_user(user_data,organisation_id)
+                system_role_permission = self.system_role_permission_repo.create_system_role(user.id,system_role_id = role.id)
+        except Exception as e:
+            logger.error(f"error while creating user {e}")
+            raise ValueError("error while creating UserCreation")
         print (user,system_role_permission)
 
         logger.info("< ------- user created  with role ---------  >")
@@ -82,6 +86,7 @@ class UserService:
         if not user:
             raise ValueError("user not found")
         role_id = self.system_role_permission_repo.get_role_id(role_name)
+
         logger.info(f"assigning role {role_id}")
 
         role = self.system_role_permission_repo.create_system_role(user_id,system_role_id=role_id)

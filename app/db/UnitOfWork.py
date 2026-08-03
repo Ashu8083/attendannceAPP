@@ -1,5 +1,5 @@
 from sqlalchemy.orm import session
-
+from app.core.logging_config import logger
 class UnitOfWork:
 
     def __init__(self,db):
@@ -11,6 +11,8 @@ class UnitOfWork:
     def __exit__(self, exc_type, exc_val, exc_tb):
 
         if exc_type:
+
+            logger.error("Error in __exit__")
             self.db.rollback()
         else:
             self.db.commit()
