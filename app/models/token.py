@@ -17,7 +17,10 @@ class Token(Base, TimestampMixin):
         primary_key=True,
         default=uuid.uuid4
     )
-
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("user.id")
+    )
     device_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("userdevice.id"),
@@ -33,4 +36,9 @@ class Token(Base, TimestampMixin):
     device = relationship(
         "UserDeviceDetails",
         back_populates="refresh_tokens"
+    )
+    user = relationship(
+        "User",
+        back_populates="refresh_tokens"
+
     )

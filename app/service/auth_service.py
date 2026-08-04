@@ -24,9 +24,12 @@ from app.exceptions.custom_exception import *
 from app.enums.scops import AccountType
 from app.models import User
 from app.schemas.userdevice_schema import UserDeviceCreate
-from app.repo.token_type import TokenRepo
+from app.repo.token_repo import TokenRepo
 from app.db.UnitOfWork import UnitOfWork
 from app.models.token import Token
+from app.schemas.user_device_schema import CreateUserDeviceSchema
+from app.service.user_device_service import UserDeviceAndTokenService
+from app.enums.token_schema import TokenSchema
 
 
 class AuthService:
@@ -35,19 +38,16 @@ class AuthService:
                  auth_repo: AuthRepo,
                  user_repo: UserRepo,
                  system_role_repo: SystemRoleRepo,
-                 user_device_repo: UserDeviceDetailRepo,
-                 token_repo: TokenRepo,
+                 user_device_and_token_service : UserDeviceAndTokenService,
                  org_role_repo: OrganisationLevelRolePermissionsRepo):
         self.db = db
         self.auth_repo = auth_repo
         self.user_repo = user_repo
-        self.user_device_repo = user_device_repo
-        self.token_repo = token_repo
         self.org_role_repo = org_role_repo
         self.sys_role_repo = system_role_repo
+        self.user_device_and_token_service = user_device_and_token_service
 
-    def verify_otp(self, otp_schema: OTPSchema, ):  ## letter it will replace by redis_config
-
+    def verify_otp(self, otp_schema: OTPSchema,user_device : CreateUserDeviceSchema ):  ## letter it will replace by redis_config
         logger.info(f"verify otp for user {otp_schema.user_email}")
         user = self.user_repo.get_user_by_email(otp_schema.user_email)
         employee_id = None
@@ -62,19 +62,25 @@ class AuthService:
             raise OtpInValid
 
         permissions = set()
+        employee_id = None
 
         if user.account_type == AccountType.ORGANISATION:
-            role = user.employee.employee_roles.role
-            for rp in role.organisation_role_permissions:
-                permissions.add(rp.permission.name)
-            logger.info(permissions)
-            employee_id = user.employee.employee_id
+            employee_id = user.employee.employee_id if user.employee else None
+            if (
+                    user.employee
+                    and user.employee.employee_roles
+                    and user.employee.employee_roles.role
+            ):
+                role = user.employee.employee_roles.role
+                for rp in role.organisation_role_permissions:
+                    permissions.add(rp.permission.name)
 
-        if user.account_type == AccountType.SYSTEM:
-            role = user.user_role.system_roles
-            for rp in role.system_role_permissions:
-                permissions.add(rp.permission.name)
-            employee_id = None
+        elif user.account_type == AccountType.SYSTEM:
+            if user.user_role and user.user_role.system_roles:
+                role = user.user_role.system_roles
+                for rp in role.system_role_permissions:
+                    permissions.add(rp.permission.name)
+
         access_token = create_access_token(user.id, user_role=user.account_type, organisation_id=user.organisation_id,
                                            employee_id=employee_id)
         if not access_token:
@@ -83,22 +89,22 @@ class AuthService:
         refresh_token = create_refresh_token(user.id, user_role=user.account_type,
                                              organisation_id=user.organisation_id)
         user_device_schema = UserDeviceCreate(
-            device_type="app",  # <---- change it letter
-            device_unique_id="letter will add",  # < -----------
-            firebaseFCM_token="letter will add",
+            device_type= user_device.device_type,
+            device_unique_id= user_device.device_unique_id,
+            firebaseFCM_token= user_device.firebaseFCM_token
+        )
+        token = TokenSchema(
+            user_id = user.id,
+            device_id=None,
+            refresh_token=refresh_token[1],
+            expires_at=refresh_token[0]
         )
         with UnitOfWork(self.db):
-            user_device = self.user_device_repo.create_user_device(user.id, user_device_schema)
-            logger.info(f"user device unique id{user_device.id}")
-            logger.info(f"user device unique id{user_device.device_unique_id}")
-            if not user_device:
-                raise ValueError("device not created")
-            token = Token(
-                device_id=user_device.id,
-                refresh_token=refresh_token[1],
-                expires_at = refresh_token[0]
-            )
-            refresh_token = self.token_repo.create(token)
+             otp = otp
+             self.user_device_and_token_service.create_user_device_and_token(user.id, user_device_schema, token)
+             logger.debug(f"Created new user device for user {user.id}")
+             logger.info(f"Created new user device for user {user.id}")
+             logger.info(f"Created new user token for user {user.id}")
 
         ## store the refresh token in user device
         if not refresh_token:
@@ -111,6 +117,8 @@ class AuthService:
             expires_in=3600,
             permission_list=list(permissions)
         )
+
+
 
     async def generate_otp_service(self, user_email, background_task: BackgroundTasks):
         user_id = self.user_repo.get_id_by_email(user_email)
@@ -169,6 +177,7 @@ class AuthService:
             permissions = set()
             for rp in user.system_roles.system_role_permissions:
                 permissions.add(rp.permission.name)
+
             auth = AuthContext(
                 user_id=user.id,
                 organiasation_id=None,
@@ -179,7 +188,7 @@ class AuthService:
             user_role = user.system_roles.system_role.name
         logger.info(f"auth model for user {user.id} has permissions of {permissions} for user role {user_role}")
 
-        return
+        return auth
 
     def verify_refresh_token(self, token) -> AuthContext:
         token = self.token_repo.get_by_token(token)

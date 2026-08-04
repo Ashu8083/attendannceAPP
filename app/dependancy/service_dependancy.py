@@ -25,7 +25,8 @@ from app.repo.RolePermissionRepo.organisation_role_permission import Organisatio
 from app.service.role_services.permission_service import RoleService
 from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
 from app.service.role_services.defult_role_permission import DefaultRolePermissionService
-from app.repo.token_type import TokenRepo
+from app.repo.token_repo import TokenRepo
+from app.service.user_device_service import UserDeviceAndTokenService
 
 
 def get_organaistion_service(
@@ -86,7 +87,9 @@ def get_auth_service(
     # role_permission_repo = RolePermissionRepo(db)
     organisation_role = OrganisationLevelRolePermissionsRepo(db)
     system_role = SystemRoleRepo(db)
-    return AuthService(db,auth_repo, user_repo,system_role,user_device_repo=user_device_repo,token_repo=token_repo,org_role_repo=organisation_role )
+    user_device_and_token_service = UserDeviceAndTokenService(token_repo = token_repo , user_device_repo= user_device_repo)
+
+    return AuthService(db,auth_repo, user_repo,system_role,org_role_repo=organisation_role,user_device_and_token_service =user_device_and_token_service  )
 
 
 def get_leave_service(

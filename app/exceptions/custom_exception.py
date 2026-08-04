@@ -193,7 +193,13 @@ class RoleAlreadyExist(AppException):
         )
 
 class RoleNotFound(AppException):
-    def __init__(self,role_name: str):
+    def __init__(self,role_name: str | None = None):
+        if not role_name:
+            super().__init__(
+                message=f"Role Not Found",
+                status_code=404,
+                error_code="ROLE_NOT_FOUND"
+            )
         super().__init__(
             message=f"Role Not Found with {role_name}",
             status_code= 404,

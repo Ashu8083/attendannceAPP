@@ -26,6 +26,7 @@ class UserDeviceDetailRepo:
                                          )
         self.db.add(user_device)
         self.db.flush()
+        self.db.refresh(user_device)
         return user_device
     
     def update_on_user_logout(self,user_id,user_device_id,userdeviceupdate : UserDeviceUpdate):
@@ -88,7 +89,7 @@ class UserDeviceDetailRepo:
         )
         return self.db.scalar(stmt)
     
-    def get_active_device(
+    def get_user_active_device(
         self,
         user_id: UUID,
         device_unique_id: str

@@ -91,5 +91,13 @@ class User(Base,TimestampMixin):
         back_populates="user",
         uselist=False,
     )
+    device = relationship(
+        "UserDeviceDetails",
+        back_populates ="user"
+    )
+    refresh_tokens = relationship(
+        "Token",
+        back_populates="user"
+    )
 
 

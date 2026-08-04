@@ -1,14 +1,15 @@
 import uuid
 from datetime import datetime
 from typing import Optional
+from app.enums.device_type_enum import DeviceType
 
 from pydantic import BaseModel, ConfigDict
 
 
 class UserDeviceCreate(BaseModel):
 
-    device_type: str
-    device_unique_id: str
+    device_type:  DeviceType
+    device_unique_id: uuid.UUID
     firebaseFCM_token: str
 
 

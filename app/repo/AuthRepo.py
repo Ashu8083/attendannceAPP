@@ -26,7 +26,7 @@ class AuthRepo :
             
         otp.is_expired = True
         try:
-            self.db.commit()
+            self.db.flush()
             self.db.refresh(otp)
         except Exception as e:
             self.db.rollback()

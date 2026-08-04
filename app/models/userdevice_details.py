@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String,Index
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,6 +17,11 @@ class UserDeviceDetails(Base, TimestampMixin):
             "user_id",
 
         ),
+        UniqueConstraint(
+            "user_id",
+            "device_type",
+            "device_unique_id",
+        )
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -31,7 +36,7 @@ class UserDeviceDetails(Base, TimestampMixin):
     )
 
     device_type: Mapped[str] = mapped_column(String)
-    device_unique_id: Mapped[str] = mapped_column(String, unique=True)
+    device_unique_id: Mapped[uuid.UUID] = mapped_column(UUID)
     firebase_fcm_token: Mapped[str] = mapped_column(String)
 
     last_login: Mapped[datetime] = mapped_column(DateTime)

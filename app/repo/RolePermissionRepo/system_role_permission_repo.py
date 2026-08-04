@@ -96,7 +96,7 @@ class SystemRoleRepo:
             exists = (
                 self.db.query(SystemRolePermissions)
                 .filter(
-                    SystemRolePermissions.system_roles_id == rp.system_roles_id,
+           SystemRolePermissions.system_roles_id == rp.system_roles_id,
                     SystemRolePermissions.permission_id == rp.permission_id,
                 )
                 .first()
