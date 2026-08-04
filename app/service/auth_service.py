@@ -50,12 +50,10 @@ class AuthService:
     def verify_otp(self, otp_schema: OTPSchema,user_device : CreateUserDeviceSchema ):  ## letter it will replace by redis_config
         logger.info(f"verify otp for user {otp_schema.user_email}")
         user = self.user_repo.get_user_by_email(otp_schema.user_email)
-        employee_id = None
         if not user:
             raise UserNotFound(f"User with email {otp_schema.user_email} not found")
         otp = self.auth_repo.get_otp(user.id)
-        logger.info(f"otp for user id{otp.user_id}")
-        logger.info(f"otp :{otp.otp}")
+        logger.info(f"otp for user id :{otp.user_id}")
         if not otp:
             raise OtpInValid
         if otp.otp != otp_schema.otp:
@@ -118,6 +116,16 @@ class AuthService:
             permission_list=list(permissions)
         )
 
+    def logout(self,user_email, device_unique : str ) -> None:
+        user_id = self.user_repo.get_id_by_email(user_email)
+        if not user_id:
+            raise UserNotFound(f"User with email {user_email} not found")
+        refresh_token,user_device = self.user_device_and_token_service.make_logout_and_revoke_refresh_token(user_id,device_unique)
+        with UnitOfWork(self.db):
+            refresh_token
+            user_device
+        logger.info("user got logged out from the system user_id :{}".format(user_id) )
+        return user_device
 
 
     async def generate_otp_service(self, user_email, background_task: BackgroundTasks):

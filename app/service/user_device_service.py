@@ -25,7 +25,7 @@ class UserDeviceAndTokenService:
         create_token = []
         if  user_device:
             user_device.last_login = datetime.now()
-            token_in_db = self.token_repo.get_user_active_token(user_id=user_device.user_id)
+            token_in_db = self.token_repo.get_user_active_token(user_id=user_id,device_id=user_device.device_id)
             if token_in_db:
                 token_in_db.is_revoked = True
                 self.token_repo.revoke_token(token=token_in_db)
@@ -42,7 +42,7 @@ class UserDeviceAndTokenService:
             user_device = self.user_device_repo.create_user_device(user_id=user_id, userdevice=create_user_device)
             if not user_device:
                 logger.info("User device not created".format(user_device))
-            token_in_db = self.token_repo.get_user_active_token(user_id=user_device.user_id)
+            token_in_db = self.token_repo.get_user_active_token(user_id=user_device.user_id,device_id=user_device.device_id)
             if token_in_db:
                 token_in_db.is_revoked = True
                 self.token_repo.revoke_token(token=token_in_db)
@@ -59,8 +59,17 @@ class UserDeviceAndTokenService:
         return user_device,create_token
 
 
-    def get_user_device(self,user_id):
-        return
+    def make_logout_and_revoke_refresh_token(self,user_id,device_unique):
+        user_device = self.user_device_repo.get_user_active_device(user_id=user_id,device_unique_id=device_unique)
+        if not user_device:
+            raise
+        user_device.is_login = False
+        user_device.logout_time = datetime.now()
+        refresh_token = self.token_repo.get_user_active_token(user_id=user_id,device_id=user_device.id)
+        if not refresh_token:
+            raise
+        refresh_token.is_revoked = True
+        return refresh_token,user_device
 
 
 

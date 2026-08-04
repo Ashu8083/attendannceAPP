@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi import  status
 from fastapi.encoders import jsonable_encoder
+from pydantic.v1 import EmailStr
 
 from app.dependancy.service_dependancy import get_auth_service
 from app.service.auth_service import AuthService
@@ -40,3 +41,15 @@ def verify_otp(otp_schema : OTPSchema ,auth_service : AuthService = Depends(get_
                                                 })
                                                 )
 
+@auth_router.post("/logout")
+def logout(user_email: str, device_unique :str ,auth_service : AuthService = Depends(get_auth_service)):
+    auth_response = auth_service.logout(user_email,device_unique)
+    if not auth_response:
+        raise
+    return JSONResponse(
+        status_code=200,
+        content= jsonable_encoder({
+            "success": True,
+            "message": "Logged out"
+        })
+    )
