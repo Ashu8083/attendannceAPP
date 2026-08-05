@@ -146,6 +146,13 @@ class OtpInValid(AppException):
             status_code= 401,
             error_code= "OTP_INVALID"
         )
+
+class TokenInValid(AppException):
+    def __init__(self):
+        super().__init__(
+            message= "Invalid Token ",
+            status_code= 403
+        )
 class AccessTokenExpired(AppException):
     def __init__(self):
         super().__init__(
@@ -221,3 +228,20 @@ class RolePermissionNotFound():
 
         )
 
+
+class FaceDetectionNotFound(AppException):
+    def __init__(self):
+        super().__init__(
+            message= "FaceNotDetect",
+            status_code= 404,
+            error_code= "FACE_NOT_DETECT"
+        )
+
+
+class FaceNotFound(AppException):
+    def __init__(self):
+        super().__init__(
+            message= "Employee Face not Found",
+            status_code= 404,
+            error_code= "NOT_FOUND"
+        )

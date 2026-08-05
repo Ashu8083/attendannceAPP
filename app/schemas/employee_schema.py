@@ -46,6 +46,12 @@ class create_employee_exising_user(CreateEmployee):
     employee_status : EmployeeStatus
     organisation_id : UUID
 
+class CreateEmployeeFaceRecord(BaseModel):
+
+    employee_id : UUID
+    employee_face_embeding : list[float]
+    
+
 
 
 class EmployeeUpdate(BaseModel):

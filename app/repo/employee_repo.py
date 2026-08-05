@@ -41,7 +41,10 @@ class EmployeeRepo:
 
     def check_existing_employee(self,employee_code:str,organisation_id : uuid.UUID) -> type[UUID] | None:
         return self.db.query(Employee.id).filter(Employee.employee_code == employee_code,
-                                                 Employee.organisation_id == organisation_id).first()
+                                                 Employee.organisation_id == organisation_id).scalar()
+
+    def check_employee_exist_by_employee_id(self,employee_id : uuid.UUID,organisation_id  :uuid.UUID) -> type[UUID] | None:
+        return self.db.query(Employee.id).filter(Employee.id == employee_id,Employee.organisation_id == organisation_id).scalar()
 
     # ====================================================================================================================
     #         Employee Create
@@ -49,13 +52,6 @@ class EmployeeRepo:
 
     def createEmployee(self, user_id: uuid.UUID, employeedata: CreateEmployee, organisation_id: uuid.UUID):
         logger.info(f"Trying to create Employee ")
-        existing = self.get_employee_by_employee_code(organisation_id=organisation_id,
-                                                      employee_code=employeedata.employee_code
-                                                      )
-
-        if existing:
-            raise ValueError("Employee code already exists")
-
         employee = Employee(user_id=user_id,
                             organisation_id=organisation_id,
                             employee_code=employeedata.employee_code,
@@ -63,22 +59,24 @@ class EmployeeRepo:
                             join_date=employeedata.join_date,
                             )
         self.db.add(employee)
+        self.db.flush()
+        self.db.refresh(employee)
 
         logger.info(f"Employee with  employee code {employeedata.employee_code} added belong to organisation {organisation_id} ")
 
         employee_details = ED(
             employee_id=employee.id,
             full_name=employeedata.full_name,
-            dob=employeedata.dob,
-            gender=employeedata.gender,
-            marital_status=employeedata.marital_status,
-            address=employeedata.address,
-            city=employeedata.city,
-            state=employeedata.state,
+            dob= employeedata.employee_details.dob,
+            gender=employeedata.employee_details.gender,
+            marital_status=employeedata.employee_details.marital_status,
+            address=employeedata.employee_details.address,
+            city=employeedata.employee_details.city,
+            state=employeedata.employee_details.state,
         )
         self.db.add(employee_details)
 
-        logger.info(f"Employee details add for  {employee_details.employee_code} ")
+        logger.info(f"Employee details add for  {employee.employee_code} ")
         self.db.flush()
 
         return employee

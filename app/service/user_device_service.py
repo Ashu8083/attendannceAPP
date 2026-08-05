@@ -21,11 +21,11 @@ class UserDeviceAndTokenService:
 
     def create_user_device_and_token(self,user_id : UUID ,create_user_device: UserDeviceCreate, token_schema : TokenSchema):
 
-        user_device = self.user_device_repo.get_user_active_device(user_id= user_id, device_unique_id= create_user_device.device_unique_id)
+        user_device  = self.user_device_repo.get_user_active_device(user_id= user_id, device_unique_id= create_user_device.device_unique_id)
         create_token = []
         if  user_device:
             user_device.last_login = datetime.now()
-            token_in_db = self.token_repo.get_user_active_token(user_id=user_id,device_id=user_device.device_id)
+            token_in_db = self.token_repo.get_user_active_token(user_id=user_id,device_id=user_device.id)
             if token_in_db:
                 token_in_db.is_revoked = True
                 self.token_repo.revoke_token(token=token_in_db)
@@ -42,7 +42,7 @@ class UserDeviceAndTokenService:
             user_device = self.user_device_repo.create_user_device(user_id=user_id, userdevice=create_user_device)
             if not user_device:
                 logger.info("User device not created".format(user_device))
-            token_in_db = self.token_repo.get_user_active_token(user_id=user_device.user_id,device_id=user_device.device_id)
+            token_in_db = self.token_repo.get_user_active_token(user_id=user_id,device_id=user_device.id)
             if token_in_db:
                 token_in_db.is_revoked = True
                 self.token_repo.revoke_token(token=token_in_db)

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from app.models.shift import Shift
-from app.repositories.shift_repository import ShiftRepository
+from app.models.shift_model import Shift
+from app.repo.shift_repo import ShiftRepository
 from app.schemas.shift_schema import ShiftCreate, ShiftUpdate
 
 

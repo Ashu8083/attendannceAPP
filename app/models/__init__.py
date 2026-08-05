@@ -24,3 +24,6 @@ from .system_roles import *
 from .organisation_role import *
 from .system_role_permission import *
 from .organisation_role_permission import *
+
+from app.models.token import Token
+from app.models.employee_face_model import EmployeeFaceModel

@@ -2,11 +2,14 @@ import uuid
 
 from datetime import datetime, time, timedelta, timezone
 
+from cryptography.fernet import InvalidToken
 from sqlalchemy import true
 
 from app.core.config import get_settings
 from app.enums.role_enums import UserRole
 from jose import jwt, ExpiredSignatureError, JWTError
+
+from app.exceptions.custom_exception import AccessTokenExpired
 
 ## responsibility of JWT handler
 # * create JWT
@@ -67,10 +70,14 @@ def decode_token(token):
             algorithms=[ALGORITHM]
         )
         return payload
+    # except ExpiredSignatureError:
+    #     raise Exception("Token has expired")
+    # except JWTError:
+    #     raise Exception("Invalid token")
     except ExpiredSignatureError:
-        raise Exception("Token has expired")
+        raise AccessTokenExpired()
     except JWTError:
-        raise Exception("Invalid token")
+        raise InvalidToken()
 
     return True
 

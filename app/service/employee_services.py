@@ -82,9 +82,9 @@ class EmployeeService:
         if  user:
             raise EmailAlreadyExists
 
-        employee = self.employeeRepo.get_employee_by_user_id(user.id)
-        if employee:
-            raise EmployeeAlreadyExists
+        # employee = self.employeeRepo.get_employee_by_user_id(user.id)
+        # if employee:
+        #     raise EmployeeAlreadyExists
         department_id = self.department_repo.department_id(organisation_id=organisation_id,department_name=employee_schema.department)
         employee_schema.department = department_id
 

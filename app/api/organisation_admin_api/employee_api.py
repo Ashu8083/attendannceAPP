@@ -1,9 +1,10 @@
 import uuid
 from urllib import request
 
-from fastapi import  APIRouter,Request
+from fastapi import APIRouter, Request, Security
 from fastapi import Depends
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer
 
 from app.auth.permission_check import PermissionChecker
 from app.schemas.employee_schema import *
@@ -11,23 +12,26 @@ from app.service.employee_services import EmployeeService
 from app.dependancy.service_dependancy import get_employee_service
 
 employee_router = APIRouter(prefix="/employees",tags=["employees"])
+bearer_scheme = HTTPBearer()
 
-@employee_router.get("/create-employee-employeecode",response_model=EmployeeDetailsResponce)
+@employee_router.get("/create-employee-employeecode")
 def create_employee_code(
     request : Request,
+    credentials=Security(bearer_scheme),
     employee_service : EmployeeService = Depends(get_employee_service),
 ):
-    employee_code = employee_service.generate_employee_code_by_organisation_id(organisation_id= request.state.auth.organisation_id)
+    employee_code = employee_service.generate_employee_code_by_organisation_id(oranisation_id= request.state.auth.organisation_id)
     return employee_code
 
-@employee_router.post("/create-employee",response_model=EmployeeResponse,dependencies=[Depends(PermissionChecker("employee.create","ORGANISATION"))])
-def create_employee(
+@employee_router.post("/create-employee",response_model=EmployeeResponse)
+async def create_employee(
     data : CreateEmployee ,
     request : Request,
+    credentials=Security(bearer_scheme),
     employee_service : EmployeeService = Depends (get_employee_service),
   
     ):
-    employee = employee_service.createEmployee_service(organisation_id=request.state.auth.organisation_id, employee_schema=data)
+    employee = await employee_service.create_employee_service(organisation_id=request.state.auth.organisation_id, employee_schema=data)
     
     return employee
 

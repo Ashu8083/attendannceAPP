@@ -12,7 +12,7 @@ class OrganisationRepo:
         self.db = db
 
     def check_organisation(self, organisation_id: uuid.UUID) :
-        return self.db.query(Organisation.id).filter(Organisation.id == organisation_id).first()
+        return self.db.query(Organisation.id).filter(Organisation.id == organisation_id).scalar()
 
 
     def get_organisation_id(self, organisation_code) -> uuid.UUID:

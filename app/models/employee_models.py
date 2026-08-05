@@ -135,6 +135,9 @@ class Employee(Base,TimestampMixin):
         "EmployeeRoles",
         back_populates="employee"
      )
-     
+    employee_face = relationship(
+        "EmployeeFaceModel",
+         back_populates="employee"
+     )
 
 

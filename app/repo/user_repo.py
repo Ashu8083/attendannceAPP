@@ -29,6 +29,7 @@ class UserRepo:
         user = self.db.query(User).filter(User.email ==user_email).first()
         return user
 
+
     def get_user(self, user_id: uuid.UUID):
         return (
             self.db.query(User)

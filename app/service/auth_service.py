@@ -1,8 +1,10 @@
 from datetime import datetime
 from urllib import request
 
+from cryptography.fernet import InvalidToken
 from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
 from app.repo.user_device_repo import UserDeviceDetailRepo
 from app.auth.auth_cntx import AuthContext
@@ -63,7 +65,7 @@ class AuthService:
         employee_id = None
 
         if user.account_type == AccountType.ORGANISATION:
-            employee_id = user.employee.employee_id if user.employee else None
+            employee_id = user.employee.id if user.employee else None
             if (
                     user.employee
                     and user.employee.employee_roles
@@ -149,52 +151,45 @@ class AuthService:
         logger.info(otp_model)
         return otp_model
 
-    def verify_access_token(self, token) -> AuthContext:
+    def verify_access_token(self, token) :
 
+        auth = AuthContext
         payload = decode_token(token)
-        user = self.user_repo.get_user(payload["user_id"])
+
+        user = self.user_repo.get_user_by_id(payload["user_id"])
 
         if not user:
             raise UserNotFound()
         user_role = ""
+        permissions = set()
+        employee_id = None
+
         if user.account_type == AccountType.ORGANISATION:
+            employee_id = user.employee.id if user.employee else None
+            if (
+                    user.employee
+                    and user.employee.employee_roles
+                    and user.employee.employee_roles.role
+            ):
+                role = user.employee.employee_roles.role
+                for rp in role.organisation_role_permissions:
+                    permissions.add(rp.permission.name)
 
-            employee: Employee = user.employee
+        elif user.account_type == AccountType.SYSTEM:
+            if user.user_role and user.user_role.system_roles:
+                role = user.user_role.system_roles
+                for rp in role.system_role_permissions:
+                    permissions.add(rp.permission.name)
 
-            if employee.emplopyee_status != EmployeeStatus.ACTIVE:
-                raise EmployeeIsInactive
-            if employee.employee_roles is None:
-                raise Exception("Employee role not assigned")
-
-            permissions = set()
-            for rp in employee.employee_roles.organisation_permissions:
-                permissions.add(rp.permission.name)
-
-            auth = AuthContext(
+        auth = AuthContext(
                 user_id=user.id,
                 organisation_id=user.organisation_id,
                 system_role=user.account_type.value,
                 employee_id=user.employee.id if user.employee else None,
                 permissions=permissions,
-            )
-            user_role = employee.employee_roles.role.name
-        if user.account_type == AccountType.SYSTEM:
+                )
 
-            if user.account_type is None:
-                raise Exception("Account type not assigned")
-            permissions = set()
-            for rp in user.system_roles.system_role_permissions:
-                permissions.add(rp.permission.name)
-
-            auth = AuthContext(
-                user_id=user.id,
-                organiasation_id=None,
-                system_role=user.account_type.value,
-                employee_id=None,
-                permissions=permissions,
-            )
-            user_role = user.system_roles.system_role.name
-        logger.info(f"auth model for user {user.id} has permissions of {permissions} for user role {user_role}")
+        # logger.info(f"auth model for user {user.id} has permissions of {permissions} for user role {user_role}")
 
         return auth
 

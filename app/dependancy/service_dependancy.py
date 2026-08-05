@@ -27,6 +27,9 @@ from app.repo.RolePermissionRepo.role_repo import RolePermissionRepo
 from app.service.role_services.defult_role_permission import DefaultRolePermissionService
 from app.repo.token_repo import TokenRepo
 from app.service.user_device_service import UserDeviceAndTokenService
+from app.repo.employee_face_repo import EmployeeFaceRepo
+from app.face_model.service import FaceService
+from app.service.employee_face_service import EmployeeFaceService
 
 
 def get_organaistion_service(
@@ -115,3 +118,24 @@ def get_permission_service(
 ):
     permission_repo = RolePermissionRepo(db)
     return RoleService(permission_repo)
+
+def get_employee_face_service(
+        db: Session = Depends(get_db),
+):
+    employee_repo = EmployeeRepo(db)
+    face_service = FaceService()
+    employee_face_repo = EmployeeFaceRepo(db)
+    return EmployeeFaceService(db = db,
+                               face_service=face_service,
+                               employee_repo=employee_repo,
+                               employee_face_repo=employee_face_repo,
+
+                               )
+
+def get_user_device_token_service(
+        db: Session = Depends(get_db),
+):
+    user_device_repo = UserDeviceDetailRepo(db)
+    token_repo = TokenRepo(db)
+    user_device_token_service = UserDeviceAndTokenService(user_device_repo,token_repo)
+    return user_device_token_service
