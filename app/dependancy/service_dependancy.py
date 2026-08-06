@@ -28,7 +28,6 @@ from app.service.role_services.defult_role_permission import DefaultRolePermissi
 from app.repo.token_repo import TokenRepo
 from app.service.user_device_service import UserDeviceAndTokenService
 from app.repo.employee_face_repo import EmployeeFaceRepo
-from app.face_model.service import FaceService
 from app.service.employee_face_service import EmployeeFaceService
 
 
@@ -65,7 +64,8 @@ def get_attendance_service(
 ):
     attendance_repo = AttendanceRepo(db)
     employee_repo = EmployeeRepo(db)
-    return AttendanceService(attendance_repo,employee_repo)
+    employee_face_repo = EmployeeFaceRepo(db)
+    return AttendanceService(attendance_repo,employee_repo,employee_face_repo)
 #
 # def get_role_service(
 #         db: Session= Depends(get_db)
@@ -123,10 +123,8 @@ def get_employee_face_service(
         db: Session = Depends(get_db),
 ):
     employee_repo = EmployeeRepo(db)
-    face_service = FaceService()
     employee_face_repo = EmployeeFaceRepo(db)
     return EmployeeFaceService(db = db,
-                               face_service=face_service,
                                employee_repo=employee_repo,
                                employee_face_repo=employee_face_repo,
 

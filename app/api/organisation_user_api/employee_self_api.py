@@ -10,6 +10,8 @@ from app.service.employee_services import EmployeeService
 from app.service.employee_face_service import EmployeeFaceService
 from app.dependancy.service_dependancy import get_employee_face_service
 
+
+
 employee_self_router = APIRouter(
     prefix="/organisation-user/employee",
     tags=["organisation-user/employee"]
@@ -22,16 +24,25 @@ def get_employee_api(request : Request ,employee_service: EmployeeService = Depe
 
 @employee_self_router.post("/employee-face-register")
 async def register_employee_face(request : Request,credentials=Security(bearer_scheme), image_file : UploadFile = File(...), employee_face_service: EmployeeFaceService = Depends(get_employee_face_service)):
-    contents = await image_file.read()
 
-    image = cv2.imdecode(
-        np.frombuffer(contents, np.uint8),
-        cv2.IMREAD_COLOR,
+
+    image_bytes = await image_file.read()
+    # Store embedding in PostgreSQL
+
+    await employee_face_service.register_employee_face(
+        image_bytes,request
     )
-    await employee_face_service.register_face(
-        employee_id=request.state.auth.employee_id,
-        organisation_id=request.state.auth.organisation_id,
-        image=image,
+
+    return {"messsage" : "Employee registered successfully"}
+
+@employee_self_router.post("/employee-face-verify")
+async def verify_employee_face(request : Request,credentials=Security(bearer_scheme), image_file : UploadFile = File(...), employee_face_service: EmployeeFaceService = Depends(get_employee_face_service)):
+
+    image_bytes = await image_file.read()
+    data = await employee_face_service.verify_employee_face(
+    request,image_bytes
     )
+    return {"messsage" : "Employee verified successfully",
+            "content": data }
 
 

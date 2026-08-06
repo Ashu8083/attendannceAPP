@@ -41,7 +41,7 @@ class AttendanceRepo:
                                                             Attendance.is_punchout == True).first()
         return attendace_record
 
-    def punch_in(self,employee_id : uuid.UUID, workmode : WorkMode,organisation_id : uuid.UUID):
+    def punch_in(self,employee_id : uuid.UUID, workMode : WorkMode,organisation_id : uuid.UUID):
         today = date.today()
         logger.info(
             "Employee %s is attempting to check in for attendance in organization %s.",
@@ -51,7 +51,7 @@ class AttendanceRepo:
         attendance_record = Attendance(
                                         organisation_id = organisation_id,
                                         employee_id=employee_id,
-                                        work_mode = workmode,
+                                        work_mode = workMode,
                                         attendance_date = today,
                                         punchin_time = datetime.now().time(),
                                         is_punchin = True,

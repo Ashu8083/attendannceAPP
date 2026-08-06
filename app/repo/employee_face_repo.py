@@ -33,7 +33,8 @@ class EmployeeFaceRepo:
         return employee_face_record
 
     def get_employee_face_record (self, employee_id) :
-        employee_face_record = self.db.query(EmployeeFaceModel).filter(EmployeeFaceModel.employee_id == employee_id).first()
+        employee_face_record = self.db.query(EmployeeFaceModel.embedding).filter(EmployeeFaceModel.employee_id == employee_id).scalar()
+
 
         return employee_face_record
 

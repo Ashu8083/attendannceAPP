@@ -9,7 +9,6 @@ from app.enums.leave_status import LeaveStatus
 
 # Employee applies for leave
 class LeaveCreate(BaseModel):
-    employee_id: uuid.UUID | None
     start_date: date
     end_date: date
     reason: str = Field(min_length=5, max_length=300)

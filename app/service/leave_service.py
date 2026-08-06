@@ -15,8 +15,8 @@ class LeaveService:
         self.leave_repo = leave_repo
         self.employee_repo = employee_repo
 
-    def apply_leave(self, leave_schema : LeaveCreate):
-        return self.leave_repo.apply_leave(leave_schema)
+    def apply_leave(self, leave_schema : LeaveCreate,employee_id : uuid.UUID,) -> LeaveResponse:
+        return self.leave_repo.apply_leave(leave_schema,employee_id)
 
     def get_leave_by_id(self, leave_id : int) -> LeaveRequest:
         leave_record = self.leave_repo.get_leave(leave_id)

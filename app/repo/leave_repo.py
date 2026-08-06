@@ -17,12 +17,14 @@ class LeaveRepo:
     def __init__(self, db: Session):
         self.db = db
 
-    def apply_leave(self, leave: LeaveCreate):
+    def apply_leave(self, leave: LeaveCreate,employee_id : UUID,organisation_id : UUID) -> LeaveResponse:
         leave_request = LeaveRequest(
-            employee_id=leave.employee_id,
+            employee_id=employee_id,
+            organisation_id = organisation_id,
             start_date=leave.start_date,
             end_date=leave.end_date,
-            status=LeaveStatus.PENDING
+            status=LeaveStatus.PENDING,
+            reason=leave.reason,
         )
 
         try:
