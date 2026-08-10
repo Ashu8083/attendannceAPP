@@ -20,4 +20,7 @@ class RefreshAccessToken(BaseModel):
     user_email  :EmailStr
     refresh_token : str
     device_unique_id : str
+    device_type: str
+    fcm_token: str
+
 

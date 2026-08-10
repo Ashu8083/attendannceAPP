@@ -90,9 +90,10 @@ def get_auth_service(
     # role_permission_repo = RolePermissionRepo(db)
     organisation_role = OrganisationLevelRolePermissionsRepo(db)
     system_role = SystemRoleRepo(db)
+    token_repo= TokenRepo(db)
     user_device_and_token_service = UserDeviceAndTokenService(token_repo = token_repo , user_device_repo= user_device_repo)
 
-    return AuthService(db,auth_repo, user_repo,system_role,org_role_repo=organisation_role,user_device_and_token_service =user_device_and_token_service  )
+    return AuthService(db,auth_repo, user_repo,system_role,org_role_repo=organisation_role,user_device_and_token_service =user_device_and_token_service,token_repo= token_repo ,user_device_repo= UserDeviceDetailRepo(db) )
 
 
 def get_leave_service(

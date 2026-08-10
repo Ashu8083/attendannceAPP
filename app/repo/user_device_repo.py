@@ -99,6 +99,7 @@ class UserDeviceDetailRepo:
             UserDeviceDetails.device_unique_id == device_unique_id,
             UserDeviceDetails.is_login.is_(True)
         )
+
         return self.db.scalar(stmt)
     
 

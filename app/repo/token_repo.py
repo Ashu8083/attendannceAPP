@@ -11,8 +11,38 @@ class TokenRepo():
     def create(self,token: Token):
         self.db.add(token)
         return token
-    def get_user_active_token(self,user_id :UUID,device_id :UUID):
-        return self.db.query(Token).filter(Token.user_id == user_id,Token.device_id == device_id ,Token.is_revoked == False).first()
+
+    def get_user_active_token(
+            self,
+            user_id: UUID,
+            device_id: UUID
+    ):
+        logger.info(
+            f"Getting active token for user {user_id} with device {device_id}"
+        )
+        refresh_model = (
+            self.db.query(Token)
+            .filter(
+                Token.user_id == user_id,
+                Token.device_id == device_id,
+                Token.is_revoked.is_(False)
+            )
+            .first()
+        )
+        if not refresh_model:
+            logger.info(
+                f"No active token found for user {user_id} "
+                f"and device {device_id}"
+            )
+            return None
+        logger.info(
+            f"Active token found: {refresh_model.id}"
+        )
+        logger.info(
+            f"Token revoked: {refresh_model.is_revoked}"
+        )
+        return refresh_model
+
 
     def get_user_tokens(self,user_id: UUID):
         token = self.db.query(Token).filter(Token.user_id == user_id).all()

@@ -41,6 +41,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         PUBLIC_ROUTES = [   # all the public api , which are not going throuh the security
             "/auth/otp-login",
             "/auth/otp-verify",
+            "/auth/refresh-access-token",
             "/docs",
             "/openapi.json",
             "/favicon.ico",
@@ -92,9 +93,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
         auth_service = AuthService(db= db_session,
                                    auth_repo=AuthRepo(db_session)
                                    , user_repo=UserRepo(db_session)
-                                   ,system_role_repo=SystemRoleRepo(db_session)
+                                   ,system_role_repo=SystemRoleRepo(db_session),
+                                   token_repo=TokenRepo(db_session),
+                                   user_device_repo=UserDeviceDetailRepo(db_session)
                                    ,user_device_and_token_service=UserDeviceAndTokenService(user_device_repo = UserDeviceDetailRepo(db_session)
-                                                                                            , token_repo = TokenRepo(db_session)),org_role_repo= OrganisationLevelRolePermissionsRepo(db_session))
+                                                                                            , token_repo = TokenRepo(db_session)),
+                                   org_role_repo= OrganisationLevelRolePermissionsRepo(db_session))
         auth =   auth_service.verify_access_token(token)
         if auth is None:
             raise

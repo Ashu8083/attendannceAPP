@@ -22,6 +22,7 @@ class UserDeviceAndTokenService:
     def create_user_device_and_token(self,user_id : UUID ,create_user_device: UserDeviceCreate, token_schema : TokenSchema):
 
         user_device  = self.user_device_repo.get_user_active_device(user_id= user_id, device_unique_id= create_user_device.device_unique_id)
+        logger.info(f"Created new user device for user {user_id}  with device {create_user_device}")
         create_token = []
         if  user_device:
             user_device.last_login = datetime.now()
@@ -36,6 +37,7 @@ class UserDeviceAndTokenService:
                     refresh_token = token_schema.refresh_token,
                     expires_at = token_schema.expires_at,
                             )
+            
             create_token = self.token_repo.create(token=token)
 
         if not  user_device:
@@ -70,6 +72,11 @@ class UserDeviceAndTokenService:
             raise
         refresh_token.is_revoked = True
         return refresh_token,user_device
+
+    def get_user_active_device(self,user_id : UUID,device_unique_id : UUID):
+        return self.user_device_repo.get_user_active_device(user_id=user_id,device_unique_id=device_unique_id)
+
+
 
 
 

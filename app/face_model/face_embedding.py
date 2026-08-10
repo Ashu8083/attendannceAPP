@@ -119,7 +119,7 @@ def extract_face_embedding_db(image_bytes: bytes) -> list[float]:
 
     if image is None:
 
-        raise ValueError("Invalid image")
+            raise ValueError("Invalid image")
 
     faces = app.get(image)
 

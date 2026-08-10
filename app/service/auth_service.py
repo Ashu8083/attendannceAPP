@@ -42,6 +42,7 @@ class AuthService:
                  user_repo: UserRepo,
                  system_role_repo: SystemRoleRepo,
                  token_repo :TokenRepo,
+                 user_device_repo: UserDeviceDetailRepo,
                  user_device_and_token_service : UserDeviceAndTokenService,
                  org_role_repo: OrganisationLevelRolePermissionsRepo):
         self.db = db
@@ -49,7 +50,8 @@ class AuthService:
         self.user_repo = user_repo
         self.token_repo = token_repo
         self.org_role_repo = org_role_repo
-        self.sys_role_repo = system_role_repo
+        self.sys_role_repo = system_role_repo,
+        self.user_device_repo = user_device_repo
         self.user_device_and_token_service = user_device_and_token_service
 
     def verify_otp(self, otp_schema: OTPSchema,user_device : CreateUserDeviceSchema ):  ## letter it will replace by redis_config
@@ -66,17 +68,18 @@ class AuthService:
 
         permissions = set()
         employee_id = None
-
         if user.account_type == AccountType.ORGANISATION:
-            employee_id = user.employee.id if user.employee else None
-            if (
-                    user.employee
-                    and user.employee.employee_roles
-                    and user.employee.employee_roles.role
-            ):
-                role = user.employee.employee_roles.role
-                for rp in role.organisation_role_permissions:
-                    permissions.add(rp.permission.name)
+            employee = user.employee
+            if employee:
+                for employee_role in employee.employee_roles:
+                    role = employee_role.role
+                    if not role:
+                        continue
+                    for role_permission in role.organisation_role_permissions:
+                        if role_permission.permission:
+                            permissions.add(
+                                role_permission.permission.name
+                            )
 
         elif user.account_type == AccountType.SYSTEM:
             if user.user_role and user.user_role.system_roles:
@@ -98,6 +101,7 @@ class AuthService:
         )
         token = TokenSchema(
             user_id = user.id,
+
             device_id=None,
             refresh_token=refresh_token[1],
             expires_at=refresh_token[0]
@@ -161,10 +165,11 @@ class AuthService:
         user = self.user_repo.get_user_by_email(user_email)
         if not user.id:
             raise UserNotFound(f"User with email {user_email} not found")
-
-        db_store_refresh_token = self.token_repo.get_user_active_token(user.id)
+        device = self.user_device_repo.get_user_active_device(user.id,authSchema.device_unique_id)
+        logger.info(f"device for user {user.id} : {device.id} ,device_unique_id :{device.device_unique_id}")
+        db_store_refresh_token = self.token_repo.get_user_active_token(user.id,device_id=device.id)
         if not db_store_refresh_token:
-            logger.info(f"refresh token for user {user.id} not Found")
+            logger.info(f"refresh token model not found for user {user.id} ")
             raise TokenInValid
 
         if not db_store_refresh_token.refresh_token == refresh_token :
@@ -176,44 +181,38 @@ class AuthService:
         employee_id = None
 
         if user.account_type == AccountType.ORGANISATION:
-            employee_id = user.employee.id if user.employee else None
-            if (
-                    user.employee
-                    and user.employee.employee_roles
-                    and user.employee.employee_roles.role
-            ):
-                role = user.employee.employee_roles.role
-                for rp in role.organisation_role_permissions:
-                    permissions.add(rp.permission.name)
-
+            employee = user.employee
+            if employee:
+                for employee_role in employee.employee_roles:
+                    role = employee_role.role
+                    if not role:
+                        continue
+                    for role_permission in role.organisation_role_permissions:
+                        if role_permission.permission:
+                            permissions.add(
+                                role_permission.permission.name
+                            )
         elif user.account_type == AccountType.SYSTEM:
             if user.user_role and user.user_role.system_roles:
                 role = user.user_role.system_roles
                 for rp in role.system_role_permissions:
                     permissions.add(rp.permission.name)
-
         access_token = create_access_token(user.id, user_role=user.account_type, organisation_id=user.organisation_id,
                                            employee_id=employee_id)
         if not access_token:
             raise Exception(f"access_token not generated for user {user.id} ")
-
         refresh_token = create_refresh_token(user.id, user_role=user.account_type,
                                              organisation_id=user.organisation_id)
-
-        user_device_schema = UserDeviceCreate(
-            device_type=user.device.device_type,
-            device_unique_id=user.device.device_unique_id,
-            firebaseFCM_token=user.device.firebaseFCM_token
-        )
-        token = TokenSchema(
+        logger.info(f"device token  {authSchema.device_unique_id} ")
+        token = Token(
             user_id=user.id,
-            device_id=None,
+            device_id=device.id,
             refresh_token=refresh_token[1],
             expires_at=refresh_token[0]
         )
         with UnitOfWork(self.db):
-            self.user_device_and_token_service.create_user_device_and_token(user.id, user_device_schema, token)
-            self.token_repo.revoke_token(db_store_refresh_token)
+
+            self.token_repo.create(token)
             logger.debug(f"Created new user device for user {user.id}")
             logger.info(f"Created new user device for user {user.id}")
             logger.info(f"Created new user token for user {user.id}")
@@ -248,16 +247,17 @@ class AuthService:
         employee_id = None
 
         if user.account_type == AccountType.ORGANISATION:
-            employee_id = user.employee.id if user.employee else None
-            if (
-                    user.employee
-                    and user.employee.employee_roles
-                    and user.employee.employee_roles.role
-            ):
-                role = user.employee.employee_roles.role
-                for rp in role.organisation_role_permissions:
-                    permissions.add(rp.permission.name)
-
+            employee = user.employee
+            if employee:
+                for employee_role in employee.employee_roles:
+                    role = employee_role.role
+                    if not role:
+                        continue
+                    for role_permission in role.organisation_role_permissions:
+                        if role_permission.permission:
+                            permissions.add(
+                                role_permission.permission.name
+                            )
         elif user.account_type == AccountType.SYSTEM:
             if user.user_role and user.user_role.system_roles:
                 role = user.user_role.system_roles
