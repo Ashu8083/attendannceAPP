@@ -1,0 +1,52 @@
+name: FastAPI Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+  SECRET_KEY: test-secret
+
+  MAIL_USERNAME: test@example.com
+  MAIL_PASSWORD: password
+  MAIL_FROM: test@example.com
+  MAIL_PORT: 587
+  MAIL_SERVER: smtp.gmail.com
+  MAIL_FROM_NAME: Test
+  MAIL_STARTTLS: true
+  MAIL_SSL_TLS: false
+  USE_CREDENTIALS: true
+  VALIDATE_CERTS: true
+
+  REDIS_HOST: localhost
+  REDIS_PORT: 6379
+  REDIS_DB: 0
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: pytest -v
