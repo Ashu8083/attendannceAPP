@@ -32,6 +32,7 @@ from app.models.token import Token
 from app.schemas.user_device_schema import CreateUserDeviceSchema
 from app.service.user_device_service import UserDeviceAndTokenService
 from app.enums.token_schema import TokenSchema
+from app.schemas.auth_schema import RefreshAccessToken
 
 
 class AuthService:
@@ -40,11 +41,13 @@ class AuthService:
                  auth_repo: AuthRepo,
                  user_repo: UserRepo,
                  system_role_repo: SystemRoleRepo,
+                 token_repo :TokenRepo,
                  user_device_and_token_service : UserDeviceAndTokenService,
                  org_role_repo: OrganisationLevelRolePermissionsRepo):
         self.db = db
         self.auth_repo = auth_repo
         self.user_repo = user_repo
+        self.token_repo = token_repo
         self.org_role_repo = org_role_repo
         self.sys_role_repo = system_role_repo
         self.user_device_and_token_service = user_device_and_token_service
@@ -150,6 +153,86 @@ class AuthService:
         )
         logger.info(otp_model)
         return otp_model
+
+    def refresh_access_token(self, authSchema : RefreshAccessToken):
+        refresh_token = authSchema.refresh_token
+        user_email = authSchema.user_email
+
+        user = self.user_repo.get_user_by_email(user_email)
+        if not user.id:
+            raise UserNotFound(f"User with email {user_email} not found")
+
+        db_store_refresh_token = self.token_repo.get_user_active_token(user.id)
+        if not db_store_refresh_token:
+            logger.info(f"refresh token for user {user.id} not Found")
+            raise TokenInValid
+
+        if not db_store_refresh_token.refresh_token == refresh_token :
+            logger.info(f"refresh token for user {user.id} not matched ")
+            raise TokenInValid
+        db_store_refresh_token.is_revoked = True
+
+        permissions = set()
+        employee_id = None
+
+        if user.account_type == AccountType.ORGANISATION:
+            employee_id = user.employee.id if user.employee else None
+            if (
+                    user.employee
+                    and user.employee.employee_roles
+                    and user.employee.employee_roles.role
+            ):
+                role = user.employee.employee_roles.role
+                for rp in role.organisation_role_permissions:
+                    permissions.add(rp.permission.name)
+
+        elif user.account_type == AccountType.SYSTEM:
+            if user.user_role and user.user_role.system_roles:
+                role = user.user_role.system_roles
+                for rp in role.system_role_permissions:
+                    permissions.add(rp.permission.name)
+
+        access_token = create_access_token(user.id, user_role=user.account_type, organisation_id=user.organisation_id,
+                                           employee_id=employee_id)
+        if not access_token:
+            raise Exception(f"access_token not generated for user {user.id} ")
+
+        refresh_token = create_refresh_token(user.id, user_role=user.account_type,
+                                             organisation_id=user.organisation_id)
+
+        user_device_schema = UserDeviceCreate(
+            device_type=user.device.device_type,
+            device_unique_id=user.device.device_unique_id,
+            firebaseFCM_token=user.device.firebaseFCM_token
+        )
+        token = TokenSchema(
+            user_id=user.id,
+            device_id=None,
+            refresh_token=refresh_token[1],
+            expires_at=refresh_token[0]
+        )
+        with UnitOfWork(self.db):
+            self.user_device_and_token_service.create_user_device_and_token(user.id, user_device_schema, token)
+            self.token_repo.revoke_token(db_store_refresh_token)
+            logger.debug(f"Created new user device for user {user.id}")
+            logger.info(f"Created new user device for user {user.id}")
+            logger.info(f"Created new user token for user {user.id}")
+
+        ## store the refresh token in user device
+        if not refresh_token:
+            raise Exception(f"token not generated for user {user.id}")
+
+        return AuthResponse(
+            access_token=access_token,
+            refresh_token=refresh_token[1],
+            token_type="Bearer",
+            expires_in=3600,
+            permission_list=list(permissions)
+        )
+
+
+
+
 
     def verify_access_token(self, token) :
 

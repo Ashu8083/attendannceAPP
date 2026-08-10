@@ -4,11 +4,14 @@ from fastapi import  status
 from fastapi.encoders import jsonable_encoder
 from pydantic.v1 import EmailStr
 
+
+
 from app.dependancy.service_dependancy import get_auth_service
 from app.service.auth_service import AuthService
 from app.schemas.otp_schema import OTPSchema
 from app.schemas.user_device_schema import CreateUserDeviceSchema
 from app.schemas.userdevice_schema import UserDeviceCreate
+from app.schemas.auth_schema import RefreshAccessToken
 
 auth_router = APIRouter(prefix="/auth",tags=["auth"])
 @auth_router.post("/otp-login")
@@ -40,6 +43,13 @@ def verify_otp(otp_schema : OTPSchema ,auth_service : AuthService = Depends(get_
                                                 "auth": auth_response
                                                 })
                                                 )
+
+@auth_router.post("/refresh-access-token")
+def refresh_access_token(user_auth_schema : RefreshAccessToken , auth_service : AuthService = Depends(get_auth_service)):
+
+    auth_schema = auth_service.refresh_access_token(user_auth_schema)
+
+    return auth_schema
 
 @auth_router.post("/logout")
 def logout(user_email: str, device_unique :str ,auth_service : AuthService = Depends(get_auth_service)):
