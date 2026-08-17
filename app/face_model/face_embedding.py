@@ -5,6 +5,8 @@ import threading
 import logging
 from insightface.app import FaceAnalysis
 
+from app.exceptions.custom_exception import FaceNotFound
+
 logger = logging.getLogger(__name__)
 
 # -------------------------------------------------------
@@ -110,22 +112,17 @@ def extract_face_embedding(image_path: str) -> list[float]:
 def extract_face_embedding_db(image_bytes: bytes) -> list[float]:
 
     image = cv2.imdecode(
-
         np.frombuffer(image_bytes, np.uint8),
-
         cv2.IMREAD_COLOR,
-
     )
-
     if image is None:
-
-            raise ValueError("Invalid image")
+            raise FaceNotFound
 
     faces = app.get(image)
 
     if len(faces) == 0:
 
-        raise ValueError("No face detected")
+        raise FaceNotFound
 
     face = max(
 

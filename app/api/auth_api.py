@@ -5,13 +5,16 @@ from fastapi.encoders import jsonable_encoder
 from pydantic.v1 import EmailStr
 
 
-
+from fastapi import Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.dependancy.service_dependancy import get_auth_service
 from app.service.auth_service import AuthService
 from app.schemas.otp_schema import OTPSchema
 from app.schemas.user_device_schema import CreateUserDeviceSchema
 from app.schemas.userdevice_schema import UserDeviceCreate
-from app.schemas.auth_schema import RefreshAccessToken
+from app.schemas.auth_schema import RefreshAccessToken, AuthResponse
+
+bearer_scheme = HTTPBearer()
 
 auth_router = APIRouter(prefix="/auth",tags=["auth"])
 @auth_router.post("/otp-login")
@@ -27,7 +30,7 @@ async def get_otp_login(back_ground_task : BackgroundTasks ,email : str = Form(.
         }
     )
     
-@auth_router.post("/otp-verify")
+@auth_router.post("/otp-verify",response_model=AuthResponse)
 def verify_otp(otp_schema : OTPSchema ,auth_service : AuthService = Depends(get_auth_service)):
     user_device = UserDeviceCreate(
         device_type=otp_schema.user_device.device_type,
@@ -44,15 +47,22 @@ def verify_otp(otp_schema : OTPSchema ,auth_service : AuthService = Depends(get_
                                                 })
                                                 )
 
-@auth_router.post("/refresh-access-token")
+@auth_router.post("/refresh-access-token",response_model=AuthResponse)
 def refresh_access_token(user_auth_schema : RefreshAccessToken , auth_service : AuthService = Depends(get_auth_service)):
 
     auth_schema = auth_service.refresh_access_token(user_auth_schema)
 
-    return auth_schema
+    return JSONResponse(
+        status_code=200,
+        content= jsonable_encoder({
+            "success": True,
+            "message": "Refreshed access token",
+            "auth": auth_schema
+        })
+    )
 
 @auth_router.post("/logout")
-def logout(user_email: str, device_unique :str ,auth_service : AuthService = Depends(get_auth_service)):
+def logout(user_email: str, device_unique :str ,credentials=Security(bearer_scheme),auth_service : AuthService = Depends(get_auth_service)):
     auth_response = auth_service.logout(user_email,device_unique)
     if not auth_response:
         raise

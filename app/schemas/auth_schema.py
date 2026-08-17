@@ -1,6 +1,10 @@
 from pydantic import BaseModel, EmailStr
 
 
+class OtpRequestResponse(BaseModel):
+    success: bool
+    message: str
+
 class AuthResponse(BaseModel):
 
     access_token: str

@@ -15,10 +15,11 @@ from app.helperFunction.locationcheker import get_distance
 from app.exceptions.custom_exception import (
     AttendanceNotFound,
     TodayAttendanceAlreadyTaken,
-    EmployeeNotFound)
+    EmployeeNotFound, FaceNotFound)
 from app.repo.employee_face_repo import EmployeeFaceRepo
 from app.face_model.face_embedding import extract_face_embedding_db
 from app.face_model.face_matcher import arcface_match
+from app.exceptions.custom_exception import FaceDoseNotMatch
 
 
 class AttendanceService:
@@ -30,7 +31,8 @@ class AttendanceService:
 
 
     async def punch_in_attendance(self,face_image : bytes
-                                  ,punch_in_out_schema,
+                                  ,employee_latitude: float,
+                                  employee_longitude: float,
                                   employee_id :uuid.UUID ,
                                   organisation_id : uuid.UUID):
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
@@ -39,8 +41,8 @@ class AttendanceService:
         if employee.work_mode == WorkMode.WFO:
                      distance = get_distance(office_latitude=employee.organisation.latitude,
                                 office_longitude=employee.organisation.longitude,
-                                employee_latitude=punch_in_out_schema.employee_latitude,
-                                employee_longitude=punch_in_out_schema.employee_longitude )
+                                employee_latitude=employee_latitude,
+                                employee_longitude=employee_longitude )
 
                      if distance > employee.organisation.allowed_radius:
                         logger.info(f"Employee {employee.employee_code} is not in the office permisies")
@@ -61,11 +63,14 @@ class AttendanceService:
             return self.attendance_record_repo.punch_in(employee_id, workMode= employee.work_mode,
                                                         organisation_id=organisation_id)
         else :
-            raise
+            raise FaceDoseNotMatch
 
 
 
-    def punch_out_attendance(self,face_image : bytes,punch_out : PunchInOutSchema , organisation_id : uuid.UUID,employee_id : uuid.UUID):
+    def punch_out_attendance(self,face_image : bytes,punch_out : PunchInOutSchema ,
+                             employee_latitude: float,
+                             employee_longitude: float,
+                             organisation_id : uuid.UUID,employee_id : uuid.UUID):
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
         if not employee:
             logger.error("employee s% of organisation %s is not found",employee_id ,organisation_id)
@@ -79,8 +84,8 @@ class AttendanceService:
 
                 distance = get_distance(office_latitude=employee.organisation.latitude
                                      ,office_longitude=employee.organisation.longitude
-                                     ,employee_longitude=punch_out.employee_longitude
-                                     ,employee_latitude=punch_out.employee_latitude)
+                                     ,employee_longitude=employee_longitude
+                                     ,employee_latitude=employee_latitude)
 
                 if distance > employee.organisation.allowed_radius:
                     logger.error("Employee %s is not in the office permisiess",employee_id)

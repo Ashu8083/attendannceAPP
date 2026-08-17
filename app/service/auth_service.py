@@ -162,7 +162,10 @@ class AuthService:
         refresh_token = authSchema.refresh_token
         user_email = authSchema.user_email
 
+        logger.info(f"refresh service start for  {user_email} ")
         user = self.user_repo.get_user_by_email(user_email)
+
+        logger.info(f"email in the user table{user.email} ")
         if not user.id:
             raise UserNotFound(f"User with email {user_email} not found")
         device = self.user_device_repo.get_user_active_device(user.id,authSchema.device_unique_id)

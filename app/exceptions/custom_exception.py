@@ -245,3 +245,10 @@ class FaceNotFound(AppException):
             status_code= 404,
             error_code= "NOT_FOUND"
         )
+class FaceDoseNotMatch(AppException):
+    def __init__(self):
+        super().__init__(
+            message= "face not match ",
+            status_code = 404,
+            error_code = "NOT_FOUND"
+        )
