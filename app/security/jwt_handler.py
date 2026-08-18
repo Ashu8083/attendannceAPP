@@ -29,7 +29,7 @@ def create_access_token(user_id,user_role,organisation_id,employee_id :uuid.UUID
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    playload = {
+    payload = {
         "user_id": str(user_id),
         "system_role" : user_role,
         "organisation_id": str(organisation_id),
@@ -39,7 +39,7 @@ def create_access_token(user_id,user_role,organisation_id,employee_id :uuid.UUID
     }
 
     return jwt.encode(
-        playload,
+        payload,
         SECRET_KEY,
         algorithm=ALGORITHM
     )

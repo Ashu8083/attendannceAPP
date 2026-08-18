@@ -132,9 +132,12 @@ class NotPunchIn(AppException):
 
 #Location Error
 
-class EmployeeNotInOfficePermises(AppException):
+class EmployeeNotInOfficePremises(AppException):
     def __init__(self):
         super().__init__(
+            message="Not in Office Premises",
+            status_code=401, # change 
+            error_code=""
         )
 
 

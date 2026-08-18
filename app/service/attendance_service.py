@@ -15,7 +15,7 @@ from app.helperFunction.locationcheker import get_distance
 from app.exceptions.custom_exception import (
     AttendanceNotFound,
     TodayAttendanceAlreadyTaken,
-    EmployeeNotFound, FaceNotFound)
+    EmployeeNotFound, FaceNotFound, EmployeeNotInOfficePremises)
 from app.repo.employee_face_repo import EmployeeFaceRepo
 from app.face_model.face_embedding import extract_face_embedding_db
 from app.face_model.face_matcher import arcface_match
@@ -46,7 +46,7 @@ class AttendanceService:
 
                      if distance > employee.organisation.allowed_radius:
                         logger.info(f"Employee {employee.employee_code} is not in the office permisies")
-                        raise
+                        raise EmployeeNotInOfficePremises
 
         attendance = self.attendance_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
