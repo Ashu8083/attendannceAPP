@@ -1,14 +1,15 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.openapi.models import HTTPBearer
 from redis import RedisError
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api import auth_router
 from app.db.database import engine, Base
-from app.middleware.middleware import AuthMiddleware
+from app.middleware.middleware import RequestMiddleware
 from app.api import all_router
 
 from app.exceptions.exception_handaler import *
@@ -23,8 +24,7 @@ from app.models.leave_record_model import LeaveRequest
 
 from app.core.logging_config import logger
 from app.redis_config.redis import redis_client
-
-
+from app.dependancy.auth_dependency import get_current_auth
 
 
 @asynccontextmanager
@@ -72,15 +72,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(AuthMiddleware)
+app.add_middleware(RequestMiddleware)
 app.add_exception_handler(AppException, app_exception_handler)
-
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
-
 app.add_exception_handler(HTTPException, http_exception_handler)
-
 app.add_exception_handler(Exception, generic_exception_handler)
+
+public_routers = [
+    auth_router,
+    "/"
+]
 
 
 @app.get("/")
@@ -89,4 +90,11 @@ def home():
 
 
 for router in all_router:
-    app.include_router(router)
+    if router in public_routers:
+        app.include_router(router)
+    else:
+        app.include_router(
+            router,
+            dependencies=[Depends(get_current_auth)]
+
+        )

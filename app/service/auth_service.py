@@ -231,16 +231,9 @@ class AuthService:
             expires_in=3600,
             permission_list=list(permissions)
         )
-
-
-
-
-
     def verify_access_token(self, token) :
-
         auth = AuthContext
         payload = decode_token(token)
-
         user = self.user_repo.get_user_by_id(payload["user_id"])
 
         if not user:

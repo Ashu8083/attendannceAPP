@@ -18,7 +18,7 @@ from app.core.logging_config import logger
 from app.service.attendance_service import AttendanceService
 
 
-bearer_scheme = HTTPBearer()
+gir
 attendance_router = APIRouter(prefix="/employee/attendance",tags=["Employee Attendance"])
 
 
