@@ -160,7 +160,7 @@ class AccessTokenExpired(AppException):
     def __init__(self):
         super().__init__(
             message= "token expired or not found",
-            status_code= 403,
+            status_code= 401,
         )
 class MissingToken(AppException):
     def __init__(self):
