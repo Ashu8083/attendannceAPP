@@ -34,11 +34,14 @@ class EmployeeFaceService:
 
         if not employee_id:
             raise
-
-        face_register = self.employee_face_repo.create_employee_face_record(employee_id=employee_id,embedding=embedding)
-        if not face_register:
-            raise
-
+        employee_face = self.employee_face_repo.get_employee_face_record(employee_id=employee_id)
+        if not employee_face:
+            face_register = self.employee_face_repo.create_employee_face_record(employee_id=employee_id,
+                                                                                embedding=embedding)
+            if not face_register:
+                raise
+        face_register = self.employee_face_repo.update_employee_face_record(employee_id=employee_id,
+                                                                                    employee_face_embedding=embedding)
         return face_register
 
     async def verify_employee_face(self,request : Request,image_byte : bytes):

@@ -27,3 +27,6 @@ from .organisation_role_permission import *
 
 from app.models.token import Token
 from app.models.employee_face_model import EmployeeFaceModel
+from app.models.branches import Branch
+from app.models.organisation_calendar import OrganisationCalendar
+from app.models.organisation_holidays import  Holidays

@@ -25,6 +25,7 @@ from app.models.leave_record_model import LeaveRequest
 from app.core.logging_config import logger
 from app.redis_config.redis import redis_client
 from app.dependancy.auth_dependency import get_current_auth
+from app.core.response_helper import CommonJSONResponse
 
 
 @asynccontextmanager
@@ -91,10 +92,11 @@ def home():
 
 for router in all_router:
     if router in public_routers:
-        app.include_router(router)
+        app.include_router(router,default_response_class=CommonJSONResponse)
     else:
         app.include_router(
             router,
+            default_response_class=CommonJSONResponse,
             dependencies=[Depends(get_current_auth)]
 
         )

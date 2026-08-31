@@ -14,13 +14,11 @@ class PunchInOutSchema(BaseModel):
     employee_longitude: float
 
 class AttendanceResponse(BaseModel):
-    employee_code: str
-    attendance_date: datetime
-    punchin_time: datetime | None
-    punchout_time: datetime | None
-    status: AttendanceStatus
-    work_mode: WorkMode
 
+    id: uuid.UUID
+    employee_id: uuid.UUID
+    organisation_id: uuid.UUID
+    attendance_date: date
     model_config = ConfigDict(from_attributes=True)
 
 class AttendanceUpdate(BaseModel):

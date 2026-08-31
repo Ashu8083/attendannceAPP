@@ -122,6 +122,24 @@ class AttendanceService:
             raise AttendanceNotFound
         return attendacne_record
 
+    def get_employee_month_attendance(
+            self,
+            month: int,
+            year: int,
+            page: int,
+            page_size: int,
+            organisation_id: uuid.UUID,
+            employee_id: uuid.UUID
+    ):
+        return self.attendance_record_repo.get_employee_month_attendance(
+            month=month,
+            year=year,
+            page=page,
+            page_size=page_size,
+            organisation_id=organisation_id,
+            employee_id=employee_id
+        )
+
     def get_today_employee_attendance(self,organisation_id : uuid.UUID,employee_id : uuid.UUID):
         return self.attendance_record_repo.get_employee_today_attendance(employee_id=employee_id , organisation_id=organisation_id)
 

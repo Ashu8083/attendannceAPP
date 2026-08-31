@@ -94,4 +94,13 @@ class Organisation(Base,TimestampMixin):
         "OrganisationRoles",
         back_populates="organisation",
     )
-
+    organisation_calender = relationship(
+        "OrganisationCalendar",
+        back_populates="organisation",
+        cascade="all, delete-orphan",
+    )
+    branch = relationship(
+        "Branch",
+        back_populates="organisation",
+        cascade="all, delete-orphan",
+    )

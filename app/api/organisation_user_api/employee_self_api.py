@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
-from fastapi import APIRouter, Depends, Request, File, UploadFile, Security
+from fastapi import APIRouter, Depends, Request, File, UploadFile, Security,status
 from fastapi.security import HTTPBearer
+from starlette.responses import JSONResponse
 
 from app.schemas.employee_schema import Employee, EmployeeResponse
 from app.api.organisation_admin_api.employee_api import get_employee_service
@@ -25,15 +26,18 @@ def get_employee_api(request : Request ,employee_service: EmployeeService = Depe
 @employee_self_router.post("/employee-face-register")
 async def register_employee_face(request : Request,credentials=Security(bearer_scheme), image_file : UploadFile = File(...), employee_face_service: EmployeeFaceService = Depends(get_employee_face_service)):
 
-
     image_bytes = await image_file.read()
     # Store embedding in PostgreSQL
-
     await employee_face_service.register_employee_face(
         image_bytes,request
     )
-
-    return {"messsage" : "Employee registered successfully"}
+    return JSONResponse(
+        status_code=201,
+        content={
+            "success": True,
+            "message": "Face successfully registered",
+        }
+    )
 
 @employee_self_router.post("/employee-face-verify")
 async def verify_employee_face(request : Request,credentials=Security(bearer_scheme), image_file : UploadFile = File(...), employee_face_service: EmployeeFaceService = Depends(get_employee_face_service)):
@@ -42,7 +46,11 @@ async def verify_employee_face(request : Request,credentials=Security(bearer_sch
     data = await employee_face_service.verify_employee_face(
     request,image_bytes
     )
-    return {"messsage" : "Employee verified successfully",
-            "content": data }
-
+    return JSONResponse(
+        status_code=200,
+        content={
+            "success": True,
+            "data": data,
+        }
+    )
 

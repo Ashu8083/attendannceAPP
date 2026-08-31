@@ -1,3 +1,4 @@
+from calendar import monthrange
 from uuid import UUID
 
 from sqlalchemy import extract
@@ -206,3 +207,37 @@ class AttendanceRepo:
         )
 
         return {row.employee_id for row in result}
+
+    from calendar import monthrange
+    from datetime import date
+
+    def get_employee_month_attendance(
+            self,
+            month: int,
+            year: int,
+            page: int,
+            page_size: int,
+            organisation_id: uuid.UUID,
+            employee_id: uuid.UUID
+    ):
+        start_date = date(year, month, 1)
+        last_day = monthrange(year, month)[1]
+        end_date = date(year, month, last_day)
+
+        offset = (page - 1) * page_size
+
+        attendance = (
+            self.db.query(Attendance)
+            .filter(
+                Attendance.organisation_id == organisation_id,
+                Attendance.employee_id == employee_id,
+                Attendance.attendance_date >= start_date,
+                Attendance.attendance_date <= end_date
+            )
+            .order_by(Attendance.attendance_date.desc())
+            .offset(offset)
+            .limit(page_size)
+            .all()
+        )
+
+        return attendance
