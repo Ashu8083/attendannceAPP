@@ -6,12 +6,13 @@ from pydantic import BaseModel, ConfigDict
 from app.enums.attandance_status import AttendanceStatus
 from app.enums.work_mode import WorkMode
 
-
-
-
 class PunchInOutSchema(BaseModel):
     employee_latitude: float
     employee_longitude: float
+
+class PunchInAndPunchOutResponseSchema(BaseModel):
+   punchIn_time: time | None = None
+   punchout_time: time | None = None
 
 class AttendanceResponse(BaseModel):
 
@@ -19,6 +20,8 @@ class AttendanceResponse(BaseModel):
     employee_id: uuid.UUID
     organisation_id: uuid.UUID
     attendance_date: date
+    punchin_time: time | None
+    punchout_time: time | None
     model_config = ConfigDict(from_attributes=True)
 
 class AttendanceUpdate(BaseModel):

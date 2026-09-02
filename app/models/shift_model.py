@@ -37,6 +37,9 @@ class Shift(Base,TimestampMixin):
     grace_minutes : Mapped[int] = mapped_column(
         Integer
     )
+    break_time_minutes : Mapped[int] = mapped_column(
+        Integer
+    )
     organisation = relationship(
                                 "Organisation",
                                 back_populates="shift"

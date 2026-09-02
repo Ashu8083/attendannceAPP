@@ -50,6 +50,10 @@ class Branch(Base):
     grace_period : Mapped[int] = mapped_column(
         Integer,
     )
+    total_number_of_paid_leaves :Mapped[int] = mapped_column(
+        Integer,
+        default=2,
+    )
     is_verified: Mapped[bool] = mapped_column(
         Boolean,
         default=False,

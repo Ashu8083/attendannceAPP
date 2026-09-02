@@ -91,9 +91,6 @@ async def punch_out_attendance(
         data=attendance_punch_out,
     )
 
-
-
-
 @attendance_router.get(
     "/self-attendance",
     response_model=CommonResponse[AttendanceResponse],
@@ -116,19 +113,6 @@ def attendance_view(
         message="Attendance fetched successfully",
         data=data
     )
-# @attendance_router.put("/update-employee-attendance/{organisation_id}"
-#                         ,dependencies=[Depends(PermissionChecker("employee.update"))])
-# def update_employee_attendance(
-#         organisation_id : uuid.UUID,
-#         attendance_update : AttendanceUpdate,
-#         service : AttendanceService = Depends(get_attendance_service)
-# ):
-#     return service.update_employee_attendance(organisation_id,attendance_update)
-
-# @attendance_router.delete("/employee-attendance",response_model=AttendanceResponse)
-# def employee_attendance(
-# ):
-    return
 
 
 @attendance_router.get(

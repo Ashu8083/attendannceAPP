@@ -5,7 +5,7 @@ from mako.util import restore__ast
 from sqlalchemy.orm  import Session
 
 from app.enums.departement_status import DepartmentStatusEnum
-from app.models import DepartmentModel
+from app.models.department_model import DepartmentModel
 from app.schemas.department_schema import DepartmentCreate
 from app.models.department_model import DepartmentModel
 from app.schemas.organisation_schema import OrganisationUpdateStatus
