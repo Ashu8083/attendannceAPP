@@ -67,7 +67,7 @@ class AttendanceService:
 
 
 
-    def punch_out_attendance(self,face_image : bytes,punch_out : PunchInOutSchema ,
+    def punch_out_attendance(self,face_image : bytes,
                              employee_latitude: float,
                              employee_longitude: float,
                              organisation_id : uuid.UUID,employee_id : uuid.UUID):

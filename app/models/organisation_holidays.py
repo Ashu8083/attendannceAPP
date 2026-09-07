@@ -37,8 +37,8 @@ class Holidays(Base,TimestampMixin):
         Enum(HolidayStatus),
     )
 
-    organisation_calender = relationship(
-        "OrganisationCalender",
+    organisation_calendar = relationship(
+        "OrganisationCalendar",
         back_populates="holidays",
 
     )

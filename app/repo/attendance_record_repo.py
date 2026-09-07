@@ -68,7 +68,7 @@ class AttendanceRepo:
             logger.exception("Error while creating attendance record for employee %s in organisation  %s", employee_id, organisation_id)
             self.db.rollback()
             raise
-
+        logger.info( attendance_record.is_punchin, attendance_record.punchin_time)
         return attendance_record
 
     def punch_out(self,employee_id:uuid.UUID,organisation_id : uuid.UUID):

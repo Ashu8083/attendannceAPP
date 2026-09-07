@@ -6,6 +6,7 @@ from fastapi import Request, UploadFile, File, Security, Form
 from fastapi import  APIRouter
 from fastapi import  Depends
 from fastapi.responses import JSONResponse
+from jinja2.nodes import List
 from starlette import status
 from fastapi import Query
 from fastapi.security import HTTPBearer
@@ -17,7 +18,7 @@ from app.service import attendance_service
 from app.core.logging_config import logger
 from app.service.attendance_service import AttendanceService
 from app.schemas.faceRegister import EmployeeFaceReg
-from app.schemas.commonResponse import CommonResponse, PaginatedResponse
+from app.core.response_helper import CommonJSONResponse
 
 bearer_scheme = HTTPBearer()
 attendance_router = APIRouter(prefix="/employee/attendance",tags=["Employee Attendance"])
@@ -25,7 +26,7 @@ attendance_router = APIRouter(prefix="/employee/attendance",tags=["Employee Atte
 
 @attendance_router.post(
     "/punch-in",
-    response_model=CommonResponse[AttendanceResponse],
+    response_model= AttendanceResponse,
     status_code=status.HTTP_201_CREATED
 )
 async def punch_in_attendance(
@@ -51,27 +52,29 @@ async def punch_in_attendance(
             employee_longitude=employee_longitude,
             face_image=image_bytes
         )
-
-        return CommonResponse(
-            message="Punch in successfully",
-            data=attendance
+        attendance_response = AttendanceResponse.model_validate(attendance)
+        return CommonJSONResponse(
+            message="punch-in successfully",
+            data=attendance_response,
         )
+    attendance_response = AttendanceResponse.model_validate(attendance)
 
-    return CommonResponse(
-        message="Today's attendance already exists",
-        data=attendance
+    return CommonJSONResponse(
+        message="Attendance Already Punched",
+        content=attendance_response,
     )
+
 
 
 @attendance_router.post(
     "/punch-out",
-    response_model=CommonResponse[AttendanceResponse]
+    response_model=AttendanceResponse,
 )
 async def punch_out_attendance(
     request: Request,
     employee_latitude: float,
     employee_longitude: float,
-    image_file: UploadFile = File(...),
+    face_image: UploadFile = File(...),
     credentials=Security(bearer_scheme),
     attendance_service: AttendanceService = Depends(get_attendance_service)
 ):
@@ -80,20 +83,27 @@ async def punch_out_attendance(
                   .get_today_employee_attendance(employee_id = request.state.auth.employee_id
                                                  ,organisation_id = request.state.auth.organisation_id))
     if attendacne.is_punchout :
-        return JSONResponse(content="today attendance already taken")
-    image_bytes = await image_file.read()
-    attendance_punch_out = attendance_service.punch_out_attendance(employee_id = request.state.auth.employee_id,organisation_id = request.state.auth.organisation_id,
-                                                             employee_latitude = employee_latitude,
-                                                             employee_longitude = employee_longitude,face_image=image_bytes)
-
-    return CommonResponse(
-        message="Punch out attendance successfully punched",
-        data=attendance_punch_out,
+        attendance_response = AttendanceResponse.model_validate(attendacne)
+        return CommonJSONResponse(
+            message="Attendance Already Punched",
+            content=attendance_response,
+        )
+    image_bytes = await face_image.read()
+    attendance_punch_out = attendance_service.punch_out_attendance(employee_id = request.state.auth.employee_id
+                                                                   ,organisation_id = request.state.auth.organisation_id,
+                                                                    employee_latitude = employee_latitude,
+                                                                    employee_longitude = employee_longitude
+                                                                   ,face_image=image_bytes)
+    attendance_response = AttendanceResponse.model_validate(attendance_punch_out)
+    return CommonJSONResponse(
+        message="Punch-out successfully",
+        content=attendance_response,
     )
+
 
 @attendance_router.get(
     "/self-attendance",
-    response_model=CommonResponse[AttendanceResponse],
+    response_model=AttendanceResponse,
 )
     # dependencies=[
     #     Depends(PermissionChecker("employee:view", "ORGANISATION"))
@@ -109,15 +119,12 @@ def attendance_view(
         organisation_id=request.state.auth.organisation_id,
         employee_id=request.state.auth.employee_id
     )
-    return CommonResponse(
-        message="Attendance fetched successfully",
-        data=data
-    )
+    return
 
 
 @attendance_router.get(
     "/employee/month-attendance",
-    response_model=CommonResponse[list[AttendanceResponse]],
+    response_model=list[AttendanceResponse],
     # dependencies=[
     #     Depends(
     #         PermissionChecker(
@@ -146,7 +153,4 @@ def get_employee_month_attendance(
         employee_id=request.state.auth.employee_id
     )
 
-    return CommonResponse(
-        message="Monthly attendance fetched successfully",
-        data=data
-    )
+    return

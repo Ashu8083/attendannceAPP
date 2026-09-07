@@ -92,7 +92,6 @@ class EmployeeService:
 
             user = self.userRepo.create_user_as_employee(full_name = employee_schema.full_name, email = employee_schema.email, organisation_id = organisation_id)
             employee = self.employeeRepo.createEmployee(user_id= user.id, employeedata= employee_schema, organisation_id= organisation_id)
-
             if not employee :
                 raise ValueError("Employee Creation Error")
             await email_service.send_welcome_email(email=user.email)
@@ -122,11 +121,8 @@ class EmployeeService:
 
 
     def create_employee_service_by_organisation_code(self,organisation_code : str,employee_schema : CreateEmployee):
-
         organisation_id = self.organisation_repo.get_organisation_by_code(organisation_code)
-
         user = self.userRepo.get_user_by_email(user_email= employee_schema.email)
-        
         if  user:
             raise EmailAlreadyExists
 

@@ -16,10 +16,6 @@ class PunchInAndPunchOutResponseSchema(BaseModel):
 
 class AttendanceResponse(BaseModel):
 
-    id: uuid.UUID
-    employee_id: uuid.UUID
-    organisation_id: uuid.UUID
-    attendance_date: date
     punchin_time: time | None
     punchout_time: time | None
     model_config = ConfigDict(from_attributes=True)

@@ -74,10 +74,10 @@ class Attendance(Base,TimestampMixin):
                 validate_strings=True),
                 default= AttendanceStatus.PRESENT
     )
-    working_duration : Mapped[int] = mapped_column(
-        Integer,
-        default=0
-    )
+    # working_duration : Mapped[int] = mapped_column(
+    #     Integer,
+    #     default=0
+    # )
     work_mode : Mapped[WorkMode] = mapped_column(
         SQLEnum(
         WorkMode,

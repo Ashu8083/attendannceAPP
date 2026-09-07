@@ -37,6 +37,7 @@ class OrganisationCalendar(Base,TimestampMixin):
 
     )
     holidays = relationship(
-        "OrganisationHoliday",
+        "Holidays",
         cascade="all, delete-orphan",
     )
+

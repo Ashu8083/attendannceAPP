@@ -94,7 +94,7 @@ class Organisation(Base,TimestampMixin):
         "OrganisationRoles",
         back_populates="organisation",
     )
-    organisation_calender = relationship(
+    organisation_calendar = relationship(
         "OrganisationCalendar",
         back_populates="organisation",
         cascade="all, delete-orphan",
