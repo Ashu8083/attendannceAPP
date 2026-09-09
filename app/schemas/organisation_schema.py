@@ -1,12 +1,8 @@
 from typing import Optional
 
 from pydantic import BaseModel,ConfigDict
-
-from datetime import date,datetime
-
 from app.enums.organissation_status_enums import OrganizationStatus
 from app.enums.subcription_type import SubscriptionTypeORG
-from app.models.employee_models import Employee
 from app.schemas.subscription_schema import SubscriptionCreate
 
 class CreateOrganisation(BaseModel) :  
@@ -15,7 +11,7 @@ class CreateOrganisation(BaseModel) :
     organisation_status : OrganizationStatus
     organisation_phone : str
     organisation_address :str    
-class OrgnisationDetails(BaseModel):
+class OrganisationResponse(BaseModel):
 
     organisation_name :str
     organisation_code :str
