@@ -19,7 +19,7 @@ class AttendanceEvidence(Base,TimestampMixin):
     attendance_record_id : Mapped[uuid.UUID]\
         = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("attendance_record.id"),
+        ForeignKey("attendance_records.id"),
         primary_key=True,
         nullable=False,
     )
