@@ -95,3 +95,8 @@ class Attendance(Base,TimestampMixin):
     back_populates="attendance_records"
 
 )
+    attendance_evidence = relationship(
+        "AttendanceEvidence",
+        back_populates="attendance_record",
+        cascade="all, delete, delete-orphan"
+    )

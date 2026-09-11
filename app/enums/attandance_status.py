@@ -6,3 +6,7 @@ class AttendanceStatus(str, Enum):
     ABSENT = "ABSENT"
     #HALF_DAY = "HALF_DAY"
     LEAVE = "LEAVE"
+
+class TypeAttendance(str, Enum):
+        CHECKIN = "CHECKIN"
+        CHECKOUT = "CHECKOUT"

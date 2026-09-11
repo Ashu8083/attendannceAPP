@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.schemas.organisation_schema import( CreateOrganisation,
                                              OrganisationDetailsResponse,
-                                             OrgnisationDetails,
                                              OrganisationUpdateStatus,
                                              UpdateOrganisationSubscription)
 
@@ -30,14 +29,14 @@ def get_organisation_details(
     return organisation
 
 
-@organisation_router.put("/update_organisation/{organisation_code}")
-def upadate_organisation_details(
+@organisation_router.patch("/update_organisation/{organisation_code}")
+def update_organisation_details(
     organisation_code : str,
     data : OrganisationUpdateStatus,
     service : OrganisationService = Depends(get_organaistion_service)
 ):
     try : 
-        organisation :OrgnisationDetails = service.update_organisation(organisation_code,data)
+        organisation  = service.update_organisation(organisation_code,data)
         return {
             "id": str(organisation.id),
             "name": organisation.name
@@ -48,7 +47,6 @@ def upadate_organisation_details(
             status_code=400
         )
     
-@organisation_router.put("/update_organisation_subcription", response_model= OrganisationDetailsResponse)
-def update_organisation_supcription(update_schema :UpdateOrganisationSubscription ):
-
+@organisation_router.patch("/update_organisation_subcription", response_model= OrganisationDetailsResponse)
+def update_organisation_subscription(update_schema :UpdateOrganisationSubscription ):
     return

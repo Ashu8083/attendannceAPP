@@ -30,3 +30,5 @@ from app.models.employee_face_model import EmployeeFaceModel
 from app.models.branches import Branch
 from app.models.organisation_calendar import OrganisationCalendar
 from app.models.organisation_holidays import  Holidays
+from app.models.attendance_record_evidance import AttendanceEvidence
+

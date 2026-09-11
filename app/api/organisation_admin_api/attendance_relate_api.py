@@ -10,7 +10,7 @@ from app.service.attendance_service import AttendanceService
 attendance_manager = APIRouter(prefix="/attendance-manage",tags=["attendance management"])
 
 
-@attendance_manager.put("/update",response_model=AttendanceResponse,dependencies=[Depends(PermissionChecker("attendance.update","ORGANISATION"))])
+@attendance_manager.patch("/update",response_model=AttendanceResponse,dependencies=[Depends(PermissionChecker("attendance.update","ORGANISATION"))])
 def update_attendance(request : Request, attendance_update_schema : AttendanceUpdate , attendance_service : AttendanceService = Depends(get_attendance_service) ):
     attendance_update = attendance_service.update_employee_attendance(organisation_id= request.state.auth.organisation_id,attendance_update_schema = attendance_update_schema)
     if attendance_update:

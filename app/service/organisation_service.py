@@ -1,7 +1,7 @@
 import re
 import uuid
 
-from app.schemas.organisation_schema import CreateOrganisation,OrgnisationDetails,OrganisationUpdateStatus,OrganisationDetailsUpdate,UpdateOrganisationSubscription
+from app.schemas.organisation_schema import CreateOrganisation,OrganisationUpdateStatus,OrganisationDetailsUpdate,UpdateOrganisationSubscription
 from app.repo.organisation_repo import OrganisationRepo
 from app.service.role_services.defult_role_permission import DefaultRolePermissionService
 
