@@ -1,7 +1,7 @@
 from calendar import monthrange
 from uuid import UUID
 
-from sqlalchemy import extract
+from sqlalchemy import extract, func
 
 from app.models import Attendance, Employee
 from app.models.attendance_record_model import Attendance
@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session, InstrumentedAttribute
 from app.enums.attandance_status import AttendanceStatus
 from app.schemas.attendance_schema import *
 from app.core.logging_config import logger
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from datetime import date
 
 from app.models.attendance_record_model import Attendance
 
@@ -61,7 +64,7 @@ class AttendanceRepo:
 
         try:
             self.db.add(attendance_record)
-            self.db.commit()
+            self.db.flush()
             self.db.refresh(attendance_record)
             logger.info("Attendance record for employee %s in organisation  %s is created ", employee_id,organisation_id)
         except Exception:
@@ -239,5 +242,61 @@ class AttendanceRepo:
             .limit(page_size)
             .all()
         )
-
         return attendance
+
+    from datetime import date
+    from sqlalchemy import select, func
+    from sqlalchemy.orm import selectinload
+
+    def get_employee_month_attendance(
+            self,
+            month: int,
+            year: int,
+            page: int,
+            page_size: int,
+            organisation_id: uuid.UUID,
+            employee_id: uuid.UUID,
+    ):
+        start_date = date(year, month, 1)
+
+        if month == 12:
+            end_date = date(year + 1, 1, 1)
+        else:
+            end_date = date(year, month + 1, 1)
+
+        offset = (page - 1) * page_size
+
+        stmt = (
+            select(Attendance)
+            .where(
+                Attendance.organisation_id == organisation_id,
+                Attendance.employee_id == employee_id,
+                Attendance.attendance_date >= start_date,
+                Attendance.attendance_date < end_date,
+            )
+            .options(
+                selectinload(Attendance.employee),
+                selectinload(Attendance.attendance_evidence),
+            )
+            .order_by(Attendance.attendance_date)
+            .offset(offset)
+            .limit(page_size)
+        )
+
+        records = self.db.scalars(stmt).all()
+
+        # Count total records for pagination
+        count_stmt = (
+            select(func.count())
+            .select_from(Attendance)
+            .where(
+                Attendance.organisation_id == organisation_id,
+                Attendance.employee_id == employee_id,
+                Attendance.attendance_date >= start_date,
+                Attendance.attendance_date < end_date,
+            )
+        )
+
+        total = self.db.scalar(count_stmt)
+
+        return records, total

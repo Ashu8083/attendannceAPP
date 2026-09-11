@@ -5,17 +5,12 @@ from fastapi import Request, UploadFile, File, Security, Form
 
 from fastapi import  APIRouter
 from fastapi import  Depends
-from fastapi.responses import JSONResponse
-from jinja2.nodes import List
 from starlette import status
 from fastapi import Query
 from fastapi.security import HTTPBearer
-from app.auth.permission_check import PermissionChecker
-from app.models.attendance_record_model import Attendance
 from app.dependancy.service_dependancy import get_attendance_service
-from app.schemas.attendance_schema import PunchInOutSchema, AttendanceResponse, AttendanceUpdate
-from app.service import attendance_service
-from app.core.logging_config import logger
+from app.schemas.attendance_schema import PunchInOutSchema, AttendanceResponse, AttendanceUpdate, \
+    EmployeeAttendanceMonthResponse
 from app.service.attendance_service import AttendanceService
 from app.schemas.faceRegister import EmployeeFaceReg
 from app.core.response_helper import CommonJSONResponse
@@ -57,11 +52,10 @@ async def punch_in_attendance(
             message="punch-in successfully",
             data=attendance_response,
         )
-    attendance_response = AttendanceResponse.model_validate(attendance)
 
     return CommonJSONResponse(
         message="Attendance Already Punched",
-        content=attendance_response,
+
     )
 
 
@@ -134,6 +128,10 @@ def attendance_view(
     #     )
     # ]
 )
+@attendance_router.get(
+    "/employee/month-attendance",
+    response_model=EmployeeAttendanceMonthResponse,
+)
 def get_employee_month_attendance(
     request: Request,
     month: int = Query(..., ge=1, le=12),
@@ -142,15 +140,13 @@ def get_employee_month_attendance(
     page_size: int = Query(10, ge=1, le=100),
     attendance_service: AttendanceService = Depends(
         get_attendance_service
-    )
+    ),
 ):
-    data = attendance_service.get_employee_month_attendance(
+    return attendance_service.get_employee_month_attendance(
         month=month,
         year=year,
         page=page,
         page_size=page_size,
         organisation_id=request.state.auth.organisation_id,
-        employee_id=request.state.auth.employee_id
+        employee_id=request.state.auth.employee_id,
     )
-
-    return

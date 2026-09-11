@@ -29,6 +29,9 @@ from app.repo.token_repo import TokenRepo
 from app.service.user_device_service import UserDeviceAndTokenService
 from app.repo.employee_face_repo import EmployeeFaceRepo
 from app.service.employee_face_service import EmployeeFaceService
+from app.repo.attendance_evidance_repo import AttendanceEvidenceRepo
+from app.utils.file_storage_service import FileService
+from app.utils.loacl_storage_implementation import LocalFileService
 
 
 def get_organaistion_service(
@@ -62,10 +65,17 @@ def get_employee_service(
 def get_attendance_service(
         db :Session = Depends(get_db)
 ):
+    file_serviece = LocalFileService("uploads")
+    attendance_evidance_repo = AttendanceEvidenceRepo(db)
     attendance_repo = AttendanceRepo(db)
     employee_repo = EmployeeRepo(db)
     employee_face_repo = EmployeeFaceRepo(db)
-    return AttendanceService(attendance_repo,employee_repo,employee_face_repo)
+    return AttendanceService(db=db,
+                             attendance_record_repo= attendance_repo,
+                             employee_repo= employee_repo,
+                             employee_face_repo= employee_face_repo,
+                             file_service=file_serviece,
+                             attendance_evidence_repo=attendance_evidance_repo)
 #
 # def get_role_service(
 #         db: Session= Depends(get_db)

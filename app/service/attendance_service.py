@@ -1,15 +1,16 @@
 
 # import datetime
 import uuid
-from datetime import date
+from datetime import date, datetime
 
-from dateutil.utils import today
+from sqlalchemy.orm import Session
 
 from app.enums.work_mode import WorkMode
-
+from app.utils.file_storage_service import FileService
 from app.repo.attendance_record_repo import AttendanceRepo
 from app.repo.employee_repo import EmployeeRepo
-from app.schemas.attendance_schema import  AttendanceUpdate, PunchInOutSchema
+from app.schemas.attendance_schema import AttendanceUpdate, PunchInOutSchema, EmployeeAttendanceByMonth, \
+    EmployeeAttendanceMonthResponse
 from app.core.logging_config import logger
 from app.helperFunction.locationcheker import get_distance
 from app.exceptions.custom_exception import (
@@ -20,13 +21,24 @@ from app.repo.employee_face_repo import EmployeeFaceRepo
 from app.face_model.face_embedding import extract_face_embedding_db
 from app.face_model.face_matcher import arcface_match
 from app.exceptions.custom_exception import FaceDoseNotMatch
+from app.repo.attendance_evidance_repo import AttendanceEvidenceRepo
+from app.db.UnitOfWork import UnitOfWork
+from app.enums.attandance_status import TypeAttendance
 
 
 class AttendanceService:
-    def __init__(self,attendance_record_repo : AttendanceRepo,employee_repo : EmployeeRepo,employee_face_repo: EmployeeFaceRepo,):
+    def __init__(self,attendance_record_repo : AttendanceRepo,
+                 attendance_evidence_repo : AttendanceEvidenceRepo,
+                 employee_repo : EmployeeRepo,
+                 db: Session,
+                 file_service: FileService,
+                 employee_face_repo: EmployeeFaceRepo,):
 
+        self.db = db
         self.employee_repo = employee_repo
+        self.file_service = file_service
         self.attendance_record_repo = attendance_record_repo
+        self.attendance_evidence_repo = attendance_evidence_repo
         self.employee_face_repo = employee_face_repo
 
 
@@ -48,7 +60,9 @@ class AttendanceService:
                         logger.info(f"Employee {employee.employee_code} is not in the office permisies")
                         raise EmployeeNotInOfficePremises
 
-        attendance = self.attendance_record_repo.today_attendance_employee_is_punch_in(organisation_id= organisation_id,employee_id = employee_id)
+        attendance = (self.attendance_record_repo.
+                      today_attendance_employee_is_punch_in(
+                        organisation_id= organisation_id,employee_id = employee_id))
         if attendance:
             logger.info("User Already Punched")
             raise TodayAttendanceAlreadyTaken
@@ -58,12 +72,30 @@ class AttendanceService:
         face_similarity,face_confedence = arcface_match(
                                             live_embedding=live_embedding ,
                                             stored_embedding=store_embedding )
-
+        captured_at = datetime.now()
         if face_similarity > THRESHOLD:
-            return self.attendance_record_repo.punch_in(employee_id, workMode= employee.work_mode,
+            with UnitOfWork(self.db):
+                attendance = self.attendance_record_repo.punch_in(employee_id, workMode= employee.work_mode,
                                                         organisation_id=organisation_id)
+                storage_path = self.file_service.save_attendance_image(
+                    organisation_id=str(organisation_id),
+                    employee_code=employee.employee_code,
+                    attendance_id=str(attendance.id),
+                    check_out_type=TypeAttendance.CHECKIN,
+                    captured_at=captured_at,
+                    image_bytes=face_image,
+                    extension= "jpg"
+                )
+                attendance_evidence = self.attendance_evidence_repo.create_attendance_evidence(
+                                            attendance_id= attendance.id,
+                                            face_match_score=face_similarity,
+                                            type = TypeAttendance.CHECKIN,
+                                            face_profile_url=storage_path,
+                                            )
         else :
             raise FaceDoseNotMatch
+
+        return attendance,storage_path
 
 
 
@@ -129,15 +161,48 @@ class AttendanceService:
             page: int,
             page_size: int,
             organisation_id: uuid.UUID,
-            employee_id: uuid.UUID
+            employee_id: uuid.UUID,
     ):
-        return self.attendance_record_repo.get_employee_month_attendance(
+        records, total = self.attendance_record_repo.get_employee_month_attendance(
             month=month,
             year=year,
             page=page,
             page_size=page_size,
             organisation_id=organisation_id,
-            employee_id=employee_id
+            employee_id=employee_id,
+        )
+
+        data = []
+
+        for attendance in records:
+
+            punchin_face_profile = None
+            punchout_face_profile = None
+
+            for evidence in attendance.attendance_evidence:
+
+                if evidence.type == TypeAttendance.CHECKIN:
+                    punchin_face_profile = evidence.face_profile_url
+
+                elif evidence.type == TypeAttendance.CHECKOUT:
+                    punchout_face_profile = evidence.face_profile_url
+
+            data.append(
+                EmployeeAttendanceByMonth(
+                    employee_code=attendance.employee.employee_code,
+                    attendance_date=attendance.attendance_date,
+                    punchin_time=attendance.punchin_time,
+                    punchout_time=attendance.punchout_time,
+                    punchin_face_profile=punchin_face_profile,
+                    punchout_face_profile=punchout_face_profile,
+                )
+            )
+
+        return EmployeeAttendanceMonthResponse(
+            data=data,
+            page=page,
+            page_size=page_size,
+            total=total,
         )
 
     def get_today_employee_attendance(self,organisation_id : uuid.UUID,employee_id : uuid.UUID):

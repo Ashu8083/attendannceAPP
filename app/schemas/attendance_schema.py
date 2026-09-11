@@ -18,7 +18,23 @@ class AttendanceResponse(BaseModel):
 
     punchin_time: time | None
     punchout_time: time | None
+    face_profile  : str | None
     model_config = ConfigDict(from_attributes=True)
+
+class EmployeeAttendanceByMonth(BaseModel):
+
+    employee_code: str
+    attendance_date: date
+    punchin_time: time | None = None
+    punchout_time: time | None = None
+    punchin_face_profile: str | None = None
+    punchout_face_profile: str | None = None
+
+class EmployeeAttendanceMonthResponse(BaseModel):
+    data: list[EmployeeAttendanceByMonth]
+    page: int
+    page_size: int
+    total: int
 
 class AttendanceUpdate(BaseModel):
 

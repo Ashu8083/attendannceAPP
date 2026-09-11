@@ -1,8 +1,8 @@
 import uuid
 
 from sqlalchemy import UUID, ForeignKey, Float,String ,Enum
-from sqlalchemy.orm import Mapped,relationship
-from sqlalchemy.testing.schema import mapped_column
+from sqlalchemy.orm import Mapped,relationship,mapped_column
+
 from app.db.database import Base
 
 from app.db.timestamp import TimestampMixin
@@ -20,7 +20,6 @@ class AttendanceEvidence(Base,TimestampMixin):
         = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("attendance_records.id"),
-        primary_key=True,
         nullable=False,
     )
     face_match_score: Mapped[float] = mapped_column(
