@@ -100,7 +100,7 @@ async def punch_out_attendance(
         )
 
     image_bytes = await face_image.read()
-    attendance_punch_out = attendance_service.punch_out_attendance(
+    attendance_punch_out, storage_path = await attendance_service.punch_out_attendance(
         employee_id=request.state.auth.employee_id,
         organisation_id=request.state.auth.organisation_id,
         employee_latitude=employee_latitude,
@@ -112,6 +112,7 @@ async def punch_out_attendance(
         content={
             "punchin_time": attendance_punch_out.punchin_time,
             "punchout_time": attendance_punch_out.punchout_time,
+            "face_profile": storage_path,
         },
     )
 

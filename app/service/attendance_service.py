@@ -99,17 +99,17 @@ class AttendanceService:
 
 
 
-    def punch_out_attendance(self,face_image : bytes,
+    async def punch_out_attendance(self,face_image : bytes,
                              employee_latitude: float,
                              employee_longitude: float,
                              organisation_id : uuid.UUID,employee_id : uuid.UUID):
         employee = self.employee_repo.get_employee_by_employee_id(employee_id=employee_id,organisation_id=organisation_id)
         if not employee:
-            logger.error("employee s% of organisation %s is not found",employee_id ,organisation_id)
+            logger.error("employee %s of organisation %s is not found",employee_id ,organisation_id)
             raise EmployeeNotFound
         attendance = self.attendance_record_repo.today_attendacnce_employee_is_punch_out(organisation_id= organisation_id,employee_id = employee_id)
         if attendance:
-            logger.info("Employee %s  of Organisation % Attendance Already Taken", employee_id,organisation_id)
+            logger.info("Employee %s  of Organisation %s Attendance Already Taken", employee_id,organisation_id)
             raise TodayAttendanceAlreadyTaken
 
         if employee.work_mode == WorkMode.WFO :
@@ -121,7 +121,7 @@ class AttendanceService:
 
                 if distance > employee.organisation.allowed_radius:
                     logger.error("Employee %s is not in the office permisiess",employee_id)
-                    raise
+                    raise EmployeeNotInOfficePremises
         live_embedding = extract_face_embedding_db(face_image)
         store_embedding = self.employee_face_repo.get_employee_face_record(employee_id)
         THRESHOLD = 0.65
@@ -129,10 +129,28 @@ class AttendanceService:
             live_embedding=live_embedding,
             stored_embedding=store_embedding)
 
+        captured_at = datetime.now()
         if face_similarity > THRESHOLD:
-         return self.attendance_record_repo.punch_out(employee_id=employee_id,organisation_id=organisation_id)
+            with UnitOfWork(self.db):
+                attendance_punch_out = self.attendance_record_repo.punch_out(employee_id=employee_id,organisation_id=organisation_id)
+                storage_path = self.file_service.save_attendance_image(
+                    organisation_id=str(organisation_id),
+                    employee_code=employee.employee_code,
+                    attendance_id=str(attendance_punch_out.id),
+                    check_out_type=TypeAttendance.CHECKOUT,
+                    captured_at=captured_at,
+                    image_bytes=face_image,
+                    extension="jpg"
+                )
+                attendance_evidence = self.attendance_evidence_repo.create_attendance_evidence(
+                    attendance_id=attendance_punch_out.id,
+                    face_match_score=face_similarity,
+                    type=TypeAttendance.CHECKOUT,
+                    face_profile_url=storage_path,
+                )
+            return attendance_punch_out, storage_path
         else:
-            raise ValueError("FaceNotMatch")
+            raise FaceDoseNotMatch
 
 
     def get_today_attendance(self,organisation_id : uuid.UUID):

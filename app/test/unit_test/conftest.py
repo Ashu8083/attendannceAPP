@@ -39,13 +39,38 @@ def org_role_repo():
     return MagicMock(spec=OrganisationLevelRolePermissionsRepo)
 
 @pytest.fixture
+def attendance_evidence_repo():
+    return MagicMock()
+
+@pytest.fixture
+def file_service():
+    return MagicMock()
+
+@pytest.fixture
+def employee_face_repo():
+    return MagicMock()
+
+@pytest.fixture
+def db_session():
+    return MagicMock()
+
+@pytest.fixture
 def attendance_service(
         attendance_repo: AttendanceRepo,
-        employee_repo: EmployeeRepo
+        attendance_evidence_repo: MagicMock,
+        employee_repo: EmployeeRepo,
+        db_session: MagicMock,
+        file_service: MagicMock,
+        employee_face_repo: MagicMock,
 ):
     return AttendanceService(
-        attendacnce_record_repo=attendance_repo,
-        employee_repo=employee_repo)
+        attendance_record_repo=attendance_repo,
+        attendance_evidence_repo=attendance_evidence_repo,
+        employee_repo=employee_repo,
+        db=db_session,
+        file_service=file_service,
+        employee_face_repo=employee_face_repo,
+    )
 
 @pytest.fixture
 def auth_service(
