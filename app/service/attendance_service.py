@@ -158,10 +158,10 @@ class AttendanceService:
             self,
             month: int,
             year: int,
-            page: int,
-            page_size: int,
             organisation_id: uuid.UUID,
             employee_id: uuid.UUID,
+            page: int | None = None,
+            page_size: int | None = None,
     ):
         records, total = self.attendance_record_repo.get_employee_month_attendance(
             month=month,
@@ -198,10 +198,13 @@ class AttendanceService:
                 )
             )
 
+        eff_page = page if page is not None else 1
+        eff_page_size = page_size if page_size is not None else total
+
         return EmployeeAttendanceMonthResponse(
             data=data,
-            page=page,
-            page_size=page_size,
+            page=eff_page,
+            page_size=eff_page_size,
             total=total,
         )
 

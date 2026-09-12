@@ -211,51 +211,14 @@ class AttendanceRepo:
 
         return {row.employee_id for row in result}
 
-    from calendar import monthrange
-    from datetime import date
-
     def get_employee_month_attendance(
             self,
             month: int,
             year: int,
-            page: int,
-            page_size: int,
-            organisation_id: uuid.UUID,
-            employee_id: uuid.UUID
-    ):
-        start_date = date(year, month, 1)
-        last_day = monthrange(year, month)[1]
-        end_date = date(year, month, last_day)
-
-        offset = (page - 1) * page_size
-
-        attendance = (
-            self.db.query(Attendance)
-            .filter(
-                Attendance.organisation_id == organisation_id,
-                Attendance.employee_id == employee_id,
-                Attendance.attendance_date >= start_date,
-                Attendance.attendance_date <= end_date
-            )
-            .order_by(Attendance.attendance_date.desc())
-            .offset(offset)
-            .limit(page_size)
-            .all()
-        )
-        return attendance
-
-    from datetime import date
-    from sqlalchemy import select, func
-    from sqlalchemy.orm import selectinload
-
-    def get_employee_month_attendance(
-            self,
-            month: int,
-            year: int,
-            page: int,
-            page_size: int,
             organisation_id: uuid.UUID,
             employee_id: uuid.UUID,
+            page: int | None = None,
+            page_size: int | None = None,
     ):
         start_date = date(year, month, 1)
 
@@ -263,8 +226,6 @@ class AttendanceRepo:
             end_date = date(year + 1, 1, 1)
         else:
             end_date = date(year, month + 1, 1)
-
-        offset = (page - 1) * page_size
 
         stmt = (
             select(Attendance)
@@ -279,9 +240,12 @@ class AttendanceRepo:
                 selectinload(Attendance.attendance_evidence),
             )
             .order_by(Attendance.attendance_date)
-            .offset(offset)
-            .limit(page_size)
         )
+
+        if page_size is not None and page_size > 0:
+            eff_page = page or 1
+            offset = (eff_page - 1) * page_size
+            stmt = stmt.offset(offset).limit(page_size)
 
         records = self.db.scalars(stmt).all()
 

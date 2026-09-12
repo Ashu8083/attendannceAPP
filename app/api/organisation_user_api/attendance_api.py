@@ -118,7 +118,7 @@ def attendance_view(
 
 @attendance_router.get(
     "/employee/month-attendance",
-    response_model=list[AttendanceResponse],
+    response_model=EmployeeAttendanceMonthResponse,
     # dependencies=[
     #     Depends(
     #         PermissionChecker(
@@ -128,7 +128,7 @@ def attendance_view(
     #     )
     # ]
 )
-@attendance_router.get(
+@attendance_router.post(
     "/employee/month-attendance",
     response_model=EmployeeAttendanceMonthResponse,
 )
@@ -136,8 +136,8 @@ def get_employee_month_attendance(
     request: Request,
     month: int = Query(..., ge=1, le=12),
     year: int = Query(..., ge=2020),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
+    page: int | None = Query(None, ge=1),
+    page_size: int | None = Query(None, ge=1, le=100),
     attendance_service: AttendanceService = Depends(
         get_attendance_service
     ),

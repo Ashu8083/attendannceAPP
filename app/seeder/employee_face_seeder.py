@@ -1,18 +1,15 @@
-# app/seeder/attendance_seeder.py
-
 import uuid
 import random
-
+import argparse
 from pathlib import Path
 from datetime import date, time, timedelta
-
-from PIL import Image, ImageDraw
 
 from sqlalchemy.orm import Session
 
 from app.models.attendance_record_model import Attendance
 from app.models.attendance_record_evidance import AttendanceEvidence
 from app.models.employee_models import Employee
+from app.models.organisations import Organisation
 
 from app.enums.attandance_status import (
     AttendanceStatus,
@@ -21,289 +18,299 @@ from app.enums.attandance_status import (
 from app.enums.work_mode import WorkMode
 
 
-BASE_PATH = Path("uploads")
+# ============================================================
+# CONFIGURATION & CONSTANTS
+# ============================================================
+
+# Project root directory
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+UPLOADS_DIR = PROJECT_ROOT / "uploads"
+
+# Reference attendance image
+DEFAULT_IMAGE_PATH = (
+    UPLOADS_DIR
+    / "organisations"
+    / "10fbcac9-3ce1-4c53-a943-b2a5eb10f17a"
+    / "attendance"
+    / "2026"
+    / "09"
+    / "11"
+    / "EMP002_04d9550b-86c3-4e1f-8fe7-c483549cdaab_CHECKIN.jpg"
+)
+
+# Number of attendance records per month for test seeding
+ATTENDANCE_PER_MONTH = 15
+
+# Target months to seed (August and September 2026)
+MONTHS = [
+    (2026, 8),
+    (2026, 9),
+]
 
 
-def create_dummy_image(
-    file_path: Path,
-    employee_code: str,
-    attendance_date: date,
-    punch_type: str,
-):
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
+
+def resolve_reference_image(custom_path: Path = None) -> tuple[Path, str]:
     """
-    Creates a dummy JPG image for development/testing.
+    Resolves the reference image path and its relative URL string for DB storage.
     """
+    target = custom_path or DEFAULT_IMAGE_PATH
 
-    file_path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
+    if not target.exists():
+        # Fallback search inside uploads directory for any check-in or jpg image
+        jpg_files = list(UPLOADS_DIR.rglob("*.jpg"))
+        if jpg_files:
+            target = jpg_files[0]
+        else:
+            raise FileNotFoundError(
+                f"No reference attendance image found at {target} and no fallback jpg in {UPLOADS_DIR}"
+            )
+
+    try:
+        # Calculate relative path from uploads/ directory for DB face_profile_url
+        uploads_idx = target.parts.index("uploads")
+        relative_url = str(Path(*target.parts[uploads_idx + 1:]))
+    except (ValueError, IndexError):
+        relative_url = str(target)
+
+    return target, relative_url
+
+
+def get_working_days(
+    year: int,
+    month: int,
+    allow_future: bool = True,
+) -> list[date]:
+    """
+    Get Monday-Friday dates for the given month.
+    If allow_future is False, future dates beyond today are excluded.
+    For test data seeding, allow_future=True enables generating 15 days in September.
+    """
+    current_date = date(year, month, 1)
+    working_days = []
+    today = date.today()
+
+    while current_date.month == month:
+        # Monday = 0, Friday = 4
+        if current_date.weekday() < 5:
+            if allow_future or current_date <= today:
+                working_days.append(current_date)
+        current_date += timedelta(days=1)
+
+    return working_days
+
+
+def generate_punchin_time() -> time:
+    """Generate random punch-in time between 08:00 and 09:59."""
+    return time(
+        hour=random.choice([8, 9]),
+        minute=random.randint(0, 59),
     )
 
-    image = Image.new(
-        "RGB",
-        (800, 600),
-        "white",
+
+def generate_punchout_time() -> time:
+    """Generate random punch-out time between 17:00 and 18:59."""
+    return time(
+        hour=random.choice([17, 18]),
+        minute=random.randint(0, 59),
     )
 
-    draw = ImageDraw.Draw(image)
 
-    draw.text(
-        (50, 50),
-        "ATTENDANCE EVIDENCE",
-        fill="black",
-    )
+def generate_face_match_score() -> float:
+    """Generate random face match score between 0.85 and 0.98."""
+    return round(random.uniform(0.85, 0.98), 3)
 
-    draw.text(
-        (50, 100),
-        f"Employee: {employee_code}",
-        fill="black",
-    )
 
-    draw.text(
-        (50, 150),
-        f"Date: {attendance_date}",
-        fill="black",
-    )
-
-    draw.text(
-        (50, 200),
-        f"Type: {punch_type}",
-        fill="black",
-    )
-
-    image.save(
-        file_path,
-        format="JPEG",
-        quality=90,
-    )
-
+# ============================================================
+# MAIN SEEDER FUNCTION
+# ============================================================
 
 def seed_attendance(
     db: Session,
-    employee_id: uuid.UUID,
-    organisation_id: uuid.UUID,
+    employee_id: uuid.UUID = None,
+    organisation_id: uuid.UUID = None,
+    employee_code: str = None,
+    records_per_month: int = ATTENDANCE_PER_MONTH,
+    months: list[tuple[int, int]] = None,
+    image_path: Path = None,
+    allow_future: bool = True,
 ):
-    employee = db.get(Employee, employee_id)
+    """
+    Seeds test attendance and evidence records for August and September.
+    Uses reference image for face evidence.
+    """
+    if months is None:
+        months = MONTHS
+
+    # 1. Resolve reference image
+    ref_image_path, relative_face_url = resolve_reference_image(image_path)
+    print(f"Using reference image: {ref_image_path}")
+    print(f"Face profile URL stored in DB: {relative_face_url}")
+
+    # 2. Find employee and organisation automatically if not provided
+    employee = None
+    if employee_id:
+        employee = db.get(Employee, employee_id)
+    elif employee_code:
+        employee = db.query(Employee).filter(Employee.employee_code == employee_code).first()
 
     if not employee:
-        raise ValueError(
-            f"Employee {employee_id} not found"
-        )
+        # Fallback to first available employee in DB (preferably EMP002 or EMP001)
+        employee = db.query(Employee).filter(Employee.employee_code == "EMP002").first()
+        if not employee:
+            employee = db.query(Employee).first()
 
+    if not employee:
+        raise ValueError("No employee found in database to seed attendance for.")
+
+    employee_id = employee.id
     employee_code = employee.employee_code
+    organisation_id = organisation_id or employee.organisation_id
 
-    months = [
-        (2026, 8),
-        (2026, 9),
-    ]
+    print(f"\nSeeding attendance for:")
+    print(f"  Employee Code  : {employee_code}")
+    print(f"  Employee ID    : {employee_id}")
+    print(f"  Organisation ID: {organisation_id}")
+    print(f"  Records/Month  : {records_per_month}")
 
+    # Counters
     total_attendance = 0
-    total_images = 0
+    total_evidence = 0
 
+    # 3. Process each month
     for year, month in months:
+        print(f"\nProcessing {year}-{month:02d}...")
 
-        # ---------------------------------------
-        # Get weekdays
-        # ---------------------------------------
+        working_days = get_working_days(year=year, month=month, allow_future=allow_future)
+        if not working_days:
+            print(f"  No working days available for {year}-{month:02d}")
+            continue
 
-        current_date = date(
-            year,
-            month,
-            1,
-        )
-
-        working_days = []
-
-        while current_date.month == month:
-
-            # Monday = 0
-            # Sunday = 6
-            if current_date.weekday() < 5:
-                working_days.append(current_date)
-
-            current_date += timedelta(days=1)
-
-        # ---------------------------------------
-        # Pick 15 days
-        # ---------------------------------------
-
-        attendance_dates = random.sample(
-            working_days,
-            15,
-        )
-
-        attendance_dates.sort()
-
-        for attendance_date in attendance_dates:
-
-            # ---------------------------------------
-            # Generate punch-in time
-            # ---------------------------------------
-
-            punchin_time = time(
-                hour=random.choice([8, 9]),
-                minute=random.randint(0, 59),
+        # Get existing attendance dates for this month
+        existing_attendances = (
+            db.query(Attendance)
+            .filter(
+                Attendance.employee_id == employee_id,
+                Attendance.attendance_date >= date(year, month, 1),
+                Attendance.attendance_date <= date(year, month, len(working_days) + 8),
             )
+            .all()
+        )
+        existing_dates = {att.attendance_date for att in existing_attendances}
+        existing_count = len(existing_dates)
 
-            # ---------------------------------------
-            # Generate punch-out time
-            # ---------------------------------------
+        available_dates = [d for d in working_days if d not in existing_dates]
 
-            punchout_time = time(
-                hour=random.choice([17, 18]),
-                minute=random.randint(0, 59),
-            )
+        needed_count = max(0, records_per_month - existing_count)
+        if needed_count == 0:
+            print(f"  Month {year}-{month:02d} already has {existing_count} records (target: {records_per_month}). Skipping.")
+            continue
 
-            # ---------------------------------------
-            # Attendance
-            # ---------------------------------------
+        num_to_create = min(needed_count, len(available_dates))
+        if num_to_create == 0:
+            print(f"  No available dates to create new records for {year}-{month:02d}")
+            continue
+
+        selected_dates = random.sample(available_dates, num_to_create)
+        selected_dates.sort()
+
+        print(f"  Creating {num_to_create} attendance records (existing: {existing_count}, target: {records_per_month})...")
+
+        for att_date in selected_dates:
+            punchin_time = generate_punchin_time()
+            punchout_time = generate_punchout_time()
 
             attendance = Attendance(
                 id=uuid.uuid4(),
-
                 organisation_id=organisation_id,
-
                 employee_id=employee_id,
-
-                attendance_date=attendance_date,
-
+                attendance_date=att_date,
                 is_punchin=True,
-
                 punchin_time=punchin_time,
-
                 is_punchout=True,
-
                 punchout_time=punchout_time,
-
                 status=AttendanceStatus.PRESENT,
-
-                work_mode=WorkMode.OFFICE,
+                work_mode=WorkMode.WFO,
             )
-
             db.add(attendance)
-
-            # Important:
-            # We need attendance.id before
-            # creating the evidence path.
             db.flush()
 
-            # ---------------------------------------
-            # Directory
-            # ---------------------------------------
-
-            directory = (
-                BASE_PATH
-                / "organisations"
-                / str(organisation_id)
-                / "attendance"
-                / str(year)
-                / f"{month:02d}"
-                / f"{attendance_date.day:02d}"
-            )
-
-            directory.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-
-            # ---------------------------------------
-            # CHECK-IN IMAGE
-            # ---------------------------------------
-
-            checkin_filename = (
-                f"{employee_code}_"
-                f"{attendance.id}_"
-                f"check-in.jpg"
-            )
-
-            checkin_path = (
-                directory /
-                checkin_filename
-            )
-
-            create_dummy_image(
-                file_path=checkin_path,
-                employee_code=employee_code,
-                attendance_date=attendance_date,
-                punch_type="CHECK-IN",
-            )
-
-            # ---------------------------------------
-            # CHECK-OUT IMAGE
-            # ---------------------------------------
-
-            checkout_filename = (
-                f"{employee_code}_"
-                f"{attendance.id}_"
-                f"check-out.jpg"
-            )
-
-            checkout_path = (
-                directory /
-                checkout_filename
-            )
-
-            create_dummy_image(
-                file_path=checkout_path,
-                employee_code=employee_code,
-                attendance_date=attendance_date,
-                punch_type="CHECK-OUT",
-            )
-
-            # ---------------------------------------
-            # CHECK-IN evidence
-            # ---------------------------------------
-
-            checkin_evidence = AttendanceEvidence(
+            # Check-in evidence
+            checkin_ev = AttendanceEvidence(
                 id=uuid.uuid4(),
-
                 attendance_record_id=attendance.id,
-
-                face_match_score=round(
-                    random.uniform(0.85, 0.98),
-                    3,
-                ),
-
+                face_match_score=generate_face_match_score(),
                 type=TypeAttendance.CHECKIN,
-
-                face_profile_url=str(
-                    checkin_path
-                ),
+                face_profile_url=relative_face_url,
             )
 
-            # ---------------------------------------
-            # CHECK-OUT evidence
-            # ---------------------------------------
-
-            checkout_evidence = AttendanceEvidence(
+            # Check-out evidence
+            checkout_ev = AttendanceEvidence(
                 id=uuid.uuid4(),
-
                 attendance_record_id=attendance.id,
-
-                face_match_score=round(
-                    random.uniform(0.85, 0.98),
-                    3,
-                ),
-
+                face_match_score=generate_face_match_score(),
                 type=TypeAttendance.CHECKOUT,
-
-                 face_profile_url=str(
-                    checkout_path
-                ),
+                face_profile_url=relative_face_url,
             )
 
-            db.add(checkin_evidence)
-            db.add(checkout_evidence)
+            db.add(checkin_ev)
+            db.add(checkout_ev)
 
             total_attendance += 1
-            total_images += 2
+            total_evidence += 2
 
-    db.commit()
+            print(f"    ✓ {att_date} | IN {punchin_time} | OUT {punchout_time}")
 
-    print(
-        f"Created {total_attendance} attendance records"
-    )
+    # 4. Commit transaction
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
-    print(
-        f"Created {total_images} attendance images"
-    )
+    # 5. Summary
+    print("\n========================================")
+    print("  Attendance & Evidence Seeding Completed")
+    print("========================================")
+    print(f"  Total Attendance Records Created : {total_attendance}")
+    print(f"  Total Evidence Records Created   : {total_evidence}")
+    print(f"  Reference Image Used             : {ref_image_path}")
+    print("========================================")
+
+
+# ============================================================
+# CLI ENTRY POINT
+# ============================================================
+
+if __name__ == "__main__":
+    from app.db.database import SessionLocal
+
+    parser = argparse.ArgumentParser(description="Seed test attendance & face evidence records.")
+    parser.add_argument("--employee-code", type=str, help="Employee code (e.g. EMP002)")
+    parser.add_argument("--employee-id", type=str, help="Employee UUID")
+    parser.add_argument("--organisation-id", type=str, help="Organisation UUID")
+    parser.add_argument("--per-month", type=int, default=ATTENDANCE_PER_MONTH, help="Number of records per month (default 15)")
+
+    args = parser.parse_args()
+
+    emp_id = uuid.UUID(args.employee_id) if args.employee_id else None
+    org_id = uuid.UUID(args.organisation_id) if args.organisation_id else None
+
+    db = SessionLocal()
+
+    try:
+        seed_attendance(
+            db=db,
+            employee_id=emp_id,
+            organisation_id=org_id,
+            employee_code=args.employee_code,
+            records_per_month=args.per_month,
+        )
+    except Exception as error:
+        db.rollback()
+        print("\n❌ Seeder execution failed:", error)
+        raise
+    finally:
+        db.close()
