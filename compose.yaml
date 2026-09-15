@@ -1,21 +1,11 @@
-services :
-    web:
-      build: .
-      container_name: HSRM
-      ports:
-        - "8000:8000"
-      volumes:
-        - .:/app/HSRM
-      environment:
-        - ENV=development
-      restart: always
-      depends_on:
-        - redis
-
-    redis :
-      image: redis:7-alpine
-      container_name: redis_cache
-      ports:
-          - "6379:6379"
-      restart: always
-
+services:
+  web:
+    build: .
+    container_name: HSRM
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    restart: always
