@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 from app.exceptions.custom_exception import UserNotFound, EmailAlreadyExists
 from app.repo.RolePermissionRepo.system_role_permission_repo import SystemRoleRepo
 from app.db.database import get_db
-from migrations.versions.af6bf093104a_initial_migration import depends_on
 
 
 class UserService:
