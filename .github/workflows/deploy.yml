@@ -32,6 +32,16 @@ jobs:
           timeout: 30s
           command_timeout: 10m
           script: |
-            cd ~/runamarga_saas
+            cd ~/runamarga_saas/attendannceAPP
+
+            echo "Current directory:"
+            pwd
+
+            echo "Pulling latest code..."
             git pull origin main
+
+            echo "Building and starting containers..."
             docker compose up -d --build
+
+            echo "Deployment completed!"
+            docker compose ps
