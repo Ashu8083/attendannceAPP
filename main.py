@@ -6,6 +6,7 @@ from redis import RedisError
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.staticfiles import StaticFiles
 
 from app.api import auth_router
 from app.db.database import engine, Base
@@ -88,6 +89,12 @@ public_routers = [
 @app.get("/")
 def home():
     return {"message": "FastAPI Server"}
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads",
+)
 
 
 for router in all_router:

@@ -47,7 +47,7 @@ def verify_otp(otp_schema : OTPSchema ,auth_service : AuthService = Depends(get_
                                                 })
                                                 )
 
-@auth_router.post("/refresh-access-token",response_model=AuthResponse)
+@auth_router.put("/refresh-access-token",response_model=AuthResponse)
 def refresh_access_token(user_auth_schema : RefreshAccessToken , auth_service : AuthService = Depends(get_auth_service)):
 
     auth_schema = auth_service.refresh_access_token(user_auth_schema)
