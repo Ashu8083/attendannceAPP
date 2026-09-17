@@ -1,6 +1,7 @@
 import uuid
 import random
 import argparse
+import calendar
 from pathlib import Path
 from datetime import date, time, timedelta
 
@@ -26,6 +27,9 @@ from app.enums.work_mode import WorkMode
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 UPLOADS_DIR = PROJECT_ROOT / "uploads"
 
+# Default Target Employee UUID (EMP001)
+DEFAULT_EMPLOYEE_ID = uuid.UUID("dc75394c-0d4c-45f1-b8ba-98a6c76227a6")
+
 # Reference attendance image
 DEFAULT_IMAGE_PATH = (
     UPLOADS_DIR
@@ -34,8 +38,8 @@ DEFAULT_IMAGE_PATH = (
     / "attendance"
     / "2026"
     / "09"
-    / "11"
-    / "EMP002_04d9550b-86c3-4e1f-8fe7-c483549cdaab_CHECKIN.jpg"
+    / "12"
+    / "EMP001_eb747b31-cb0d-4cb4-be5b-c5b679a2c2d6_CHECKIN.jpg"
 )
 
 # Number of attendance records per month for test seeding
@@ -64,9 +68,9 @@ def resolve_reference_image(custom_path: Path = None) -> tuple[Path, str]:
         if jpg_files:
             target = jpg_files[0]
         else:
-            raise FileNotFoundError(
-                f"No reference attendance image found at {target} and no fallback jpg in {UPLOADS_DIR}"
-            )
+            # If disk path doesn't exist yet, return relative URL string specified by user
+            rel_str = "organisations/10fbcac9-3ce1-4c53-a943-b2a5eb10f17a/attendance/2026/09/12/EMP001_eb747b31-cb0d-4cb4-be5b-c5b679a2c2d6_CHECKIN.jpg"
+            return target, rel_str
 
     try:
         # Calculate relative path from uploads/ directory for DB face_profile_url
@@ -138,7 +142,7 @@ def seed_attendance(
     allow_future: bool = True,
 ):
     """
-    Seeds test attendance and evidence records for August and September.
+    Seeds test attendance and evidence records for specified employee.
     Uses reference image for face evidence.
     """
     if months is None:
@@ -149,18 +153,17 @@ def seed_attendance(
     print(f"Using reference image: {ref_image_path}")
     print(f"Face profile URL stored in DB: {relative_face_url}")
 
-    # 2. Find employee and organisation automatically if not provided
+    # 2. Find employee and organisation
     employee = None
-    if employee_id:
-        employee = db.get(Employee, employee_id)
-    elif employee_code:
+    target_emp_id = employee_id or DEFAULT_EMPLOYEE_ID
+
+    employee = db.get(Employee, target_emp_id)
+    if not employee and employee_code:
         employee = db.query(Employee).filter(Employee.employee_code == employee_code).first()
 
     if not employee:
-        # Fallback to first available employee in DB (preferably EMP002 or EMP001)
-        employee = db.query(Employee).filter(Employee.employee_code == "EMP002").first()
-        if not employee:
-            employee = db.query(Employee).first()
+        # Fallback to first available employee in DB
+        employee = db.query(Employee).first()
 
     if not employee:
         raise ValueError("No employee found in database to seed attendance for.")
@@ -188,13 +191,13 @@ def seed_attendance(
             print(f"  No working days available for {year}-{month:02d}")
             continue
 
-        # Get existing attendance dates for this month
+        last_day = calendar.monthrange(year, month)[1]
         existing_attendances = (
             db.query(Attendance)
             .filter(
                 Attendance.employee_id == employee_id,
                 Attendance.attendance_date >= date(year, month, 1),
-                Attendance.attendance_date <= date(year, month, len(working_days) + 8),
+                Attendance.attendance_date <= date(year, month, last_day),
             )
             .all()
         )
@@ -276,7 +279,7 @@ def seed_attendance(
     print("========================================")
     print(f"  Total Attendance Records Created : {total_attendance}")
     print(f"  Total Evidence Records Created   : {total_evidence}")
-    print(f"  Reference Image Used             : {ref_image_path}")
+    print(f"  Reference Image Used             : {relative_face_url}")
     print("========================================")
 
 
@@ -288,14 +291,14 @@ if __name__ == "__main__":
     from app.db.database import SessionLocal
 
     parser = argparse.ArgumentParser(description="Seed test attendance & face evidence records.")
-    parser.add_argument("--employee-code", type=str, help="Employee code (e.g. EMP002)")
-    parser.add_argument("--employee-id", type=str, help="Employee UUID")
+    parser.add_argument("--employee-id", type=str, default="e81812de-8972-439a-a811-dc19c8a09952", help="Employee UUID")
+    parser.add_argument("--employee-code", type=str, help="Employee code (e.g. EMP001)")
     parser.add_argument("--organisation-id", type=str, help="Organisation UUID")
     parser.add_argument("--per-month", type=int, default=ATTENDANCE_PER_MONTH, help="Number of records per month (default 15)")
 
     args = parser.parse_args()
 
-    emp_id = uuid.UUID(args.employee_id) if args.employee_id else None
+    emp_id = uuid.UUID(args.employee_id) if args.employee_id else DEFAULT_EMPLOYEE_ID
     org_id = uuid.UUID(args.organisation_id) if args.organisation_id else None
 
     db = SessionLocal()
