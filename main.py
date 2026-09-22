@@ -95,7 +95,7 @@ app.mount(
     StaticFiles(directory="uploads"),
     name="uploads",
 )
-
+#Upload add
 
 for router in all_router:
     if router in public_routers:
