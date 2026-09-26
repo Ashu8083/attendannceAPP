@@ -9,8 +9,7 @@ from app.auth.permission_check import PermissionChecker
 from app.service.employee_services import EmployeeService
 from app.service.employee_face_service import EmployeeFaceService
 from app.dependancy.service_dependancy import get_employee_face_service,get_employee_service
-
-
+from core.response_helper import CommonJSONResponse
 
 employee_self_router = APIRouter(
     prefix="/organisation-user",
@@ -19,16 +18,28 @@ employee_self_router = APIRouter(
 bearer_scheme = HTTPBearer()
 @employee_self_router.get("/employee",response_model= EmployeeResponse)
 def get_self_by_employee_api(request : Request ,employee_service: EmployeeService = Depends(get_employee_service)):
-    return (employee_service.
+    employee= (employee_service.
             get_employee_by_empID_service(organisation_id=request.state.auth.organisation_id,
                                           employee_id=request.state.auth.employee_id))
+
+    return CommonJSONResponse(
+        status_code=200,
+        content=employee,
+        message="Employee fetch successfully ",
+    )
 
 
 
 @employee_self_router.get("/employee-profile-image")
 def get_employee_face_url(request : Request,employee_service: EmployeeService = Depends(get_employee_service)):
-    return (employee_service.
+    employee= (employee_service.
             get_employee_profile_picture(employee_id=request.state.auth.employee_id))
+
+    return CommonJSONResponse(
+        status_code=200,
+        content=employee,
+        media_type="image/jpeg",
+    )
 
 
 @employee_self_router.post("/employee-face-register")
