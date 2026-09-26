@@ -93,6 +93,15 @@ class EmployeeRepo:
         )
         return employee_record
 
+    def get_employee_profile_image(self,employee_id):
+        logger.info(f"Trying to get profile image for employee {employee_id}")
+        employee_profile_image_url = (self.db.query(EmployeeDetails.employee_profile_imagei).
+                                      filter(EmployeeDetails.employee_id == employee_id).first())
+
+        return employee_profile_image_url
+
+
+
     def add_employee_details(self,user_full_name : str,employee_details_schema : CreateEmployeeDetails, employee_id : UUID) -> type[EmployeeDetails] | None:
         logger.info(f"Trying to add Employee details ")
         employee_details = ED(
@@ -140,7 +149,7 @@ class EmployeeRepo:
         return employee
 
 
-    def get_employee_by_employee_id(self, employee_id: uuid.UUID,organisation_id : uuid.UUID) -> type[Employee] | None:
+    def     get_employee_by_employee_id(self, employee_id: uuid.UUID,organisation_id : uuid.UUID) -> type[Employee] | None:
         return self.db.query(Employee).filter(Employee.id == employee_id,
                                               Employee.organisation_id == organisation_id).first()
 

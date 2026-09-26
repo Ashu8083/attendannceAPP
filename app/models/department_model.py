@@ -22,6 +22,7 @@ class DepartmentModel(Base,TimestampMixin):
     id : Mapped[int] = mapped_column(
         Integer,
         primary_key= True,
+        autoincrement = True,
     )
     __table_args__ = (
         UniqueConstraint(
@@ -36,11 +37,23 @@ class DepartmentModel(Base,TimestampMixin):
     name : Mapped[str] = mapped_column(
         String(25)
     )
+    department_head : Mapped[uuid.UUID] = mapped_column(
+                    UUID(as_uuid=True),
+                    ForeignKey("employees.id"),
+                    nullable = False
+    )
+
     organisation_id: Mapped[uuid.UUID] = mapped_column(
                                 UUID(as_uuid=True),
                                 ForeignKey("organisation.id"),
                                 nullable=False
                                 )
+
+    branch_id : Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("branches.id"),
+        nullable = True
+    )
     department_status : Mapped[DepartmentStatusEnum]= mapped_column(
             SQLEnum(DepartmentStatusEnum)
     )
@@ -48,4 +61,14 @@ class DepartmentModel(Base,TimestampMixin):
     organization = relationship(
     "Organisation",
     back_populates="departments"
+    )
+
+    team = relationship(
+        "Team",
+        back_populates="department",
+        cascade="all, delete-orphan",
+    )
+    branch = relationship(
+        "Branch",
+        back_populates="department",
     )

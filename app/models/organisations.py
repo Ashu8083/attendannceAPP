@@ -1,7 +1,4 @@
-
 import uuid
-
-
 from ..db.database import Base
 
 from sqlalchemy.orm import relationship

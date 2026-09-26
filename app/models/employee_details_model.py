@@ -24,6 +24,11 @@ class EmployeeDetails(Base, TimestampMixin):
             "employee_id",
             "full_name",
             "city"
+    ),
+        Index(
+            "idx_employee_profile_image"
+            "employee_id",
+            "employee_profile_image"
     )
     )
 
@@ -34,6 +39,11 @@ class EmployeeDetails(Base, TimestampMixin):
     )
     employee_id : Mapped[uuid.UUID]= mapped_column(
         ForeignKey("employees.id")
+    )
+
+    employee_profile_image : Mapped[str] = mapped_column(
+        String(200),
+        nullable=True
     )
     full_name : Mapped[str] = mapped_column(
         String(50)

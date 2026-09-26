@@ -28,6 +28,11 @@ class Shift(Base,TimestampMixin):
        ForeignKey("organisation.id"),
         nullable= False
     )
+    branch_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid = True),
+        ForeignKey("branches.id"),
+        nullable= False
+    )
     start_time : Mapped[time] = mapped_column(
         Time
     )
@@ -40,6 +45,10 @@ class Shift(Base,TimestampMixin):
     break_time_minutes : Mapped[int] = mapped_column(
         Integer
     )
+    break_type: Mapped[str] = mapped_column(
+        String,
+        nullable= False
+    )
     organisation = relationship(
                                 "Organisation",
                                 back_populates="shift"
@@ -47,4 +56,8 @@ class Shift(Base,TimestampMixin):
     employee = relationship(
                           "Employee",
                            back_populates= "shift"
+    )
+    branch = relationship(
+        "Branch",
+        back_populates= "shift"
     )

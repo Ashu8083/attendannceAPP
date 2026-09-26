@@ -27,3 +27,4 @@ class OrganisationLevelRolePermissions(Base):
         back_populates="organisation_role_permissions",
     )
     permission = relationship("Permission", back_populates="organisation_role_permissions")
+

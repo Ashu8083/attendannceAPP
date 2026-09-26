@@ -47,6 +47,11 @@ class Attendance(Base,TimestampMixin):
         ForeignKey("organisation.id"),
         nullable= False
     )
+    branches : Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("branches.id"),
+        nullable= True
+    )
     employee_id : Mapped[uuid.UUID] = mapped_column(
         ForeignKey("employees.id")
     )
@@ -99,4 +104,9 @@ class Attendance(Base,TimestampMixin):
         "AttendanceEvidence",
         back_populates="attendance_record",
         cascade="all, delete, delete-orphan"
+    )
+
+    branch = relationship(
+        "Branch",
+        back_populates="attendance_records"
     )

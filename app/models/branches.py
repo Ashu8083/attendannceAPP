@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 import uuid
 from sqlalchemy import Integer, String, UUID, ForeignKey, Float, Boolean
+from sqlalchemy import Enum as SQLEnum
 from app.db.database import Base
 
+from ..enums.organissation_status_enums import OrganizationStatus
 
 class Branch(Base):
     __tablename__ = "branches"
@@ -58,7 +60,37 @@ class Branch(Base):
         Boolean,
         default=False,
     )
+    status: Mapped[OrganizationStatus]  =mapped_column(
+        SQLEnum(OrganizationStatus)
+
+    )
     organisation = Relationship(
                 "Organisation",
                  back_populates="branch",
+    )
+
+    employee = Relationship(
+        "Employee",
+                 back_populates="branch",
+    )
+    attendance_records = Relationship(
+        "Attendance",
+        back_populates="branch",
+    )
+
+    shift = Relationship(
+        "Shift",
+            back_populates="branch",
+        cascade="all, delete-orphan",
+    )
+
+    department = Relationship(
+        "DepartmentModel",
+            back_populates="branch",
+        cascade="all, delete-orphan",
+    )
+
+    role = Relationship(
+        "OrganisationRoles",
+            back_populates="branch",
     )

@@ -33,6 +33,14 @@ class OrganisationRoles(Base, TimestampMixin):
     organisation_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("organisation.id"),
     )
+    branch_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("branches.id"),
+        nullable=True,
+    )
+    branch = relationship(
+        "Branch",
+        back_populates="role",
+    )
 
     organisation = relationship("Organisation", back_populates="organisation_lvl_roles")
     organisation_role_permissions = relationship("OrganisationLevelRolePermissions", back_populates="role",

@@ -42,6 +42,9 @@ class EmployeeService:
             raise OraganisationNotFound
         return self.employeeRepo.generate_employee_code(organisation_id)
 
+    def get_employee_profile_picture(self,employee_id : uuid.UUID) :
+        image_url = self.employeeRepo.get_employee_profile_image(employee_id)
+        return image_url
     def add_existing_user_to_organisation(self,organisation_code :str,user_email:EmailStr, employee_detail_schema : CreateEmployeeDetails ,):
 
         organisation_id = self.organisation_repo.get_organisation_id_by_organisation_code(organisation_code)
@@ -176,6 +179,7 @@ class EmployeeService:
             raise ValueError ("Employee not found")
         return employee
 
+    # def get_employee_profile_picture_service(self,organisation_id : uuid.UUID, employee_id : uuid.UUID):
     def get_all_employee_service(self,organisation_id : uuid.UUID):
 
         return self.employeeRepo.get_all_employee(organisation_id=organisation_id)

@@ -62,6 +62,17 @@ class Employee(Base,TimestampMixin):
         String(100),
         nullable=True
     )
+    organisation_branch:Mapped[UUID]= mapped_column(
+        UUID(as_uuid = True),
+        ForeignKey("branches.id"),
+        nullable= True
+    )
+
+    supervisor : Mapped[UUID]= mapped_column(
+        UUID(as_uuid = True),
+        ForeignKey("employees.id"),
+        nullable= True
+    )
     employee_status : Mapped[EmployeeStatus] = mapped_column(
             SQLEnums(EmployeeStatus),
             default=EmployeeStatus.ACTIVE
@@ -139,5 +150,9 @@ class Employee(Base,TimestampMixin):
         "EmployeeFaceModel",
          back_populates="employee"
      )
+    branch = relationship(
+        "Branch",
+        back_populates="employee",
 
+    )
 

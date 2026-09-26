@@ -32,6 +32,8 @@ from app.service.employee_face_service import EmployeeFaceService
 from app.repo.attendance_evidance_repo import AttendanceEvidenceRepo
 from app.utils.file_storage_service import FileService
 from app.utils.loacl_storage_implementation import LocalFileService
+from app.repo.organisation_calender_repo import OrganisationCalendarRepo
+from app.service.organisation_calender import OrganisationCalendarService
 
 
 def get_organaistion_service(
@@ -148,3 +150,11 @@ def get_user_device_token_service(
     token_repo = TokenRepo(db)
     user_device_token_service = UserDeviceAndTokenService(user_device_repo,token_repo)
     return user_device_token_service
+
+
+def get_organisation_calendar_service(
+        db: Session = Depends(get_db),
+):
+
+    organisation_calendar_repo =OrganisationCalendarRepo(db)
+    return OrganisationCalendarService(db,organisation_calendar_repo)
