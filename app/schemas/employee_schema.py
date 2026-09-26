@@ -70,26 +70,24 @@ class EmployeeStatusUpdate(BaseModel):
 
     employee_status :EmployeeStatus
 
-
-
 class EmployeeResponse(BaseModel):
 
-    full_name: str
-    email: EmailStr
-    password_hash: str
+    full_name: str | None = None
+    email: EmailStr | None = None
     employee_code: str
 
-    department: str
-    designation: str
-    role_id: str
+    department: str | None = None
+    designation: str | None = None
 
-    join_date: date
-    dob: date
-    gender: str
-    marital_status: str
-    address: str
-    city: str
-    state: str
+
+    join_date: date | None = None
+
+    dob: date | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+
+    profile_picture: str | None = None
 
     model_config = {
         "from_attributes": True

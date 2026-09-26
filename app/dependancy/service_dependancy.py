@@ -30,8 +30,8 @@ from app.service.user_device_service import UserDeviceAndTokenService
 from app.repo.employee_face_repo import EmployeeFaceRepo
 from app.service.employee_face_service import EmployeeFaceService
 from app.repo.attendance_evidance_repo import AttendanceEvidenceRepo
-from app.utils.file_storage_service import FileService
 from app.utils.loacl_storage_implementation import LocalFileService
+
 from app.repo.organisation_calender_repo import OrganisationCalendarRepo
 from app.service.organisation_calender import OrganisationCalendarService
 from app.service.TeamService import TeamService
@@ -62,8 +62,13 @@ def get_employee_service(
     organisation_repo = OrganisationRepo(db)
     organisation_role_repo = OrganisationLevelRolePermissionsRepo(db)
     department_repo = DepartmentRepo(db)
+    fileService = LocalFileService("uploads")
 
-    return EmployeeService(employee_repo=employee_repo,user_repo= user_repo,organisation_repo= organisation_repo,db = db,organisation_role_repo = organisation_role_repo,department_repo=department_repo)
+    return EmployeeService(employee_repo=employee_repo,user_repo= user_repo
+                           ,organisation_repo= organisation_repo,db = db
+                           ,organisation_role_repo = organisation_role_repo
+                           ,department_repo=department_repo,
+                           fileService=fileService)
 
 
 def get_attendance_service(

@@ -132,7 +132,8 @@ class Employee(Base,TimestampMixin):
     employee_details= relationship(
                                     "EmployeeDetails",
                                     back_populates="employee",
-
+                                    uselist=False,
+                                    cascade="all, delete-orphan"
                                  )
     organisation = relationship(
                                  "Organisation",

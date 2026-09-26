@@ -1,6 +1,9 @@
 import uuid
 from logging import raiseExceptions
 from urllib import request
+from pathlib import Path
+from uuid import UUID
+
 
 from redis.commands.search.reducers import random_sample
 from app.db.UnitOfWork import UnitOfWork
@@ -19,12 +22,23 @@ from app.models import OrganisationRoles
 from sqlalchemy.orm import Session
 from app.repo.department_repo import DepartmentRepo
 from app.repo.employee_repo import EmployeeRepo
+from app.models import User
+from app.models import EmployeeDetails
+from app.utils.file_storage_service import FileService
+from app.utils.loacl_storage_implementation import LocalFileService
+
+UPLOAD_DIR = Path("uploads")
 
 
 class EmployeeService:
-    def __init__(self, employee_repo : EmployeeRepo, user_repo : UserRepo, organisation_repo :OrganisationRepo, organisation_role_repo : OrganisationLevelRolePermissionsRepo, db:Session, department_repo : DepartmentRepo) :
+    def __init__(self, employee_repo : EmployeeRepo,
+                 user_repo : UserRepo, organisation_repo :OrganisationRepo,
+                 organisation_role_repo : OrganisationLevelRolePermissionsRepo,
+                 fileService : LocalFileService,
+                 db:Session, department_repo : DepartmentRepo) :
         self.employeeRepo = employee_repo
         self.userRepo = user_repo
+        self.fileService = fileService
         self.organisation_repo = organisation_repo
         self.organisation_role_repo = organisation_role_repo
         self.department_repo = department_repo
@@ -172,12 +186,52 @@ class EmployeeService:
         if not existing_employee: 
             raise ValueError ("Employee not found")
         return existing_employee
-    def get_employee_by_empID_service(self,organisation_id : uuid.UUID, employee_id : uuid.UUID):
 
-        employee = self.employeeRepo.get_employee_by_employee_id(organisation_id,employee_id)
-        if not employee :
-            raise ValueError ("Employee not found")
-        return employee
+    def get_employee_by_empID_service(
+            self,
+            organisation_id: uuid.UUID,
+            employee_id: uuid.UUID
+    ):
+        employee = self.employeeRepo.get_employee_by_employee_id(
+            employee_id,
+            organisation_id
+        )
+
+        if not employee:
+            raise ValueError("Employee not found")
+
+        details  = employee.employee_details
+        user = employee.user
+
+        return {
+            "full_name": user.full_name if details else None,
+            "email": user.email if user else None,
+            "employee_code": employee.employee_code,
+
+            "department": employee.department,
+            "designation": employee.designation,
+
+            # Change this according to your EmployeeRoles structure
+            # "role_id": (
+            #     str(employee.employee_roles[0].role_id)
+            #     if employee.employee_roles
+            #     else None
+            # ),
+
+            "join_date": employee.join_date,
+
+            "dob": details.dob if details else None,
+
+            "address": details.address if details else None,
+            "city": details.city if details else None,
+            "state": details.state if details else None,
+
+            "profile_picture": (
+                details.employee_profile_image
+                if details
+                else None
+            ),
+        }
 
     # def get_employee_profile_picture_service(self,organisation_id : uuid.UUID, employee_id : uuid.UUID):
     def get_all_employee_service(self,organisation_id : uuid.UUID):
@@ -234,5 +288,51 @@ class EmployeeService:
 
         return employee
 
+    from datetime import datetime
+    from pathlib import Path
+    from uuid import UUID
+
+    def create_update_employee_profile_image(
+            self,
+            employee_id: UUID,
+            organisation: UUID,
+            image_byte: bytes,
+            filename: str,
+            content_type: str,
+    ):
+        employee :Employee = self.employeeRepo.employee(
+            employee_id=employee_id,
+            organisation_id=organisation,
+        )
+
+        if not employee:
+            raise ValueError("Employee not found")
+
+        # Get extension from uploaded filename
+        extension = Path(filename).suffix.lower().lstrip(".")
+
+        if extension not in {"jpg", "jpeg", "png", "webp"}:
+            raise ValueError("Unsupported image format")
+
+        # Save image using FileService
+        image_path = self.fileService.save_profile_picture(
+            organisation_id=organisation,
+            employee_code=employee.employee_code,
+            captured_at=datetime.now(),
+            image_bytes=image_byte,
+            extension=extension,
+        )
+
+        # Store only relative path in database
+        employee.employee_details.employee_profile_image = image_path
+
+        self.db.add(employee)
+        self.db.commit()
+
+
+        return {
+            "message": "Profile image uploaded successfully",
+            "path": image_path,
+        }
 
 

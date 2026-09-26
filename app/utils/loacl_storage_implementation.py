@@ -44,3 +44,30 @@ class LocalFileService(FileService):
         return str(
             file_path.relative_to(self.base_path)
         )
+    def save_profile_picture(
+            self,
+            organisation_id,
+            employee_code,
+            captured_at: datetime,
+            image_bytes: bytes,
+            extension: str = "jpg",
+    ) -> str:
+        directory = (
+                self.base_path
+                / "organisations"
+                / str(organisation_id)
+                / "branches"
+                / "employees"
+                / str(employee_code)
+                / "profile"
+        )
+        directory.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+        filename = f"profile.{extension}"
+        file_path = directory / filename
+        file_path.write_bytes(image_bytes)
+        return str(
+            file_path.relative_to(self.base_path)
+        )

@@ -46,6 +46,8 @@ class EmployeeRepo:
     def check_employee_exist_by_employee_id(self,employee_id : uuid.UUID,organisation_id  :uuid.UUID) -> type[UUID] | None:
         return self.db.query(Employee.id).filter(Employee.id == employee_id,Employee.organisation_id == organisation_id).scalar()
 
+    def employee(self,employee_id : uuid.UUID,organisation_id :uuid.UUID) :
+        return self.db.query(Employee).filter(Employee.id == employee_id,Employee.organisation_id == organisation_id).scalar()
     # ====================================================================================================================
     #         Employee Create
     # ====================================================================================================================

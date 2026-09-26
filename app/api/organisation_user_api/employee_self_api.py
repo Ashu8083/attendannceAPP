@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from fastapi import APIRouter, Depends, Request, File, UploadFile, Security,status
+from fastapi import APIRouter, Depends, Request, File, UploadFile, Security, status, HTTPException
 from fastapi.security import HTTPBearer
 from starlette.responses import JSONResponse
 
@@ -62,3 +62,33 @@ async def verify_employee_face(request : Request, image_file : UploadFile = File
         }
     )
 
+
+@employee_self_router.post("/employee-profile-image")
+
+async def upload_employee_profile_picture(
+    request: Request,
+    image: UploadFile = File(...),
+    employee_service: EmployeeService = Depends(get_employee_service),
+):
+    if image.content_type not in {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    }:
+        raise HTTPException(
+            status_code=400,
+            detail="Only JPG, PNG and WEBP images are allowed",
+        )
+    image_bytes = await image.read()
+    if not image_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail="Image file is empty",
+        )
+    return employee_service.create_update_employee_profile_image(
+        employee_id=request.state.auth.employee_id,
+        organisation=request.state.auth.organisation_id,
+        image_byte=image_bytes,
+        filename=image.filename or "profile.jpg",
+        content_type=image.content_type,
+    )
