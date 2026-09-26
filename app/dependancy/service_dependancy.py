@@ -34,6 +34,8 @@ from app.utils.file_storage_service import FileService
 from app.utils.loacl_storage_implementation import LocalFileService
 from app.repo.organisation_calender_repo import OrganisationCalendarRepo
 from app.service.organisation_calender import OrganisationCalendarService
+from app.service.TeamService import TeamService
+from app.repo.team_repo import TeamRepo
 
 
 def get_organaistion_service(
@@ -158,3 +160,9 @@ def get_organisation_calendar_service(
 
     organisation_calendar_repo =OrganisationCalendarRepo(db)
     return OrganisationCalendarService(db,organisation_calendar_repo)
+
+def get_team_service(
+        db: Session = Depends(get_db),
+):
+    team_repo = TeamRepo(db)
+    return TeamService(team_repo,db)

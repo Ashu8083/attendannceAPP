@@ -5,11 +5,10 @@ from fastapi.security import HTTPBearer
 from starlette.responses import JSONResponse
 
 from app.schemas.employee_schema import Employee, EmployeeResponse
-from app.api.organisation_admin_api.employee_api import get_employee_service
 from app.auth.permission_check import PermissionChecker
 from app.service.employee_services import EmployeeService
 from app.service.employee_face_service import EmployeeFaceService
-from app.dependancy.service_dependancy import get_employee_face_service
+from app.dependancy.service_dependancy import get_employee_face_service,get_employee_service
 
 
 
