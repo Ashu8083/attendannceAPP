@@ -9,7 +9,7 @@ from app.auth.permission_check import PermissionChecker
 from app.service.employee_services import EmployeeService
 from app.service.employee_face_service import EmployeeFaceService
 from app.dependancy.service_dependancy import get_employee_face_service,get_employee_service
-from core.response_helper import CommonJSONResponse
+from app.core.response_helper import CommonJSONResponse
 
 employee_self_router = APIRouter(
     prefix="/organisation-user",
