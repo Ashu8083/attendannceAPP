@@ -18,7 +18,6 @@ class EmployeeFaceModel(Base,TimestampMixin):
                'employee_id',
                'id'),
      )
-
     id : Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
@@ -31,9 +30,7 @@ class EmployeeFaceModel(Base,TimestampMixin):
     embedding: Mapped[list[float]] = mapped_column(
         JSONB,
         nullable=False,
-
     )
-
     employee = relationship("Employee",
                             back_populates="employee_face",
                           )

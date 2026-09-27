@@ -5,7 +5,7 @@ from alembic.ddl import oracle
 from sqlalchemy import ColumnElement
 from sqlalchemy.orm import Session, InstrumentedAttribute
 
-from app.models import role, OrganisationRoles, Permission
+
 from app.schemas.role_schema import *
 from app.models.organisation_role import OrganisationRoles
 from app.models.organisation_role_permission import OrganisationLevelRolePermissions
@@ -89,13 +89,6 @@ class OrganisationLevelRolePermissionsRepo:
             return []
         return role
 
-    # def get_permission(self, permission_name: str) -> type[Permission] | None:
-    #     permission = (
-    #         self.db.query(Permission)
-    #         .filter(Permission.name == permission_name)
-    #         .first()
-    #     )
-    #     return permission
 
     def get_all_permission_organisation(self) -> list[Any] | list[type[Permission]]:
         return self.db.query(Permission).filter(Permission.assignable == True,
@@ -105,4 +98,23 @@ class OrganisationLevelRolePermissionsRepo:
         return self.db.query(Permission).filter(Permission.assignable == False,
                                                 Permission.scope == PermissionScopEnumUpdate.SYSTEM).all()
 
-    # def get_permission_assign_to_role(self,organisation_role_id : uuid.UUID ) -> type[Permission] | None:
+
+    def role_search_filter(self,
+                            role_id : uuid.UUID,
+                            permission_id : uuid.UUID,
+                            organisation_id : uuid.UUID, ):
+        query = (
+            self.db.query(OrganisationLevelRolePermissions)
+            .join(
+                OrganisationRoles,
+                OrganisationLevelRolePermissions.organisation_role_id == OrganisationRoles.id
+            ).filter(OrganisationRoles.organisation_id == organisation_id))
+        if role_id is not None:
+            query = query.filter(
+                OrganisationLevelRolePermissions.role_id == role_id
+            )
+        if permission_id is not None:
+            query = query.filter(
+                OrganisationLevelRolePermissions.permission_id == permission_id
+            )
+        return query.all()

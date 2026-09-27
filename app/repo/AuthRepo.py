@@ -17,6 +17,7 @@ class AuthRepo :
     def get_otp(self ,user_id : uuid.UUID ):
         time = datetime.now().time()
         otp =  self.db.query(TempOtpStorage).filter(TempOtpStorage.user_id == user_id,
+            TempOtpStorage.date == date.today(),
             TempOtpStorage.is_expired == False,
             TempOtpStorage.expire_time > time
         ).first()

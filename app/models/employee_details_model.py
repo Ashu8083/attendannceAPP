@@ -58,8 +58,13 @@ class EmployeeDetails(Base, TimestampMixin):
     marital_status :Mapped[str] = mapped_column(
         String(20)
     )
-    address : Mapped[str] = mapped_column(
+
+    address :Mapped[str] = mapped_column(
         String(30)
+    )
+    street : Mapped[str] = mapped_column(
+        String(30),
+        nullable=True
     )
     city : Mapped[str] = mapped_column(
         String(30)

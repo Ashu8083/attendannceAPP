@@ -26,27 +26,22 @@ class EmployeeDocuments(Base, TimestampMixin):
         nullable=False,
         unique=True,  # One document record per employee
     )
-
     photo_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,
     )
-
     aadhaar_document_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,
     )
-
     pan_document_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,
     )
-
     resume_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,
     )
-
     employee = relationship(
         "Employee",
         back_populates="documents",

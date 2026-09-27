@@ -10,28 +10,26 @@ from .user_models import User
 from .attendance_log_model import AttendanceLog
 from .userdevice_details import UserDeviceDetails
 
-# from .role import Role
 from .permission_model import Permission
-# from .rolePermision import RolePermission
 
 from .employee_details_model import EmployeeDetails
 from .employee_documents_model import EmployeeDocuments
-from .temp_otp_storage import  TempOtpStorage
+from .temp_otp_storage import TempOtpStorage
 
 from .employee_role import EmployeeRoles
-from .user_role import *
-from .system_roles import *
-from .organisation_role import *
-from .system_role_permission import *
-from .organisation_role_permission import *
-
+from .user_role import UserRole
+from .system_roles import SystemRoles
+from .organisation_role import OrganisationRoles
+from .system_role_permission import SystemRolePermissions
+from .organisation_role_permission import OrganisationLevelRolePermissions
 
 from app.models.team_model import Team
-from app.models.organisation_work_schedule import  OrganisationWorkSchedule
+from app.models.organisation_work_schedule import OrganisationWorkSchedule
 from app.models.token import Token
 from app.models.employee_face_model import EmployeeFaceModel
 from app.models.branches import Branch
 from app.models.organisation_calendar import OrganisationCalendar
-from app.models.organisation_holidays import  Holidays
+from app.models.organisation_holidays import Holidays
 from app.models.attendance_record_evidance import AttendanceEvidence
+
 

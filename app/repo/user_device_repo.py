@@ -52,14 +52,10 @@ class UserDeviceDetailRepo:
 
         user_device = self.db.query(UserDeviceDetails).filter(UserDeviceDetails.user_id == user_id,
                                                               UserDeviceDetails.device_unique_id == user_device_id).first()
-        
         if not user_device: 
             raise ValueError("Device Record not Found")
-        
-
         for feild,value in userdeviceupdate.model_dump().items():
             setattr(user_device, feild, value)
-        
         try:
             self.db.commit()
             self.db.refresh(user_device)

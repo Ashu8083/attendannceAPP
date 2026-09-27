@@ -8,12 +8,11 @@ class AttendanceEvidenceRepo():
         def  __init__ (self, db:Session):
             self.db = db
 
-
         def create_attendance_evidence(self
-                                        ,attendance_id : UUID
-                                       ,face_match_score : float,
-                                       type : TypeAttendance,
-                                       face_profile_url : str):
+                                    ,attendance_id : UUID
+                                    ,face_match_score : float,
+                                    type : TypeAttendance,
+                                    face_profile_url : str):
 
             attendance_evidence = AttendanceEvidence(
                 attendance_record_id = attendance_id,

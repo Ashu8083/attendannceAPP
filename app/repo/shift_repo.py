@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.models.shift import Shift
+from app.models.shift_model import Shift
 
 
 class ShiftRepository:

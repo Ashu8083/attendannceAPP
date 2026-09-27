@@ -5,7 +5,7 @@ from datetime import date
 from app.enums.work_mode import WorkMode
 
 from ..enums.employee_status import  EmployeeStatus
-from sqlalchemy import ForeignKey,String,Date, UniqueConstraint,Index
+from sqlalchemy import ForeignKey, String, Date, UniqueConstraint, Index, Integer
 from sqlalchemy.orm import Mapped , mapped_column,relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy.dialects.postgresql import ENUM as SQLEnums
@@ -54,20 +54,25 @@ class Employee(Base,TimestampMixin):
     employee_code: Mapped[str] = mapped_column(
         String(50),
     )
-    department: Mapped[str] = mapped_column(
-        String(100),
+    department_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("department.id"),
+        nullable= True
+    )
+    team_id : Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid = True),
+        ForeignKey("teams.id"),
         nullable= True
     )
     designation: Mapped[str] = mapped_column(
         String(100),
         nullable=True
     )
-    organisation_branch:Mapped[UUID]= mapped_column(
+    organisation_branch_id:Mapped[UUID]= mapped_column(
         UUID(as_uuid = True),
         ForeignKey("branches.id"),
         nullable= True
     )
-
     supervisor : Mapped[UUID]= mapped_column(
         UUID(as_uuid = True),
         ForeignKey("employees.id"),
@@ -91,21 +96,11 @@ class Employee(Base,TimestampMixin):
         back_populates= "employee"
 
     )
-    # manager_id : Mapped[uuid.UUID] = mapped_column(
-    #     ForeignKey("user.id")
-    # )
-
-    # Employee.py
 
     user = relationship(
         "User",
         back_populates= "employee"
     )
-    # role_id:Mapped[uuid.UUID] = mapped_column(
-    #                                             UUID(as_uuid=True),
-    #                                             ForeignKey("role.id"),
-    #                                             nullable=True,
-    #)
     work_mode : Mapped[WorkMode] = mapped_column(
                                                 SQLEnums(
                                                 WorkMode,
@@ -114,11 +109,6 @@ class Employee(Base,TimestampMixin):
                                                 ),
                                                 default=WorkMode.WFO
                                                 )
-
-    # role = relationship(
-    #                     "Role",
-    #                     back_populates="employee",
-    #                     )
     leave_requests = relationship(
                                 "LeaveRequest",
                                 back_populates= "employee",

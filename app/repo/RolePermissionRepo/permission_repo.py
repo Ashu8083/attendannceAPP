@@ -5,7 +5,7 @@ from alembic.ddl import oracle
 from sqlalchemy import ColumnElement
 from sqlalchemy.orm import Session, InstrumentedAttribute
 
-from app.models import role, OrganisationRoles, Permission
+
 from app.schemas.role_schema import *
 from app.models.organisation_role import OrganisationRoles
 from app.models.organisation_role_permission import OrganisationLevelRolePermissions

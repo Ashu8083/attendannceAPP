@@ -47,6 +47,7 @@ class TokenRepo():
     def get_user_tokens(self,user_id: UUID):
         token = self.db.query(Token).filter(Token.user_id == user_id).all()
         return token
+
     def revoke_token(self,token: Token):
         try:
             self.db.add(token)

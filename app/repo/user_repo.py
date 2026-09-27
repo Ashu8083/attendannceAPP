@@ -42,13 +42,12 @@ class UserRepo:
         )
 
     def get_users_by_account_scope(self,account_scope : str):
-
         return (
             self.db.query(User).filter(User.account_type == account_scope).all()
         )
 
 
-    def create_user_as_employee(self,full_name,email,organisation_id):
+    def create_organisation_user(self,full_name,email,organisation_id):
             user = User(
                  full_name = full_name,
                  email = email,
@@ -74,17 +73,11 @@ class UserRepo:
             return user
 
     def updateUser(self,data:UserUpdate):
-         
-        user =  self.db.query(User).filter(User.full_name == data.email).first()    
-      
+        user =  self.db.query(User).filter(User.full_name == data.email).first()
         update_data = data.model_dump(exclude_unset=True)
-
         for field, value in update_data.items():
-
          setattr(user, field, value)
-
         self.db.commit()
-
         self.db.refresh(user)
 
         return user
@@ -96,12 +89,6 @@ class UserRepo:
         user = self.db.query(User).filter(User.id == id).first()
         return user
 
-    def create_user_device(self, ):
-        return
-
-    def get_user_status_by_id(self,id : uuid.UUID):
-        user_status = self.db.query(User.status).filter(User.id == id).first()
-        return user_status
 
     def suspend_user(self,user_id: uuid.UUID):
         user =self.db.query(User).filter(User.id == user_id).first()
