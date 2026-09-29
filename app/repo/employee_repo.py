@@ -97,7 +97,7 @@ class EmployeeRepo:
 
     def get_employee_profile_image(self,employee_id):
         logger.info(f"Trying to get profile image for employee {employee_id}")
-        employee_profile_image_url = (self.db.query(EmployeeDetails.employee_profile_imagei).
+        employee_profile_image_url = (self.db.query(EmployeeDetails.employee_profile_image).
                                       filter(EmployeeDetails.employee_id == employee_id).first())
 
         return employee_profile_image_url

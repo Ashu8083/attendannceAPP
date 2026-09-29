@@ -208,7 +208,7 @@ class EmployeeService:
             "email": user.email if user else None,
             "employee_code": employee.employee_code,
 
-            "department": employee.department,
+            "department": str(employee.department_id),
             "designation": employee.designation,
 
             # Change this according to your EmployeeRoles structure
