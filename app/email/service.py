@@ -6,9 +6,7 @@ from app.core.logging_config import logger
 class EmailService:
 
     async def send_otp(self, email: str, otp: str):
-
         logger.info(f"trying otp sent On the user's email {email}" )
-
         message = MessageSchema(
             subject="OTP Verification",
             recipients=[email],
@@ -28,34 +26,20 @@ class EmailService:
         except Exception as e:
             logger.error(f"we get error while sending mail to {email} | {e}")
 
-
     async def send_test_email(self, recipient: str):
         message = MessageSchema(
-
-            subject="FastAPI Mail Test",
-
+            subject="FastAPI Mail est",
             recipients=[recipient],
-
             template_body={
-
                 "name": "Ashutosh",
-
-                "otp": "123456",
-
+              "otp": "123456",
             },
-
             subtype=MessageType.html,
-
         )
-
         fm = FastMail(conf)
-
         await fm.send_message(
-
             message,
-
             template_name="test.html",
-
         )
 
     async def send_welcome_email(self,email:str):
@@ -72,5 +56,21 @@ class EmailService:
             message,
             template_name="welcome.html",
         )
+    async def send_leave_request_email(self,email:str):
+        message = MessageSchema(
+            subject="Leave Request Approve Email",
+            recipients=[email],
+            template_body={
+                "name": "leave request mail",
+            },
+            subtype=MessageType.html,
+        )
+        fm = FastMail(conf)
+        await fm.send_message(
+            message,
+            template_name="leave request.html",
+        )
+
+
 email_service = EmailService()
 # all done
