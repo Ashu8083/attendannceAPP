@@ -24,7 +24,6 @@ from app.models.subcription_model import Subscription
 from app.models.leave_record_model import LeaveRequest
 
 from app.core.logging_config import logger
-from app.redis_config.redis import redis_client
 from app.dependancy.auth_dependency import get_current_auth
 from app.core.response_helper import CommonJSONResponse
 

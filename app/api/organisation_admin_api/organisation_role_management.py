@@ -1,5 +1,6 @@
 from typing import List
 
+from fastapi import status
 from fastapi import APIRouter, Depends, Request
 
 from app.auth.permission_check import PermissionChecker
@@ -15,6 +16,7 @@ from app.schemas.role_schema import (
 from app.service.role_services.organisation_role_permission_service import (
     OrganisationRolePermissionService,
 )
+from app.core.response_helper import CommonJSONResponse
 
 role_management_router = APIRouter(
     prefix="/organisation-role-management",
@@ -54,10 +56,12 @@ def get_all_roles(
         get_organisation_role_service
     ),
 ):
-    return service.get_all_roles(
-        organisation_id=request.state.auth.organisation_id,
+    roles = service.get_all_roles(organisation_id=request.state.auth.organisation_id)
+    return CommonJSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=roles,
+        message="roles fetched successfully",
     )
-
 
 @role_management_router.get(
     "/get-role-by-name/{role_name}",
@@ -71,15 +75,22 @@ def get_role(
         get_organisation_role_service
     ),
 ):
-    return service.get_role(
+    role = service.get_role(
         organisation_id=request.state.auth.organisation_id,
         role_name=role_name,
+    )
+    return CommonJSONResponse(
+        content=role,
+        message="role fetched successfully",
+        status_code=status.HTTP_200_OK,
+
     )
 # --------------------------------------------------
 # Role Permission APIs
 # --------------------------------------------------
 @role_management_router.post(
     "/assign-permission-role/{role_name}/permissions",
+    response_model=OrganisationRoles,
     dependencies=[Depends(PermissionChecker("role.manager","ORGANISATION"))],
 )
 def assign_permissions(
@@ -90,10 +101,15 @@ def assign_permissions(
         get_organisation_role_service
     ),
 ):
-    return service.assign_permissions(
+    permissions  = service.assign_permissions(
         organisation_id=request.state.auth.organisation_id,
         role_name=role_name,
         permissions=permissions,
+    )
+    return CommonJSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=permissions,
+        message="permissions fetched successfully",
     )
 @role_management_router.get(
     "/roles/{role_name}/permissions",
@@ -107,9 +123,14 @@ def get_role_permissions(
         get_organisation_role_service
     ),
 ):
-    return service.get_all_permission_for_role(
+    role_permissions= service.get_all_permission_for_role(
         organisation_id=request.state.auth.organisation_id,
         role_name=role_name,
+    )
+    return  CommonJSONResponse(
+        content=role_permissions,
+        message="RolePermission fetched successfully",
+        status_code=status.HTTP_200_OK,
     )
 # --------------------------------------------------
 # Permission APIs
@@ -125,4 +146,9 @@ def get_organisation_permissions(
         get_organisation_role_service
     ),
 ):
-    return service.get_all_permission_organisation()
+    permissions = service.get_all_permission_organisation()
+    return CommonJSONResponse(
+        content=permissions,
+        message="permissions fetched successfully",
+        status_code=status.HTTP_200_OK,
+    )

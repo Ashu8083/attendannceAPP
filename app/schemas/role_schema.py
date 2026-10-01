@@ -51,7 +51,6 @@ class SystemRoleResponse(BaseModel):
 
 class OrganisationRoleResponse(BaseModel):
 
-    id: UUID
     name: str
     description: str | None
     model_config = {

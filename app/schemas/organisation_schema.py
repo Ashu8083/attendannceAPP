@@ -7,6 +7,7 @@ from app.schemas.subscription_schema import SubscriptionCreate
 
 class CreateOrganisation(BaseModel) :  
     organisation_name :str
+    organisation_code :str
     organisation_email : str 
     organisation_status : OrganizationStatus
     organisation_phone : str

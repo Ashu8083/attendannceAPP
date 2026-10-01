@@ -9,16 +9,21 @@ from app.schemas.organisation_schema import( CreateOrganisation,
 
 from app.service.organisation_service import OrganisationService
 from app.dependancy.service_dependancy import get_organaistion_service
+from app.core.response_helper import CommonJSONResponse
 
 organisation_router = APIRouter(prefix="/organisation",tags=["organisation"])
 
-@organisation_router.post("/create")
+@organisation_router.post("/create",response_model=OrganisationDetailsResponse)
 def create(
     data: CreateOrganisation,
     service: OrganisationService = Depends(get_organaistion_service)
 ):
     organisation = service.create_oranisation(data)
-    return organisation
+    return CommonJSONResponse(
+        content= organisation.json(),
+        status_code=201,
+        message= "Organisation created"
+    )
 
 @organisation_router.get("/get_organisation/{organisation_code}",response_model=OrganisationDetailsResponse)
 def get_organisation_details(
@@ -26,7 +31,11 @@ def get_organisation_details(
     service: OrganisationService = Depends(get_organaistion_service)
 ):
     organisation = service.get_organisation(organisation_code)
-    return organisation
+    return CommonJSONResponse(
+        content= organisation.json(),
+        status_code=200,
+        message= "Organisation retrieved"
+    )
 
 
 @organisation_router.patch("/update_organisation/{organisation_code}")
@@ -37,10 +46,12 @@ def update_organisation_details(
 ):
     try : 
         organisation  = service.update_organisation(organisation_code,data)
-        return {
-            "id": str(organisation.id),
-            "name": organisation.name
-                }
+        return CommonJSONResponse(
+            content= organisation.json(),
+            status_code=200,
+            message= "Organisation updated"
+
+        )
     except  Exception as e : 
         JSONResponse(
             content= "error",
